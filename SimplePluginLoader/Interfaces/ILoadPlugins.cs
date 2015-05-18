@@ -1,8 +1,8 @@
-﻿namespace FnoSharp.DataMigrator.Args
+﻿namespace SimplePluginLoader
 {
-    interface ILoadPlugins
+    interface ILoadPlugins<T> where T : class
     {
-        void LoadPlugins(string appName, string pluginDirectory);
+        PluginCollection<T> LoadPlugins();
     }
 }
 

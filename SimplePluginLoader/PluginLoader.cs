@@ -3,46 +3,42 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using FnoSharp.DataMigrator.Args;
 
 namespace SimplePluginLoader
 {
     /// <summary>
     /// A singleton that load plugins
     /// </summary>
-    public class PluginLoader : ILoadPlugins
+    public class PluginLoader<T> : ILoadPlugins<T> where T : class
     {
-        public const string PluginDirectoryName = "Plugins";
-        public const string DllSearchString = "*.dll";
+        private const string DefaultPluginDirectory = "Plugins";
+        private const string DefaultDllSearchString = "*.dll";
 
-        #region
-        private PluginLoader()
+        public string DefaultAppName
         {
-        }
-
-        public static PluginLoader Instance
-        {
-            get { return _Instance ?? (_Instance = new PluginLoader()); }
-        } private static PluginLoader _Instance;
-        #endregion
+            get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(Assembly.GetEntryAssembly().Location)); }
+        } private string _DefaultAppName;
 
         #region Methods
+
         /// <summary>
         /// Support multiple plugin directories, one relative to running path, 
         /// one in the uses profile, and one in ApplicationData.  
         /// </summary>
-        /// <param name="appName"></param>
-        /// <param name="pluginDirectory"></param>
-        public void LoadPlugins(string appName, string pluginDirectory = null)
+        public PluginCollection<T> LoadPlugins()
         {
-            if (string.IsNullOrWhiteSpace(pluginDirectory))
-                pluginDirectory = PluginDirectoryName;
-
-            var dirs = GetDefaultPluginDirectories(appName, pluginDirectory);
-            LoadPlugins(dirs);
+            var dirs = GetDefaultPluginDirectories(DefaultAppName, DefaultPluginDirectory);
+            return LoadPlugins(dirs);
         }
 
-        private static IEnumerable<string> GetDefaultPluginDirectories(string appName, string pluginDirectory)
+        /// <summary>
+        /// Returns a "Plugins" directory relative to the executable, a directory in the user profile
+        /// and a directory in ApplicationData.
+        /// </summary>
+        /// <param name="appName"></param>
+        /// <param name="pluginDirectory"></param>
+        /// <returns>A list of default directories</returns>
+        public static IEnumerable<string> GetDefaultPluginDirectories(string appName, string pluginDirectory)
         {
             string[] dirs = { pluginDirectory,
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), appName, pluginDirectory),
@@ -61,70 +57,37 @@ namespace SimplePluginLoader
         /// Loads any plugins found in the specified directories
         /// </summary>
         /// <param name="dirs"></param>
-        public void LoadPlugins(IEnumerable<string> dirs)
+        public PluginCollection<T> LoadPlugins(IEnumerable<string> dirs)
         {
-            foreach (var dir in dirs)
+            var plugins = new PluginCollection<T>();
+            foreach (var dir in dirs.Where(Directory.Exists))
             {
-                if (!Directory.Exists(dir))
-                    continue;
-                LoadPlugins(Directory.GetFiles(dir, DllSearchString));
+                plugins.AddRange(LoadPlugins(Directory.GetFiles(dir, DefaultDllSearchString)));
             }
+            return plugins;
         }
 
         /// <summary>
-        /// Loads the plugins specificied. 
+        /// Loads the plugins from files specificied. 
         /// </summary>
-        public bool LoadPlugins(string[] pluginFiles)
+        public PluginCollection<T> LoadPlugins(string[] pluginFiles)
         {
-            bool allLoaded = true;
-            foreach (var pluginFile in pluginFiles)
-            {
-                allLoaded = LoadPlugin(pluginFile) != null && allLoaded;
-            }
-            return allLoaded;
+            return new PluginCollection<T>(pluginFiles.Select(LoadPlugin).Where(plugin => plugin != null));
         }
 
         /// <summary>
         /// Loads the single plugin specificied. 
         /// </summary>
-        public Assembly LoadPlugin(string pluginFile)
+        public Plugin<T> LoadPlugin(string pluginFile)
         {
             if (!File.Exists(pluginFile))
                 return null;
-            return LoadAssembly(pluginFile);
-        }
-
-        public object LoadInterface(Assembly assembly, Type interfaceType)
-        {
-            if (assembly != null)
+            return new Plugin<T>
             {
-                Type[] objTypes = assembly.GetTypes();
-                foreach (var objType in objTypes.Where(objType => objType.GetInterfaces().Contains(interfaceType)))
-                {
-                    try
-                    {
-                        return Activator.CreateInstance(objType);
-                    }
-                    catch
-                    {
-                        // Todo: Log error here 
-                    }
-                }
-            }
-            return null;
-        }
-
-        public Assembly LoadAssembly(string inString)
-        {
-            try
-            {
-                return Assembly.LoadFrom(inString);
-            }
-            catch (Exception)
-            {
-                // Todo: Log that dll could not be loaded.
-                return null;
-            }
+                Directory = Path.GetDirectoryName(pluginFile),
+                File = Path.GetFileName(pluginFile),
+                Assembly = Assembly.LoadFrom(pluginFile)
+            };
         }
         #endregion
     }

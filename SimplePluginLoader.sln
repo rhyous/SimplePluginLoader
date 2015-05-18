@@ -1,9 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimplePluginLoader", "SimplePluginLoader\SimplePluginLoader.csproj", "{8EB7535D-C90C-4E91-804E-052B67DD308E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{3B152766-5529-45BE-88A6-D0A2DF070E3A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Command Line", "Command Line", "{F2996B35-A240-4909-93C7-9C0812635790}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool", "Examples\Command Line\Tool\Tool.csproj", "{3B20B597-0A54-454D-9CF6-6AB7D28B24F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.Plugin1", "Examples\Command Line\Tool.Plugin1\Tool.Plugin1.csproj", "{C0BE9BCA-DF56-4350-93E0-A9F53623E507}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +23,21 @@ Global
 		{8EB7535D-C90C-4E91-804E-052B67DD308E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EB7535D-C90C-4E91-804E-052B67DD308E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8EB7535D-C90C-4E91-804E-052B67DD308E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B20B597-0A54-454D-9CF6-6AB7D28B24F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B20B597-0A54-454D-9CF6-6AB7D28B24F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B20B597-0A54-454D-9CF6-6AB7D28B24F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B20B597-0A54-454D-9CF6-6AB7D28B24F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0BE9BCA-DF56-4350-93E0-A9F53623E507}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0BE9BCA-DF56-4350-93E0-A9F53623E507}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0BE9BCA-DF56-4350-93E0-A9F53623E507}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0BE9BCA-DF56-4350-93E0-A9F53623E507}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F2996B35-A240-4909-93C7-9C0812635790} = {3B152766-5529-45BE-88A6-D0A2DF070E3A}
+		{3B20B597-0A54-454D-9CF6-6AB7D28B24F2} = {F2996B35-A240-4909-93C7-9C0812635790}
+		{C0BE9BCA-DF56-4350-93E0-A9F53623E507} = {F2996B35-A240-4909-93C7-9C0812635790}
 	EndGlobalSection
 EndGlobal
