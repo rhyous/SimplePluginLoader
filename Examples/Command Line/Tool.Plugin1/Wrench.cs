@@ -1,4 +1,6 @@
-﻿namespace Tool.Plugin1
+﻿using Tool.Tools;
+
+namespace Tool.Plugin1
 {
     public class Wrench : ITool
     {
