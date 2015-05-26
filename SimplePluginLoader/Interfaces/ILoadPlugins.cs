@@ -1,4 +1,5 @@
-﻿namespace SimplePluginLoader
+﻿// See License at the end of the file
+namespace SimplePluginLoader
 {
     interface ILoadPlugins<T> where T : class
     {
