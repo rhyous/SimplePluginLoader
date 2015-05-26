@@ -84,6 +84,6 @@
     <Message Text="SUCCESS: Published package." Condition=" '$(Configuration)|$(Platform)|$(ExitCode)' == 'Release|AnyCPU|0' " Importance="High" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)..\SimplePluginLoader\$(OutDir)SimplePluginLoader.dll" "$(ProjectDir)Lib\"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(SolutionDir)..\SimplePluginLoader\$(OutDir)SimplePluginLoader.dll" "$(ProjectDir)Lib\net40-client\"</PostBuildEvent>
   </PropertyGroup>
 </Project>
