@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimplePluginLoader", "..\Si
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{3B152766-5529-45BE-88A6-D0A2DF070E3A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Command Line", ""Command Line", "{F2996B35-A240-4909-93C7-9C0812635790}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Command Line", "Command Line", "{F2996B35-A240-4909-93C7-9C0812635790}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool", "..\Examples\Command Line\Tool\Tool.csproj", "{3B20B597-0A54-454D-9CF6-6AB7D28B24F2}"
 EndProject
@@ -20,6 +20,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{23B699EA-3D99-4C2E-8634-71FF2D0F5B03}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimplePluginLoader.NuGet", "SimplePluginLoader.NuGet\SimplePluginLoader.NuGet.csproj", "{0451BAEF-DF2E-4B98-8644-94EE9415E389}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8EB7535D-C90C-4E91-804E-052B67DD308E} = {8EB7535D-C90C-4E91-804E-052B67DD308E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
