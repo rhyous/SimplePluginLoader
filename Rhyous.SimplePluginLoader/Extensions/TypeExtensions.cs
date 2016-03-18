@@ -1,35 +1,15 @@
 ﻿// See License at the end of the file
-using System.Collections.Generic;
 
-namespace SimplePluginLoader
+using System;
+
+namespace Rhyous.SimplePluginLoader
 {
-    public class PluginCollection<T> : List<Plugin<T>> where T : class
+    public static class TypeExtensions
     {
-        public PluginCollection()
+        public static bool IsSameOrSubclassAs(this Type currentType, Type type)
         {
-        }
-
-        public PluginCollection(int capacity)
-            : base(capacity)
-        {
-        }
-
-        public PluginCollection(IEnumerable<Plugin<T>> list)
-            : base(list)
-        {
-        }
-
-        public List<T> AllObjects
-        {
-            get
-            {
-                var list = new List<T>();
-                foreach (var plugin in this)
-                {
-                    list.AddRange(plugin.PluginObjects);
-                }
-                return list;
-            }
+            return currentType.IsSubclassOf(type)
+                   || currentType == type;
         }
     }
 }

@@ -7,8 +7,8 @@
     <ProjectGuid>{8EB7535D-C90C-4E91-804E-052B67DD308E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SimplePluginLoader</RootNamespace>
-    <AssemblyName>SimplePluginLoader</AssemblyName>
+    <RootNamespace>Rhyous.SimplePluginLoader</RootNamespace>
+    <AssemblyName>Rhyous.SimplePluginLoader</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>

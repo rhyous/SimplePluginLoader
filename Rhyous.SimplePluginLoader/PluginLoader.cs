@@ -1,11 +1,12 @@
 ﻿// See License at the end of the file
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace SimplePluginLoader
+namespace Rhyous.SimplePluginLoader
 {
     /// <summary>
     /// A singleton that load plugins

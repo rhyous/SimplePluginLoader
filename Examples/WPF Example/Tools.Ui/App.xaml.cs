@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
-using SimplePluginLoader;
+using Rhyous.SimplePluginLoader;
 using Tool;
 using Tool.Tools;
 
