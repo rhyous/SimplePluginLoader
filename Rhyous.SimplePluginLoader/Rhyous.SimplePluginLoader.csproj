@@ -48,8 +48,10 @@
     <Compile Include="InstancesLoader.cs" />
     <Compile Include="Interfaces\ILoadInstancesOfType.cs" />
     <Compile Include="Interfaces\ILoadPlugins.cs" />
+    <Compile Include="Interfaces\IName.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="PluginCollection.cs" />
+    <Compile Include="PluginFinder.cs" />
     <Compile Include="PluginLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
