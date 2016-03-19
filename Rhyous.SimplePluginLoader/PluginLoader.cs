@@ -88,7 +88,7 @@ namespace Rhyous.SimplePluginLoader
             {
                 Directory = Path.GetDirectoryName(pluginFile),
                 File = Path.GetFileName(pluginFile),
-                Assembly = Assembly.LoadFrom(pluginFile)
+                Assembly = Assembly.Load(File.ReadAllBytes(pluginFile))
             };
         }
         #endregion
