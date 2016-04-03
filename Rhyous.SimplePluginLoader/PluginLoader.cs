@@ -21,15 +21,32 @@ namespace Rhyous.SimplePluginLoader
             get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(Assembly.GetEntryAssembly().Location)); }
         } private string _DefaultAppName;
 
+        public string PluginDirectory
+        {
+            get { return (string.IsNullOrWhiteSpace(_PluginDirectory)) ? (_PluginDirectory = DefaultPluginDirectory) : _PluginDirectory; }
+            set { _PluginDirectory = value; }
+        } private string _PluginDirectory;
+
+        #region Constructors
+
+        #endregion
+        public PluginLoader()
+        {
+        }
+        public PluginLoader(string pluginDirectory)
+        {
+            _PluginDirectory = pluginDirectory;
+        }
         #region Methods
 
         /// <summary>
         /// Support multiple plugin directories, one relative to running path, 
         /// one in the uses profile, and one in ApplicationData.  
         /// </summary>
-        public PluginCollection<T> LoadPlugins()
+        public PluginCollection<T> LoadPlugins(string pluginDiretory = null)
         {
-            var dirs = GetDefaultPluginDirectories(DefaultAppName, DefaultPluginDirectory);
+            PluginDirectory = pluginDiretory;
+            var dirs = GetDefaultPluginDirectories(DefaultAppName, PluginDirectory);
             return LoadPlugins(dirs);
         }
 
