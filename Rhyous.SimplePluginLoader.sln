@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader", "Rhyous.SimplePluginLoader\Rhyous.SimplePluginLoader.csproj", "{8EB7535D-C90C-4E91-804E-052B67DD308E}"
 EndProject
@@ -12,6 +12,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool", "Examples\Command Line\Tool\Tool.csproj", "{3B20B597-0A54-454D-9CF6-6AB7D28B24F2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.Plugin1", "Examples\Command Line\Tool.Plugin1\Tool.Plugin1.csproj", "{C0BE9BCA-DF56-4350-93E0-A9F53623E507}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BC40EE53-D35F-4075-9840-F03700F684BA} = {BC40EE53-D35F-4075-9840-F03700F684BA}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WPF Example", "WPF Example", "{E647C50E-E23E-4842-B009-6E31A07DCC82}"
 EndProject
