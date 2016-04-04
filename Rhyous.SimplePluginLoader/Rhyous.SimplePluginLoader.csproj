@@ -53,6 +53,7 @@
     <Compile Include="PluginCollection.cs" />
     <Compile Include="PluginFinder.cs" />
     <Compile Include="PluginLoader.cs" />
+    <Compile Include="PluginPaths.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

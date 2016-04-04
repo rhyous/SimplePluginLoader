@@ -13,19 +13,17 @@ namespace Rhyous.SimplePluginLoader
     /// </summary>
     public class PluginLoader<T> : ILoadPlugins<T> where T : class
     {
-        private const string DefaultPluginDirectory = "Plugins";
-        private const string DefaultDllSearchString = "*.dll";
-
         public string DefaultAppName
         {
-            get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(Assembly.GetEntryAssembly().Location)); }
-        } private string _DefaultAppName;
+            get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(AppDomain.CurrentDomain.BaseDirectory)); }
+        }
+        private string _DefaultAppName;
 
-        public string PluginDirectory
+        public PluginPaths Paths
         {
-            get { return (string.IsNullOrWhiteSpace(_PluginDirectory)) ? (_PluginDirectory = DefaultPluginDirectory) : _PluginDirectory; }
-            set { _PluginDirectory = value; }
-        } private string _PluginDirectory;
+            get { return _Paths ?? (_Paths = new PluginPaths(DefaultAppName)); }
+        }
+        private PluginPaths _Paths;
 
         #region Constructors
 
@@ -33,9 +31,10 @@ namespace Rhyous.SimplePluginLoader
         public PluginLoader()
         {
         }
+
         public PluginLoader(string pluginDirectory)
         {
-            _PluginDirectory = pluginDirectory;
+            Paths.PluginDirectoryName = pluginDirectory;
         }
         #region Methods
 
@@ -43,33 +42,10 @@ namespace Rhyous.SimplePluginLoader
         /// Support multiple plugin directories, one relative to running path, 
         /// one in the uses profile, and one in ApplicationData.  
         /// </summary>
-        public PluginCollection<T> LoadPlugins(string pluginDiretory = null)
+        public PluginCollection<T> LoadPlugins()
         {
-            PluginDirectory = pluginDiretory;
-            var dirs = GetDefaultPluginDirectories(DefaultAppName, PluginDirectory);
+            var dirs = Paths.GetDefaultPluginDirectories(DefaultAppName);
             return LoadPlugins(dirs);
-        }
-
-        /// <summary>
-        /// Returns a "Plugins" directory relative to the executable, a directory in the user profile
-        /// and a directory in ApplicationData.
-        /// </summary>
-        /// <param name="appName"></param>
-        /// <param name="pluginDirectory"></param>
-        /// <returns>A list of default directories</returns>
-        public static IEnumerable<string> GetDefaultPluginDirectories(string appName, string pluginDirectory)
-        {
-            string[] dirs = { pluginDirectory,
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), appName, pluginDirectory),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, pluginDirectory)
-            };
-
-            var dirList = new List<string> { pluginDirectory };
-            foreach (var dir in dirs.Where(dir => !dirList.Contains(dir)))
-            {
-                dirList.Add(dir);
-            }
-            return dirList;
         }
 
         /// <summary>
@@ -81,7 +57,7 @@ namespace Rhyous.SimplePluginLoader
             var plugins = new PluginCollection<T>();
             foreach (var dir in dirs.Where(Directory.Exists))
             {
-                plugins.AddRange(LoadPlugins(Directory.GetFiles(dir, DefaultDllSearchString)));
+                plugins.AddRange(LoadPlugins(Directory.GetFiles(dir, PluginPaths.DefaultDllSearchString)));
             }
             return plugins;
         }
@@ -91,7 +67,8 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         public PluginCollection<T> LoadPlugins(string[] pluginFiles)
         {
-            return new PluginCollection<T>(pluginFiles.Select(LoadPlugin).Where(plugin => plugin != null));
+            return new PluginCollection<T>(pluginFiles.Select(LoadPlugin)
+                .Where(plugin => plugin?.PluginObjects != null && plugin.PluginObjects.Count > 0));
         }
 
         /// <summary>
@@ -101,12 +78,13 @@ namespace Rhyous.SimplePluginLoader
         {
             if (!File.Exists(pluginFile))
                 return null;
-            return new Plugin<T>
+            var plugin = new Plugin<T>
             {
                 Directory = Path.GetDirectoryName(pluginFile),
-                File = Path.GetFileName(pluginFile),
-                Assembly = Assembly.Load(File.ReadAllBytes(pluginFile))
+                File = Path.GetFileName(pluginFile)
             };
+            AppDomain.CurrentDomain.AssemblyResolve += plugin.AssemblyResolveHandler;
+            return plugin;
         }
         #endregion
     }
