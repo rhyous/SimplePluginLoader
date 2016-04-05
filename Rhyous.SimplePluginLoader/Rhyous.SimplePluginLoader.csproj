@@ -55,11 +55,13 @@
     <Compile Include="PluginCollection.cs" />
     <Compile Include="PluginFinder.cs" />
     <Compile Include="PluginLoader.cs" />
+    <Compile Include="PluginPaths.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetPath)" "$(ProjectDir)..\NuGet\SimplePluginLoader.NuGet\Lib\net40-client\"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

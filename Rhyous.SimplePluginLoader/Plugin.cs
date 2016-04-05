@@ -1,7 +1,9 @@
 ﻿// See License at the end of the file
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
@@ -59,6 +61,17 @@ namespace Rhyous.SimplePluginLoader
             get { return _AssemblyBuilder ?? (_AssemblyBuilder = AssemblyBuilder.Instance); }
             set { _AssemblyBuilder = value; }
         } private IAssemblyBuilder _AssemblyBuilder;
+				        
+        public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
+        {
+            var assemblyPath = Path.Combine(Directory, "bin", args.Name.Split(',').First() + ".dll");
+            if (!System.IO.File.Exists(assemblyPath))
+            {
+                throw new ReflectionTypeLoadException(new[] { args.GetType() },
+                    new Exception[] { new FileNotFoundException(assemblyPath) });
+            }
+            return Assembly.Load(System.IO.File.ReadAllBytes(assemblyPath));
+        }
     }
 }
 
