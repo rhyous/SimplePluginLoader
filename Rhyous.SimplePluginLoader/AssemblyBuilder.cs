@@ -1,66 +1,39 @@
 ﻿// See License at the end of the file
 
-using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class Plugin<T> where T : class
+    public class AssemblyBuilder : IAssemblyBuilder
     {
-        public string Directory { get; set; }
+        #region Singleton
 
-        public string File
+        private static readonly Lazy<AssemblyBuilder> Lazy = new Lazy<AssemblyBuilder>(() => new AssemblyBuilder());
+
+        public static AssemblyBuilder Instance { get { return Lazy.Value; } }
+
+        internal AssemblyBuilder()
         {
-            get { return _File; }
-            set
+        }
+
+        #endregion
+
+        public virtual Assembly Build(string dll, string pdb)
+        {
+            if (File.Exists(dll))
             {
-                _File = value;
-                _Assembly = null;
+                var assembly = File.Exists(pdb)
+                    ? Assembly.Load(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debuging
+                    : Assembly.Load(File.ReadAllBytes(dll));
+                return assembly;
             }
-        } private string _File;
-
-        public string FilePdb
-        {
-            get { return File.Substring(0, File.LastIndexOf(".")) + ".pdb"; }
+            return null;
         }
-
-        public string FullPath
-        {
-            get { return Path.Combine(Directory, File); }
-        }
-
-        public Assembly Assembly
-        {
-            get { return _Assembly ?? (_Assembly = Builder.Build(File, FilePdb)); }
-            set { _Assembly = value; }
-        } private Assembly _Assembly;
-
-        public List<T> PluginObjects
-        {
-            get { return _PluginObjects ?? (_PluginObjects = Loader.LoadInstances(Assembly)); }
-            set { _PluginObjects = value; }
-        } private List<T> _PluginObjects;
-
-        /// <summary>
-        /// Internal so tests can mock this with InternalsVisibleTo, but it isn't exposed in the API.
-        /// </summary>
-        internal ILoadInstancesOfType<T> Loader
-        {
-            get { return _Loader ?? (_Loader = new InstancesLoader<T>()); }
-            set { _Loader = value; }
-        } private ILoadInstancesOfType<T> _Loader;
-
-        /// <summary>
-        /// Internal so tests can mock this with InternalsVisibleTo, but it isn't exposed in the API.
-        /// </summary>
-        internal IAssemblyBuilder Builder
-        {
-            get { return _AssemblyBuilder ?? (_AssemblyBuilder = AssemblyBuilder.Instance); }
-            set { _AssemblyBuilder = value; }
-        } private IAssemblyBuilder _AssemblyBuilder;
     }
 }
+
 
 #region License
 /*

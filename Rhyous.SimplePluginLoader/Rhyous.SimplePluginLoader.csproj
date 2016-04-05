@@ -44,8 +44,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyBuilder.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="InstancesLoader.cs" />
+    <Compile Include="Interfaces\IAssemblyBuilder.cs" />
     <Compile Include="Interfaces\ILoadInstancesOfType.cs" />
     <Compile Include="Interfaces\ILoadPlugins.cs" />
     <Compile Include="Interfaces\IName.cs" />
