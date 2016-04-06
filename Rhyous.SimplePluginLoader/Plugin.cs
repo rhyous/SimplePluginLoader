@@ -24,7 +24,11 @@ namespace Rhyous.SimplePluginLoader
 
         public string FilePdb
         {
-            get { return File.Substring(0, File.LastIndexOf(".")) + ".pdb"; }
+            get
+            {
+                var length = File.LastIndexOf(".", StringComparison.Ordinal);
+                return length > 0 ? File.Substring(0, length) + ".pdb" : null;
+            }
         }
 
         public string FullPath
@@ -69,13 +73,18 @@ namespace Rhyous.SimplePluginLoader
 				        
         public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
         {
-            var assemblyPath = Path.Combine(Directory, "bin", args.Name.Split(',').First() + ".dll");
-            if (!System.IO.File.Exists(assemblyPath))
+            var file = args.Name.Split(',').First();
+            if (System.IO.File.Exists(file))
             {
-                throw new ReflectionTypeLoadException(new[] { args.GetType() },
-                    new Exception[] { new FileNotFoundException(assemblyPath) });
+                return Assembly.Load(System.IO.File.ReadAllBytes(file));
             }
-            return Assembly.Load(System.IO.File.ReadAllBytes(assemblyPath));
+            var assemblyPath = Path.Combine(Directory, "bin", file + ".dll");
+            if (System.IO.File.Exists(assemblyPath))
+            {
+                return Assembly.Load(System.IO.File.ReadAllBytes(assemblyPath));
+            }
+            throw new ReflectionTypeLoadException(new[] { args.GetType() },
+                   new Exception[] { new FileNotFoundException(assemblyPath) });
         }
     }
 }
