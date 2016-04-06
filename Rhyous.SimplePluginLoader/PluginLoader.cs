@@ -12,6 +12,12 @@ namespace Rhyous.SimplePluginLoader
     /// </summary>
     public class PluginLoader<T> : ILoadPlugins<T> where T : class
     {
+        public List<Plugin<T>> Plugins
+        {
+            get { return _Plugins.Value; }
+        }
+        private Lazy<List<Plugin<T>>> _Plugins = new Lazy<List<Plugin<T>>>(true);
+
         public string DefaultAppName
         {
             get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(AppDomain.CurrentDomain.BaseDirectory)); }
@@ -21,6 +27,11 @@ namespace Rhyous.SimplePluginLoader
         {
             get { return _Paths ?? (_Paths = new PluginPaths(DefaultAppName)); }
         } private PluginPaths _Paths;
+
+        public AppDomain Domain
+        {
+            get { return _Domain ?? (_Domain = AppDomain.CurrentDomain); }
+        } private AppDomain _Domain;
 
         #region Constructors
 
@@ -82,7 +93,8 @@ namespace Rhyous.SimplePluginLoader
                 Directory = Path.GetDirectoryName(pluginFile),
                 File = Path.GetFileName(pluginFile)
             };
-            AppDomain.CurrentDomain.AssemblyResolve += plugin.AssemblyResolveHandler;
+            Domain.AssemblyResolve += plugin.AssemblyResolveHandler;
+            Plugins.Add(plugin);
             return plugin;
         }
         #endregion
