@@ -32,9 +32,14 @@ namespace Rhyous.SimplePluginLoader
             get { return Path.Combine(Directory, File); }
         }
 
+        public string FullPathPdb
+        {
+            get { return Path.Combine(Directory, FilePdb); }
+        }
+
         public Assembly Assembly
         {
-            get { return _Assembly ?? (_Assembly = Builder.Build(File, FilePdb)); }
+            get { return _Assembly ?? (_Assembly = Builder.Load(FullPath, FullPathPdb)); }
             set { _Assembly = value; }
         } private Assembly _Assembly;
 
@@ -58,7 +63,7 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         internal IAssemblyBuilder Builder
         {
-            get { return _AssemblyBuilder ?? (_AssemblyBuilder = AssemblyBuilder.Instance); }
+            get { return _AssemblyBuilder ?? (_AssemblyBuilder = AssemblyLoader.Instance); }
             set { _AssemblyBuilder = value; }
         } private IAssemblyBuilder _AssemblyBuilder;
 				        

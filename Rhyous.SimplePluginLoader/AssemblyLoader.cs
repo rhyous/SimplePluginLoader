@@ -6,28 +6,52 @@ using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class AssemblyBuilder : IAssemblyBuilder
+    public class AssemblyLoader : IAssemblyBuilder
     {
         #region Singleton
 
-        private static readonly Lazy<AssemblyBuilder> Lazy = new Lazy<AssemblyBuilder>(() => new AssemblyBuilder());
+        private static readonly Lazy<AssemblyLoader> Lazy = new Lazy<AssemblyLoader>(() => new AssemblyLoader());
 
-        public static AssemblyBuilder Instance { get { return Lazy.Value; } }
+        public static AssemblyLoader Instance { get { return Lazy.Value; } }
 
-        internal AssemblyBuilder()
+        internal AssemblyLoader()
         {
         }
 
         #endregion
 
-        public virtual Assembly Build(string dll, string pdb)
+        public virtual Assembly Load(string dll, string pdb)
+        {
+            if (Path.IsPathRooted(dll))
+            {
+                return LoadAssembly(dll, pdb);
+            }
+            foreach (var path in new PluginPaths(AppDomain.CurrentDomain.BaseDirectory).GetDefaultPluginDirectories())
+            {
+
+                var assembly = LoadAssembly(dll, pdb);
+                if (assembly != null)
+                {
+                    return assembly;
+                }
+            }
+            return null;
+        }
+
+        private static Assembly LoadAssembly(string dll, string pdb)
         {
             if (File.Exists(dll))
             {
-                var assembly = File.Exists(pdb)
+#if DEBUG // For some reason I can't debug when using File.ReadAllBytes
+                return File.Exists(pdb)
+                    ? Assembly.LoadFile(dll) // Allow debugging
+                    : Assembly.Load(dll);
+#else
+                return File.Exists(pdb)
                     ? Assembly.Load(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debuging
                     : Assembly.Load(File.ReadAllBytes(dll));
-                return assembly;
+#endif
+
             }
             return null;
         }

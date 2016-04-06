@@ -4,6 +4,6 @@ namespace Rhyous.SimplePluginLoader
 {
     public interface IAssemblyBuilder
     {
-        Assembly Build(string dll, string pdb);
+        Assembly Load(string dll, string pdb);
     }
 }

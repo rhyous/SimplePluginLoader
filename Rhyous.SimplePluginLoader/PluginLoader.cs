@@ -15,14 +15,12 @@ namespace Rhyous.SimplePluginLoader
         public string DefaultAppName
         {
             get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(AppDomain.CurrentDomain.BaseDirectory)); }
-        }
-        private string _DefaultAppName;
+        } private string _DefaultAppName;
 
         public PluginPaths Paths
         {
             get { return _Paths ?? (_Paths = new PluginPaths(DefaultAppName)); }
-        }
-        private PluginPaths _Paths;
+        } private PluginPaths _Paths;
 
         #region Constructors
 
@@ -45,7 +43,7 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         public PluginCollection<T> LoadPlugins()
         {
-            var dirs = Paths.GetDefaultPluginDirectories(DefaultAppName);
+            var dirs = Paths.GetDefaultPluginDirectories();
             return LoadPlugins(dirs);
         }
 
