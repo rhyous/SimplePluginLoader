@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -30,9 +29,7 @@ namespace Rhyous.SimplePluginLoader
                     : _PluginDirectoryName;
             }
             set { _PluginDirectoryName = value; }
-        }
-
-        private string _PluginDirectoryName;
+        } private string _PluginDirectoryName;
 
         public string UserProfilePlugins
         {
@@ -49,7 +46,7 @@ namespace Rhyous.SimplePluginLoader
             get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginDirectoryName); }
         }
 
-        public IEnumerable<string> GetDefaultPluginDirectories(string appName)
+        public IEnumerable<string> GetDefaultPluginDirectories()
         {
             return new[] { PluginDirectoryName, UserProfilePlugins, ApplicationDataPlugins, RelativePathPlugins };
         }
