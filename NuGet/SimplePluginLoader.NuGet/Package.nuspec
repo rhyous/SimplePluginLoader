@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SimplePluginLoader</id>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <title>Simple Plugin Loader</title>
     <authors>Jared Barneck (Rhyous)</authors>
     <owners>Jared Barneck (Rhyous)</owners>
