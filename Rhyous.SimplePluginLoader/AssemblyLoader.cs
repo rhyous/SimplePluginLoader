@@ -42,15 +42,15 @@ namespace Rhyous.SimplePluginLoader
         {
             if (File.Exists(dll))
             {
-#if DEBUG // For some reason I can't debug when using File.ReadAllBytes
-                return File.Exists(pdb)
-                    ? Assembly.LoadFile(dll) // Allow debugging
-                    : Assembly.Load(dll);
-#else
+//#if DEBUG // For some reason I can't debug when using File.ReadAllBytes
+//                return File.Exists(pdb)
+//                    ? Assembly.LoadFile(Path.GetFullPath(dll)) // Allow debugging
+//                    : Assembly.Load(dll);
+//#else
                 return File.Exists(pdb)
                     ? Assembly.Load(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debuging
                     : Assembly.Load(File.ReadAllBytes(dll));
-#endif
+//#endif
 
             }
             return null;
