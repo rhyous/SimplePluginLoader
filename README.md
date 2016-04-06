@@ -23,9 +23,10 @@ Step 2 - Load the plugins from a plugins directory in two lines of code:
 ````
 
 Step 3 - Do something with your plugins.
+This loads the dlls. Now, each dll could have multiple plugins, so we get all the plugins from all the dlls like this.
 
 ````
-    foreach (var plugin in plugins)
+    foreach (var plugun in plugins.SelectMany(plugin => plugin.PluginObjects))
     {
       plugin.DoSomething();
     }
