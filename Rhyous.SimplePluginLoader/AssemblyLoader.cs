@@ -1,6 +1,7 @@
 ﻿// See License at the end of the file
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -20,6 +21,11 @@ namespace Rhyous.SimplePluginLoader
 
         #endregion
 
+        public Dictionary<string, Assembly> Assemblies
+        {
+            get { return _Assemblies.Value; }
+        } private Lazy<Dictionary<string, Assembly>> _Assemblies = new Lazy<Dictionary<string, Assembly>>();
+
         public virtual Assembly Load(string dll, string pdb)
         {
             if (Path.IsPathRooted(dll))
@@ -28,8 +34,8 @@ namespace Rhyous.SimplePluginLoader
             }
             foreach (var path in new PluginPaths(AppDomain.CurrentDomain.BaseDirectory).GetDefaultPluginDirectories())
             {
-
-                var assembly = LoadAssembly(dll, pdb);
+                var dllPath = Path.Combine(path, dll);
+                var assembly = LoadAssembly(dllPath, pdb);
                 if (assembly != null)
                 {
                     return assembly;
@@ -38,22 +44,38 @@ namespace Rhyous.SimplePluginLoader
             return null;
         }
 
-        private static Assembly LoadAssembly(string dll, string pdb)
+        private Assembly LoadAssembly(string dll, string pdb)
+        {
+            return FindAlreadyLoadedAssembly(dll) ?? LoadNewAssembly(dll, pdb);
+        }
+
+        private Assembly FindAlreadyLoadedAssembly(string dll)
+        {
+            Assembly assembly;
+            return Assemblies.TryGetValue(GetKeyFromDll(dll), out assembly) ? assembly : null;
+        }
+
+        private Assembly LoadNewAssembly(string dll, string pdb)
         {
             if (File.Exists(dll))
             {
-//#if DEBUG // For some reason I can't debug when using File.ReadAllBytes
-//                return File.Exists(pdb)
-//                    ? Assembly.LoadFile(Path.GetFullPath(dll)) // Allow debugging
-//                    : Assembly.Load(dll);
-//#else
-                return File.Exists(pdb)
-                    ? Assembly.Load(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debuging
+                // For some reason I can't debug when using File.ReadAllBytes so I use this
+                // var assembly = File.Exists(pdb)
+                //    ? Assembly.LoadFile(Path.GetFullPath(dll)) // Allow debugging
+                //    : Assembly.Load(dll);
+                var assembly = File.Exists(pdb)
+                    ? Assembly.Load(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debugging
                     : Assembly.Load(File.ReadAllBytes(dll));
-//#endif
-
+                Assemblies.Add(GetKeyFromDll(dll), assembly);
+                return assembly;
             }
             return null;
+        }
+
+        private static string GetKeyFromDll(string dll)
+        {
+            var key = Path.GetFileName(dll) + File.GetLastWriteTime(dll).ToFileTimeUtc();
+            return key;
         }
     }
 }
