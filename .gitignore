@@ -198,3 +198,8 @@ FakesAssemblies/
 # misc
 *.dll
 *.bak
+
+/NuGet/Rhyous.SimplePluginLoader.Nuget.Sources/content/*
+/NuGet/Rhyous.SimplePluginLoader.Nuget.Sources/src/*
+
+[Aa]pp_[Ppackages]/
