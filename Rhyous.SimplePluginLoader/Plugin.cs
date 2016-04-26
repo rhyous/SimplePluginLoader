@@ -79,9 +79,12 @@ namespace Rhyous.SimplePluginLoader
                 return Assembly.Load(System.IO.File.ReadAllBytes(file));
             }
             var assemblyPath = Path.Combine(Directory, "bin", file + ".dll");
+            var pdbPath = Path.Combine(Directory, "bin", file + ".dll");
             if (System.IO.File.Exists(assemblyPath))
             {
-                return Assembly.Load(System.IO.File.ReadAllBytes(assemblyPath));
+                return System.IO.File.Exists(pdbPath)
+                    ? Assembly.Load(System.IO.File.ReadAllBytes(assemblyPath), System.IO.File.ReadAllBytes(pdbPath))
+                    : Assembly.Load(System.IO.File.ReadAllBytes(assemblyPath));
             }
             throw new ReflectionTypeLoadException(new[] { args.GetType() },
                    new Exception[] { new FileNotFoundException(assemblyPath) });
