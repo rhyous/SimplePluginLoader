@@ -1,4 +1,4 @@
-﻿# Runs every time a package is installed in a project
+﻿# Runs every time a package is uninstalled
 
 param($installPath, $toolsPath, $package, $project)
 
@@ -6,3 +6,4 @@ param($installPath, $toolsPath, $package, $project)
 # $toolsPath is the path to the tools directory in the folder where the package is installed.
 # $package is a reference to the package object.
 # $project is a reference to the project the package was installed to.
+

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader", "..\Rhyous.SimplePluginLoader\Rhyous.SimplePluginLoader.csproj", "{8EB7535D-C90C-4E91-804E-052B67DD308E}"
 EndProject
@@ -22,7 +22,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools.Ui", "..\Examples\WPF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{23B699EA-3D99-4C2E-8634-71FF2D0F5B03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.NuGet", "SimplePluginLoader.NuGet\Rhyous.SimplePluginLoader.NuGet.csproj", "{0451BAEF-DF2E-4B98-8644-94EE9415E389}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.NuGet", "Rhyous.SimplePluginLoader.NuGet\Rhyous.SimplePluginLoader.NuGet.csproj", "{0451BAEF-DF2E-4B98-8644-94EE9415E389}"
 	ProjectSection(ProjectDependencies) = postProject
 		{8EB7535D-C90C-4E91-804E-052B67DD308E} = {8EB7535D-C90C-4E91-804E-052B67DD308E}
 	EndProjectSection
