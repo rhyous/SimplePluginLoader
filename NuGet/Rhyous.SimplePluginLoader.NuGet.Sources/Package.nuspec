@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Rhyous.SimplePluginLoader.Sources</id>
+    <version>1.0.5</version>
+    <title>Simple Plugin Loader</title>
+    <authors>Jared Barneck (Rhyous)</authors>
+    <owners>Jared Barneck (Rhyous)</owners>
+    <description>A simple library for loading plugins.</description>
+    <releaseNotes></releaseNotes>
+    <summary>A library that makes loading plugins quick and easy. It creates instances of interfaces or base classes from plugins with a few lines of code.</summary>
+    <language>en-US</language>
+    <projectUrl>https://github.com/rhyous/SimplePluginLoader/wiki</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/rhyous/SimplePluginLoader/master/Images/SimplePluginLoaderLogo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/rhyous/SimplePluginLoader/blob/master/Fork%20and%20Contribute%20License.txt</licenseUrl>
+    <copyright>Copyright Jared Barneck (Rhyous) 2015</copyright>
+    <tags>plugin interface create instance extension extensibility</tags>
+  </metadata>
+  <files>
+    <file src="src\" target="src" />
+    <file src="tools\" target="tools" />
+  </files>
+</package>
