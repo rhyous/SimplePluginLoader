@@ -26,10 +26,36 @@ Step 3 - Do something with your plugins.
 This loads the dlls. Now, each dll could have multiple plugins, so we get all the plugins from all the dlls like this.
 
 ````
-    foreach (var plugun in plugins.SelectMany(plugin => plugin.PluginObjects))
+    foreach (var plugin in plugins)
+    {
+      foreach (var pluginObj in plugin.Objects) {
+        plugin.DoSomething();
+      }
+    }
+````
+
+Note: you could short this with linq if you want. Like this:
+
+````
+    foreach (var plugin in plugins.SelectMany(plugin => plugin.PluginObjects))
     {
       plugin.DoSomething();
     }
 ````
 
 Yeah. I know. All the complexity of plugins just disappeared. Your welcome!
+
+## Handling Dependencies ##
+
+A plugin may have dependencies of it's own. By default these are not loaded.
+
+````
+    foreach (var plugin in plugins)
+    {
+      plugin.AddDependencyResolver();
+      foreach (var pluginObj in plugin.Objects) {
+        plugin.DoSomething();
+      }
+      plugin.RemoveDependencyResolver();
+    }
+````
