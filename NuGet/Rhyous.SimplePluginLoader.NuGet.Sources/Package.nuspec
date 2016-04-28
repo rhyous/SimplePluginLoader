@@ -2,8 +2,8 @@
 <package >
   <metadata>
     <id>Rhyous.SimplePluginLoader.Sources</id>
-    <version>1.0.5</version>
-    <title>Simple Plugin Loader</title>
+    <version>1.0.5.1</version>
+    <title>Simple Plugin Loader Sources</title>
     <authors>Jared Barneck (Rhyous)</authors>
     <owners>Jared Barneck (Rhyous)</owners>
     <description>A simple library for loading plugins.</description>
