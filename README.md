@@ -69,7 +69,7 @@ You can require that plugins implement the very simple IName interface.  Then yo
 ```
     using (var pluginFinder = new PluginFinder<IMyObject>()) 
     {
-      var plugin = pluginFinder.FindPlugin(request.GeneratorName, @"c:\my\path\to\the\plugins");
+      var plugin = pluginFinder.FindPlugin("MyPluginName", @"c:\my\path\to\the\plugins");
       plugin.DoSomething();
     }
 ```
