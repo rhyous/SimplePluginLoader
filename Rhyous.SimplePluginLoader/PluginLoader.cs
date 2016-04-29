@@ -10,7 +10,8 @@ namespace Rhyous.SimplePluginLoader
     /// <summary>
     /// A singleton that load plugins
     /// </summary>
-    public class PluginLoader<T> : ILoadPlugins<T> where T : class
+    public class PluginLoader<T> : ILoadPlugins<T> 
+        where T : class
     {
         public List<Plugin<T>> Plugins
         {
@@ -20,7 +21,7 @@ namespace Rhyous.SimplePluginLoader
 
         public string DefaultAppName
         {
-            get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(AppDomain.CurrentDomain.BaseDirectory)); }
+            get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(Domain.BaseDirectory)); }
         } private string _DefaultAppName;
 
         public PluginPaths Paths
@@ -93,7 +94,6 @@ namespace Rhyous.SimplePluginLoader
                 Directory = Path.GetDirectoryName(pluginFile),
                 File = Path.GetFileName(pluginFile)
             };
-            Domain.AssemblyResolve += plugin.AssemblyResolveHandler;
             Plugins.Add(plugin);
             return plugin;
         }

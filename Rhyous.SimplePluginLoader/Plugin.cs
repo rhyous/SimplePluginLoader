@@ -3,13 +3,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class Plugin<T> where T : class
+    public class Plugin<T> : IDisposable
+        where T : class
     {
+        public string Name { get { return Path.GetFileNameWithoutExtension(File); } }
+
         public string Directory { get; set; }
 
         public string File
@@ -43,7 +45,7 @@ namespace Rhyous.SimplePluginLoader
 
         public Assembly Assembly
         {
-            get { return _Assembly ?? (_Assembly = Builder.Load(FullPath, FullPathPdb)); }
+            get { return _Assembly ?? (_Assembly = AssemblyBuilder.Load(FullPath, FullPathPdb)); }
             set { _Assembly = value; }
         } private Assembly _Assembly;
 
@@ -65,30 +67,59 @@ namespace Rhyous.SimplePluginLoader
         /// <summary>
         /// Internal so tests can mock this with InternalsVisibleTo, but it isn't exposed in the API.
         /// </summary>
-        internal IAssemblyBuilder Builder
+        internal IAssemblyBuilder AssemblyBuilder
         {
-            get { return _AssemblyBuilder ?? (_AssemblyBuilder = AssemblyLoader.Instance); }
+            get { return _AssemblyBuilder ?? (_AssemblyBuilder = new AssemblyLoader<T>(this)); }
             set { _AssemblyBuilder = value; }
         } private IAssemblyBuilder _AssemblyBuilder;
-				        
-        public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
+
+        /// <summary>
+        /// Dependency Resolver.
+        /// </summary>
+        internal IPluginDependencyResolver DependencyResolver
         {
-            var file = args.Name.Split(',').First();
-            if (System.IO.File.Exists(file))
-            {
-                return Assembly.Load(System.IO.File.ReadAllBytes(file));
-            }
-            var assemblyPath = Path.Combine(Directory, "bin", file + ".dll");
-            var pdbPath = Path.Combine(Directory, "bin", file + ".dll");
-            if (System.IO.File.Exists(assemblyPath))
-            {
-                return System.IO.File.Exists(pdbPath)
-                    ? Assembly.Load(System.IO.File.ReadAllBytes(assemblyPath), System.IO.File.ReadAllBytes(pdbPath))
-                    : Assembly.Load(System.IO.File.ReadAllBytes(assemblyPath));
-            }
-            throw new ReflectionTypeLoadException(new[] { args.GetType() },
-                   new Exception[] { new FileNotFoundException(assemblyPath) });
+            get { return _DependencyResolver ?? (_DependencyResolver = new PluginDependencyResolver<T>(this)); }
+            set { _DependencyResolver = value; }
+        } private IPluginDependencyResolver _DependencyResolver;
+
+        public void AddDependencyResolver()
+        {
+            AssemblyBuilder.Domain.AssemblyResolve += DependencyResolver.AssemblyResolveHandler;
         }
+
+        public void RemoveDependencyResolver()
+        {
+            AssemblyBuilder.Domain.AssemblyResolve -= DependencyResolver.AssemblyResolveHandler;
+        }
+
+        #region IDisposable
+        bool _disposed;
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                RemoveDependencyResolver();
+                foreach (var obj in PluginObjects)
+                {
+                    var disposable = obj as IDisposable;
+                    if (disposable != null)
+                        disposable.Dispose();
+                }
+                AssemblyBuilder.Dispose();
+            }
+            _disposed = true;
+        }
+        #endregion
     }
 }
 

@@ -7,24 +7,25 @@ using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class AssemblyLoader : IAssemblyBuilder
+    public class AssemblyLoader<T> : IAssemblyBuilder
+        where T : class
     {
-        #region Singleton
+        private Plugin<T> _Plugin;
 
-        private static readonly Lazy<AssemblyLoader> Lazy = new Lazy<AssemblyLoader>(() => new AssemblyLoader());
-
-        public static AssemblyLoader Instance { get { return Lazy.Value; } }
-
-        internal AssemblyLoader()
+        public AssemblyLoader(Plugin<T> plugin)
         {
+            _Plugin = plugin;
         }
-
-        #endregion
 
         public Dictionary<string, Assembly> Assemblies
         {
             get { return _Assemblies.Value; }
         } private Lazy<Dictionary<string, Assembly>> _Assemblies = new Lazy<Dictionary<string, Assembly>>();
+
+        public AppDomain Domain
+        {
+            get { return _Domain ?? (_Domain = AppDomain.CurrentDomain); }
+        } private AppDomain _Domain;
 
         public virtual Assembly Load(string dll, string pdb)
         {
@@ -32,7 +33,7 @@ namespace Rhyous.SimplePluginLoader
             {
                 return LoadAssembly(dll, pdb);
             }
-            foreach (var path in new PluginPaths(AppDomain.CurrentDomain.BaseDirectory).GetDefaultPluginDirectories())
+            foreach (var path in new PluginPaths(_Plugin.AssemblyBuilder.Domain.BaseDirectory).GetDefaultPluginDirectories())
             {
                 var dllPath = Path.Combine(path, dll);
                 var assembly = LoadAssembly(dllPath, pdb);
@@ -44,9 +45,22 @@ namespace Rhyous.SimplePluginLoader
             return null;
         }
 
+        public Assembly TryLoad(string dll, string pdb)
+        {
+            return FindAlreadyLoadedAssembly(dll) ?? LoadAssembly(dll, pdb);
+        }
+
         private Assembly LoadAssembly(string dll, string pdb)
         {
-            return FindAlreadyLoadedAssembly(dll) ?? LoadNewAssembly(dll, pdb);
+            if (File.Exists(dll))
+            {
+                var assembly = File.Exists(pdb)
+                    ? Domain.Load(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debugging
+                    : Domain.Load(File.ReadAllBytes(dll));
+                Assemblies.Add(GetKeyFromDll(dll), assembly);
+                return assembly;
+            }
+            return null;
         }
 
         private Assembly FindAlreadyLoadedAssembly(string dll)
@@ -55,28 +69,33 @@ namespace Rhyous.SimplePluginLoader
             return Assemblies.TryGetValue(GetKeyFromDll(dll), out assembly) ? assembly : null;
         }
 
-        private Assembly LoadNewAssembly(string dll, string pdb)
-        {
-            if (File.Exists(dll))
-            {
-                // For some reason I can't debug when using File.ReadAllBytes so I use this
-                // var assembly = File.Exists(pdb)
-                //    ? Assembly.LoadFile(Path.GetFullPath(dll)) // Allow debugging
-                //    : Assembly.Load(dll);
-                var assembly = File.Exists(pdb)
-                    ? Assembly.Load(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debugging
-                    : Assembly.Load(File.ReadAllBytes(dll));
-                Assemblies.Add(GetKeyFromDll(dll), assembly);
-                return assembly;
-            }
-            return null;
-        }
-
         private static string GetKeyFromDll(string dll)
         {
             var key = Path.GetFileName(dll) + File.GetLastWriteTime(dll).ToFileTimeUtc();
             return key;
         }
+
+        #region IDisposable
+        bool _disposed;
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                //AppDomain.Unload(Domain); // When we get it working in a separate AppDomain
+            }
+            _disposed = true;
+        }
+        #endregion
     }
 }
 
