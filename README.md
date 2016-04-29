@@ -28,7 +28,8 @@ This loads the dlls. Now, each dll could have multiple plugins, so we get all th
 ````
     foreach (var plugin in plugins)
     {
-      foreach (var pluginObj in plugin.Objects) {
+      foreach (var pluginObj in plugin.Objects) 
+      {
         plugin.DoSomething();
       }
     }
@@ -53,7 +54,8 @@ A plugin may have dependencies of it's own. By default these are not loaded.
     foreach (var plugin in plugins)
     {
       plugin.AddDependencyResolver();
-      foreach (var pluginObj in plugin.Objects) {
+      foreach (var pluginObj in plugin.Objects) 
+      {
         plugin.DoSomething();
       }
       plugin.RemoveDependencyResolver();
