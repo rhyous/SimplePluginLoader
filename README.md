@@ -8,7 +8,7 @@ Create a projects that loads plugin with one interface and two line of code. It 
 Step 1 - Create your plugin interface:
 
 ````
-public interface IMyPlugin 
+public interface IMyObject 
 {
     string Name { get; set; }
     void DoSomething();
@@ -18,7 +18,7 @@ public interface IMyPlugin
 Step 2 - Load the plugins from a plugins directory in two lines of code:
 
 ````
-    var pluginLoader = new PluginLoader<IMyPlugin>();
+    var pluginLoader = new PluginLoader<IMyObject>();
     var plugins = pluginLoader.LoadPlugins();
 ````
 
@@ -28,7 +28,8 @@ This loads the dlls. Now, each dll could have multiple plugins, so we get all th
 ````
     foreach (var plugin in plugins)
     {
-      foreach (var pluginObj in plugin.Objects) {
+      foreach (var pluginObj in plugin.Objects) 
+      {
         plugin.DoSomething();
       }
     }
@@ -53,9 +54,22 @@ A plugin may have dependencies of it's own. By default these are not loaded.
     foreach (var plugin in plugins)
     {
       plugin.AddDependencyResolver();
-      foreach (var pluginObj in plugin.Objects) {
+      foreach (var pluginObj in plugin.Objects) 
+      {
         plugin.DoSomething();
       }
       plugin.RemoveDependencyResolver();
     }
 ````
+
+## Finding a plugin ##
+
+You can require that plugins implement the very simple IName interface.  Then you can easily find one plugin and use it.
+
+```
+    using (var pluginFinder = new PluginFinder<IMyObject>()) 
+    {
+      var plugin = pluginFinder.FindPlugin("MyPluginName", @"c:\my\path\to\the\plugins");
+      plugin.DoSomething();
+    }
+```
