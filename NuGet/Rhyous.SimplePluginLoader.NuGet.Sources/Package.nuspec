@@ -3,7 +3,7 @@
   <metadata>
     <id>Rhyous.SimplePluginLoader.Sources</id>
     <version>1.0.6</version>
-    <title>Simple Plugin Loader Sources</title>
+    <title>Rhyous.SimplePluginLoader.Sources</title>
     <authors>Jared Barneck (Rhyous)</authors>
     <owners>Jared Barneck (Rhyous)</owners>
     <description>A simple library for loading plugins.</description>
