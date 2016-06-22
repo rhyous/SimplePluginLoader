@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class PluginFinder<T> : IDisposable
+    public class PluginFinder<T> : IDisposable, IPluginFinder<T>
         where T : class
     {
         private const string DllExtension = "*.dll";
