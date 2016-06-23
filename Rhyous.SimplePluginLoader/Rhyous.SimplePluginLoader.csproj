@@ -52,6 +52,7 @@
     <Compile Include="Interfaces\ILoadPlugins.cs" />
     <Compile Include="Interfaces\IName.cs" />
     <Compile Include="Interfaces\IPluginDependencyResolver.cs" />
+    <Compile Include="Interfaces\IPluginFinder.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="PluginCollection.cs" />
     <Compile Include="PluginDependencyResolver.cs" />
