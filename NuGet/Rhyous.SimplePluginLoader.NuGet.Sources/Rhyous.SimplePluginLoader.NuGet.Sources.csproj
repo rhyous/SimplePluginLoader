@@ -50,13 +50,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="NuGet.exe" />
-    <None Include="Package.nuspec" />
+    <None Include="Package.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="tools\init.ps1" />
     <None Include="tools\install.ps1" />
     <None Include="tools\uninstall.ps1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="src\App_Packages\Rhyous.SimplePluginLoader.Sources.1.0.6\" />
+    <Folder Include="src\App_Packages\Rhyous.SimplePluginLoader.Sources.1.0.7\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="exclude.txt" />
