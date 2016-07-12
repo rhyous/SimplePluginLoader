@@ -18,7 +18,7 @@ namespace Rhyous.SimplePluginLoader
 /*
 Simple Plugin Loader - A library that makes loading plugins quick and easy. It
                        creates instances of interfaces or base classes from
-					   plugins with a few lines of code.
+                       plugins with a few lines of code.
 
 Copyright (c) 2012, Jared Barneck (Rhyous)
 All rights reserved.
