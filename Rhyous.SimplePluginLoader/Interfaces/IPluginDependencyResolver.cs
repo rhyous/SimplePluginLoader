@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 
-
 namespace Rhyous.SimplePluginLoader
 {
     interface IPluginDependencyResolver
@@ -9,6 +8,3 @@ namespace Rhyous.SimplePluginLoader
         Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args);
     }
 }
-
-
-#region License

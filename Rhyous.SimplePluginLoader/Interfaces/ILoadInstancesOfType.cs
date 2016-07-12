@@ -1,6 +1,4 @@
-﻿// See License at the end of the file
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
