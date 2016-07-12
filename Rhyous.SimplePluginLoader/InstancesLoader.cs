@@ -9,6 +9,8 @@ namespace Rhyous.SimplePluginLoader
 {
     public class InstancesLoader<T> : ILoadInstancesOfType<T> where T : class
     {
+        public static bool ThrowExceptionsOnLoad = false;
+
         public List<T> LoadInstances(Assembly assembly)
         {
             return LoadTypes(assembly);
@@ -23,7 +25,8 @@ namespace Rhyous.SimplePluginLoader
                 IEnumerable<Type> typesToLoad = GetTypesToLoad(objTypes);
                 if (typesToLoad == null)
                     return null;
-                listOfT.AddRange(typesToLoad.Select(Activator.CreateInstance).OfType<T>());
+                try { listOfT.AddRange(typesToLoad.Select(Activator.CreateInstance).OfType<T>()); }
+                catch { if (ThrowExceptionsOnLoad) throw; }
             }
             return listOfT;
         }
