@@ -10,6 +10,16 @@ namespace Rhyous.SimplePluginLoader
     public class Plugin<T> : IDisposable
         where T : class
     {
+        public Plugin()
+        {
+            AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
+        }
+
+        public Plugin(ResolveEventHandler handler = null)
+        {
+                AddDependencyResolver(handler);
+        }
+
         public string Name { get { return Path.GetFileNameWithoutExtension(File); } }
 
         public string Directory { get; set; }
@@ -82,14 +92,15 @@ namespace Rhyous.SimplePluginLoader
             set { _DependencyResolver = value; }
         } private IPluginDependencyResolver _DependencyResolver;
 
-        public void AddDependencyResolver()
+        public void AddDependencyResolver(ResolveEventHandler handler = null)
         {
-            AssemblyBuilder.Domain.AssemblyResolve += DependencyResolver.AssemblyResolveHandler;
+            RemoveDependencyResolver(handler); // Remove it first
+            AssemblyBuilder.Domain.AssemblyResolve += handler; // Add
         }
 
-        public void RemoveDependencyResolver()
+        public void RemoveDependencyResolver(ResolveEventHandler handler = null)
         {
-            AssemblyBuilder.Domain.AssemblyResolve -= DependencyResolver.AssemblyResolveHandler;
+            AssemblyBuilder.Domain.AssemblyResolve -= handler;
         }
 
         #region IDisposable
