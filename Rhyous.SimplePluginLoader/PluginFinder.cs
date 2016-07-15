@@ -17,9 +17,9 @@ namespace Rhyous.SimplePluginLoader
         /// <returns></returns>
         public T FindPlugin(string pluginName, string dir)
         {
-            var pluginLoader = new PluginLoader<T>();
-            var plugins = pluginLoader.LoadPlugins(Directory.GetFiles(dir, DllExtension));
+            FoundPlugin = null;
             FoundPluginObject = null;
+            var plugins = PluginLoader.LoadPlugins(Directory.GetFiles(dir, DllExtension));
             foreach (var plugin in plugins)
             {
                 foreach (var obj in plugin.PluginObjects)
@@ -29,23 +29,25 @@ namespace Rhyous.SimplePluginLoader
                     {
                         if (namedObj.Name.Equals(pluginName, StringComparison.InvariantCultureIgnoreCase))
                         {
-                            FoundPluginObject = obj;
-                            break;
+                            FoundPlugin = plugin;
+                            return (FoundPluginObject = obj); 
                         }
                     }
                 }
-                if (FoundPluginObject != null)
-                {
-                    FoundPlugin = plugin;
-                    plugin.AddDependencyResolver();
-                }
             }
-            return FoundPluginObject;
+            return null;
         }
 
         public Plugin<T> FoundPlugin { get; set; }
 
         public T FoundPluginObject { get; set; }
+
+        public ILoadPlugins<T> PluginLoader
+        {
+            get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>()); }
+            set { _PluginLoader = value; } // Allows for use of a custom plugin
+        } private ILoadPlugins<T> _PluginLoader;
+
 
         #region IDisposable
         bool _disposed;
