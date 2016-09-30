@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyLoader.cs" />
+    <Compile Include="Extensions\AppDomainExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="InstancesLoader.cs" />
     <Compile Include="Interfaces\IAssemblyLoader.cs" />

@@ -1,89 +1,40 @@
-﻿// See License at the end of the file
-
-using Rhyous.SimplePluginLoader.Extensions;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Reflection;
 
-namespace Rhyous.SimplePluginLoader
+namespace Rhyous.SimplePluginLoader.Extensions
 {
-    public class AssemblyLoader<T> : IAssemblyBuilder
-        where T : class
+    public static class AppDomainExtensions
     {
-        private Plugin<T> _Plugin;
-
-        public AssemblyLoader(Plugin<T> plugin)
+        public static Assembly TryLoad(this AppDomain domain, byte[] rawAssembly)
         {
-            _Plugin = plugin;
+            try { return domain.Load(rawAssembly); }
+            catch { return null; }
         }
 
-        public Dictionary<string, Assembly> Assemblies
+        public static Assembly TryLoad(this AppDomain domain, byte[] rawAssembly, byte[] rawSymbolStore)
         {
-            get { return _Assemblies.Value; }
-        } private Lazy<Dictionary<string, Assembly>> _Assemblies = new Lazy<Dictionary<string, Assembly>>();
+            try { return domain.Load(rawAssembly, rawSymbolStore); }
+            catch { return null; }
+        }
 
-        public AppDomain Domain
+        public static Assembly TryLoad(this AppDomain domain, string dll)
         {
-            get { return _Domain ?? (_Domain = AppDomain.CurrentDomain); }
-        } private AppDomain _Domain;
-
-        public virtual Assembly Load(string dll, string pdb)
-        {
-            if (Path.IsPathRooted(dll))
-            {
-                return Domain.TryLoad(dll, pdb);
-            }
-            foreach (var path in new PluginPaths(_Plugin.AssemblyBuilder.Domain.BaseDirectory).GetDefaultPluginDirectories())
-            {
-                var dllPath = Path.Combine(path, dll);
-                var assembly = Domain.TryLoad(dllPath, pdb);
-                if (assembly != null)
-                {
-                    return assembly;
-                }
-            }
+            if (File.Exists(dll))
+                return domain.TryLoad(File.ReadAllBytes(dll));
             return null;
         }
 
-        public Assembly TryLoad(string dll, string pdb)
+        public static Assembly TryLoad(this AppDomain domain, string dll, string pdb)
         {
-            return FindAlreadyLoadedAssembly(dll) ?? Domain.TryLoad(dll, pdb);
-        }
-
-        private Assembly FindAlreadyLoadedAssembly(string dll)
-        {
-            Assembly assembly;
-            return Assemblies.TryGetValue(GetKeyFromDll(dll), out assembly) ? assembly : null;
-        }
-
-        private static string GetKeyFromDll(string dll)
-        {
-            var key = Path.GetFileName(dll) + File.GetLastWriteTime(dll).ToFileTimeUtc();
-            return key;
-        }
-
-        #region IDisposable
-        bool _disposed;
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-                return;
-
-            if (disposing)
+            if (File.Exists(dll))
             {
-                //AppDomain.Unload(Domain); // When we get it working in a separate AppDomain
+                var assembly = File.Exists(pdb)
+                    ? domain.TryLoad(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debugging
+                    : domain.TryLoad(File.ReadAllBytes(dll));
             }
-            _disposed = true;
+            return null;
         }
-        #endregion
     }
 }
 
