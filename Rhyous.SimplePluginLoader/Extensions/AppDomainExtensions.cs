@@ -29,7 +29,7 @@ namespace Rhyous.SimplePluginLoader.Extensions
         {
             if (File.Exists(dll))
             {
-                var assembly = File.Exists(pdb)
+                return File.Exists(pdb)
                     ? domain.TryLoad(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debugging
                     : domain.TryLoad(File.ReadAllBytes(dll));
             }
