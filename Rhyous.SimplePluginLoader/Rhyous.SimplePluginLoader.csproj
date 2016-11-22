@@ -44,9 +44,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyDictionary.cs" />
     <Compile Include="AssemblyLoader.cs" />
     <Compile Include="Extensions\AppDomainExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="Interfaces\IAssemblyDictionary.cs" />
     <Compile Include="InstancesLoader.cs" />
     <Compile Include="Interfaces\IAssemblyLoader.cs" />
     <Compile Include="Interfaces\ILoadInstancesOfType.cs" />

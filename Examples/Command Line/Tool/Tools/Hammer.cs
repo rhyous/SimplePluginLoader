@@ -4,12 +4,12 @@
     {
         private int _NailsHammered;
 
-        public string Name
+        public virtual string Name
         {
             get { return "Hammer"; }
         }
 
-        public string DoWork()
+        public virtual string DoWork()
         {
             return "Whack. Whack. Whack. " + ++_NailsHammered + " nails hammered";
         }

@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CaveManTool.cs" />
     <Compile Include="Screwdriver.cs" />
     <Compile Include="Wrench.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,6 +1,8 @@
 ﻿// See License at the end of the file
 
 using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -10,6 +12,15 @@ namespace Rhyous.SimplePluginLoader
         {
             return currentType.IsSubclassOf(type)
                    || currentType == type;
+        }
+
+        public static MethodInfo GetGenericMethod(this Type type, string methodName)
+        {
+            if (type == null)
+                throw new ArgumentNullException("type");
+            if (string.IsNullOrWhiteSpace(methodName))
+                throw new ArgumentNullException("methodName");
+            return type.GetMethods().FirstOrDefault(m => m.Name == methodName && m.IsGenericMethod == true);
         }
     }
 }
