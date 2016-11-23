@@ -11,7 +11,7 @@
 
         public virtual string DoWork()
         {
-            return "Whack. Whack. Whack. " + ++_NailsHammered + " nails hammered";
+            return "Whack. Whack. Whack. " + ++_NailsHammered + " nails hammered.";
         }
     }
 }

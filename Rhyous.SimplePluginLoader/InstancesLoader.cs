@@ -23,10 +23,10 @@ namespace Rhyous.SimplePluginLoader
             if (assembly != null)
             {
                 Type[] objTypes = assembly.GetTypes();
-                IEnumerable<Type> typesToLoad = GetTypesToLoad(objTypes);
+                IEnumerable<Type> typesToLoad = objTypes.Where(o => o.IsTypeToLoad<T>());
                 if (typesToLoad == null)
                     return null;
-                try { listOfT.AddRange(typesToLoad.Select(Create).OfType<T>()); }
+                try { listOfT.AddRange(typesToLoad.Select(Create).Where(o => o != null)); }
                 catch { if (ThrowExceptionsOnLoad) throw; }
             }
             return listOfT;
@@ -38,7 +38,11 @@ namespace Rhyous.SimplePluginLoader
             {
                 return CreateGenericType(type, typeof(T).GetGenericArguments());
             }
-            return Activator.CreateInstance(type) as T;
+            var obj = Activator.CreateInstance(type);
+            var objAsT = obj as T;
+            if (objAsT != null)
+                return objAsT;
+            return null;
         }
 
         private static T CreateGenericType(Type genericType, params Type[] genericParams)
@@ -48,26 +52,6 @@ namespace Rhyous.SimplePluginLoader
             var genMethod = methodInfo.MakeGenericMethod(constructedType);
             var obj = genMethod.Invoke(null, null);
             return obj as T;
-        }
-
-        private static IEnumerable<Type> GetTypesToLoad(Type[] objTypes)
-        {
-            IEnumerable<Type> typesToLoad = null;
-            if (typeof(T).IsClass)
-            {
-                typesToLoad = objTypes.Where(objType => objType.IsSameOrSubclassAs(typeof(T))
-                                                     || (objType.IsGenericType 
-                                                         && typeof(T).IsGenericType 
-                                                         && objType.IsSameOrSubclassAs(typeof(T).GetGenericTypeDefinition())));
-            }
-            if (typeof(T).IsInterface)
-            {
-                typesToLoad = objTypes.Where(objType => objType.GetInterfaces().Contains(typeof(T))
-                                         || (objType.IsGenericType 
-                                             && typeof(T).IsGenericType 
-                                             && objType.GetInterfaces().Any(ti => ti.GetGenericTypeDefinition() == typeof(T).GetGenericTypeDefinition())));
-            }
-            return typesToLoad;
         }
     }
 }
