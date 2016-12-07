@@ -27,7 +27,7 @@ namespace Rhyous.SimplePluginLoader
                 return true;
             var leftGenArgs = left.GetGenericArguments().ToList();
             var rightGenArgs = right.GetGenericArguments().ToList();
-            if (rightInterfaces.Any(itype => itype.GetGenericTypeDefinition() == left.GetGenericTypeDefinition()))
+            if (rightInterfaces.Any(itype => itype.IsGenericType && itype.GetGenericTypeDefinition() == left.GetGenericTypeDefinition()))
             {
                 if (!left.ContainsGenericParameters && right.ContainsGenericParameters)
                     return true;
