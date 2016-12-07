@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Rhyous.SimplePluginLoader;
+using System;
 using System.Collections.Generic;
-using Rhyous.SimplePluginLoader;
+using System.Linq;
 using Tool.Tools;
 
 namespace Tool
@@ -17,6 +18,10 @@ namespace Tool
             var plugins = pluginLoader.LoadPlugins();
             tools.AddRange(plugins.AllObjects);
 
+            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>();
+            var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
+            tools.AddRange(caveManPlugins.AllObjects.Select(o => o.Tool));
+            
             ShowPrompt(tools);
             int input = ReadLine(tools);
             while (input != 0)

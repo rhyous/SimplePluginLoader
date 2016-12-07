@@ -1,7 +1,7 @@
 ﻿// See License at the end of the file
 
+using Rhyous.SimplePluginLoader.Extensions;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -17,26 +17,22 @@ namespace Rhyous.SimplePluginLoader
             _Plugin = plugin;
         }
 
-        public Dictionary<string, Assembly> Assemblies
-        {
-            get { return _Assemblies.Value; }
-        } private Lazy<Dictionary<string, Assembly>> _Assemblies = new Lazy<Dictionary<string, Assembly>>();
-
         public AppDomain Domain
         {
             get { return _Domain ?? (_Domain = AppDomain.CurrentDomain); }
-        } private AppDomain _Domain;
+        }
+        private AppDomain _Domain;
 
         public virtual Assembly Load(string dll, string pdb)
         {
             if (Path.IsPathRooted(dll))
             {
-                return LoadAssembly(dll, pdb);
+                return TryLoad(dll, pdb);
             }
             foreach (var path in new PluginPaths(_Plugin.AssemblyBuilder.Domain.BaseDirectory).GetDefaultPluginDirectories())
             {
                 var dllPath = Path.Combine(path, dll);
-                var assembly = LoadAssembly(dllPath, pdb);
+                var assembly = TryLoad(dllPath, pdb);
                 if (assembly != null)
                 {
                     return assembly;
@@ -47,26 +43,20 @@ namespace Rhyous.SimplePluginLoader
 
         public Assembly TryLoad(string dll, string pdb)
         {
-            return FindAlreadyLoadedAssembly(dll) ?? LoadAssembly(dll, pdb);
-        }
-
-        private Assembly LoadAssembly(string dll, string pdb)
-        {
-            if (File.Exists(dll))
+            var assembly = FindAlreadyLoadedAssembly(dll);
+            if (assembly == null)
             {
-                var assembly = File.Exists(pdb)
-                    ? Domain.Load(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debugging
-                    : Domain.Load(File.ReadAllBytes(dll));
-                Assemblies.Add(GetKeyFromDll(dll), assembly);
-                return assembly;
+                assembly = Domain.TryLoad(dll, pdb);
+                if (assembly != null)
+                    AssemblyDictionary.Assemblies.Add(GetKeyFromDll(dll), assembly);
             }
-            return null;
+            return assembly;
         }
 
         private Assembly FindAlreadyLoadedAssembly(string dll)
         {
             Assembly assembly;
-            return Assemblies.TryGetValue(GetKeyFromDll(dll), out assembly) ? assembly : null;
+            return AssemblyDictionary.Assemblies.TryGetValue(GetKeyFromDll(dll), out assembly) ? assembly : null;
         }
 
         private static string GetKeyFromDll(string dll)
@@ -74,6 +64,13 @@ namespace Rhyous.SimplePluginLoader
             var key = Path.GetFileName(dll) + File.GetLastWriteTime(dll).ToFileTimeUtc();
             return key;
         }
+
+        internal AssemblyDictionary AssemblyDictionary
+        {
+            get { return _AssemblyDictionary ?? (_AssemblyDictionary = AssemblyDictionary.Instance); }
+            set { _AssemblyDictionary = value; }
+        } private AssemblyDictionary _AssemblyDictionary;
+
 
         #region IDisposable
         bool _disposed;
@@ -104,7 +101,7 @@ namespace Rhyous.SimplePluginLoader
 /*
 Simple Plugin Loader - A library that makes loading plugins quick and easy. It
                        creates instances of interfaces or base classes from
-					   plugins with a few lines of code.
+                       plugins with a few lines of code.
 
 Copyright (c) 2012, Jared Barneck (Rhyous)
 All rights reserved.

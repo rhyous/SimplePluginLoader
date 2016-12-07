@@ -1,24 +1,62 @@
 ﻿// See License at the end of the file
 
 using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
     public static class TypeExtensions
     {
-        public static bool IsSameOrSubclassAs(this Type currentType, Type type)
+        public static bool IsSameOrSubclassAs(this Type left, Type right)
         {
-            return currentType.IsSubclassOf(type)
-                   || currentType == type;
+            return left == right || left.IsSubclassOf(right);
+        }
+
+        public static bool IsTypeToLoad<T>(this Type type)
+        {
+            return type.IsSameOrSubclassAs(typeof(T)) || typeof(T).IsAssignableFrom(type) || typeof(T).IsGenericInterfaceOf(type);
+        }
+
+        public static bool IsGenericInterfaceOf(this Type left, Type right)
+        {
+            if (!left.IsGenericType || !left.IsInterface || !right.IsGenericType)
+                return false;
+            var rightInterfaces = right.GetInterfaces();
+            if (rightInterfaces.Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == left))
+                return true;
+            var leftGenArgs = left.GetGenericArguments().ToList();
+            var rightGenArgs = right.GetGenericArguments().ToList();
+            if (rightInterfaces.Any(itype => itype.GetGenericTypeDefinition() == left.GetGenericTypeDefinition()))
+            {
+                if (!left.ContainsGenericParameters && right.ContainsGenericParameters)
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool IsInstantiable(this Type type)
+        {
+            return !type.IsInterface && !type.IsAbstract && (!type.IsGenericType || !type.GetGenericArguments().Any(t => t.IsInterface || !t.IsAbstract));
+        }
+
+        public static MethodInfo GetGenericMethod(this Type type, string methodName)
+        {
+            if (type == null)
+                throw new ArgumentNullException("type");
+            if (string.IsNullOrWhiteSpace(methodName))
+                throw new ArgumentNullException("methodName");
+            return type.GetMethods().FirstOrDefault(m => m.Name == methodName && m.IsGenericMethod == true);
         }
     }
+
 }
 
 #region License
 /*
 Simple Plugin Loader - A library that makes loading plugins quick and easy. It
                        creates instances of interfaces or base classes from
-					   plugins with a few lines of code.
+                       plugins with a few lines of code.
 
 Copyright (c) 2012, Jared Barneck (Rhyous)
 All rights reserved.

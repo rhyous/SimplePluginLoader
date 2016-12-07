@@ -7,8 +7,11 @@ using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class InstancesLoader<T> : ILoadInstancesOfType<T> where T : class
+    public class InstancesLoader<T> : ILoadInstancesOfType<T>
+        where T : class
     {
+        public static bool ThrowExceptionsOnLoad = false;
+
         public List<T> LoadInstances(Assembly assembly)
         {
             return LoadTypes(assembly);
@@ -20,26 +23,35 @@ namespace Rhyous.SimplePluginLoader
             if (assembly != null)
             {
                 Type[] objTypes = assembly.GetTypes();
-                IEnumerable<Type> typesToLoad = GetTypesToLoad(objTypes);
+                IEnumerable<Type> typesToLoad = objTypes.Where(o => o.IsTypeToLoad<T>());
                 if (typesToLoad == null)
                     return null;
-                listOfT.AddRange(typesToLoad.Select(Activator.CreateInstance).OfType<T>());
+                try { listOfT.AddRange(typesToLoad.Select(Create).Where(o => o != null)); }
+                catch { if (ThrowExceptionsOnLoad) throw; }
             }
             return listOfT;
         }
 
-        private static IEnumerable<Type> GetTypesToLoad(Type[] objTypes)
+        private static T Create(Type type)
         {
-            IEnumerable<Type> typesToLoad = null;
-            if (typeof(T).IsClass)
+            if (type.IsGenericType)
             {
-                typesToLoad = objTypes.Where(objType => objType.IsSameOrSubclassAs(typeof(T)));
+                return CreateGenericType(type, typeof(T).GetGenericArguments());
             }
-            if (typeof(T).IsInterface)
-            {
-                typesToLoad = objTypes.Where(objType => objType.GetInterfaces().Contains(typeof(T)));
-            }
-            return typesToLoad;
+            var obj = Activator.CreateInstance(type);
+            var objAsT = obj as T;
+            if (objAsT != null)
+                return objAsT;
+            return null;
+        }
+
+        private static T CreateGenericType(Type genericType, params Type[] genericParams)
+        {
+            Type constructedType = genericType.MakeGenericType(genericParams);
+            var methodInfo = typeof(Activator).GetGenericMethod("CreateInstance");
+            var genMethod = methodInfo.MakeGenericMethod(constructedType);
+            var obj = genMethod.Invoke(null, null);
+            return obj as T;
         }
     }
 }
@@ -48,7 +60,7 @@ namespace Rhyous.SimplePluginLoader
 /*
 Simple Plugin Loader - A library that makes loading plugins quick and easy. It
                        creates instances of interfaces or base classes from
-					   plugins with a few lines of code.
+                       plugins with a few lines of code.
 
 Copyright (c) 2012, Jared Barneck (Rhyous)
 All rights reserved.

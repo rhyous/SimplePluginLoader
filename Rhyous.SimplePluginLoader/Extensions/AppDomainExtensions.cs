@@ -1,47 +1,43 @@
-﻿// See License at the end of the file
-
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 
-namespace Rhyous.SimplePluginLoader
+namespace Rhyous.SimplePluginLoader.Extensions
 {
-    [Serializable]
-    public class PluginDependencyResolver<T> : IPluginDependencyResolver
-        where T : class
+    public static class AppDomainExtensions
     {
-        public PluginDependencyResolver(Plugin<T> plugin)
+        public static Assembly TryLoad(this AppDomain domain, byte[] rawAssembly)
         {
-            Plugin = plugin;
+            try { return domain.Load(rawAssembly); }
+            catch { return null; }
         }
 
-        public Plugin<T> Plugin { get; set; }
-
-        public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
+        public static Assembly TryLoad(this AppDomain domain, byte[] rawAssembly, byte[] rawSymbolStore)
         {
-            var paths = new List<string>();
-            paths.Add("");                                             // Try current path
-            paths.Add(Plugin.Directory);                               // Try plugin directory
-            paths.Add(Path.Combine(Plugin.Directory, "bin"));          // Try plugin/bin directory
-            paths.Add(Path.Combine(Plugin.Directory, Plugin.Name));    // Try plugin/<pluginName> directory
+            try { return domain.Load(rawAssembly, rawSymbolStore); }
+            catch { return null; }
+        }
 
-            var file = args.Name.Split(',').First();
-            foreach (var path in paths)
+        public static Assembly TryLoad(this AppDomain domain, string dll)
+        {
+            if (File.Exists(dll))
+                return domain.TryLoad(File.ReadAllBytes(dll));
+            return null;
+        }
+
+        public static Assembly TryLoad(this AppDomain domain, string dll, string pdb)
+        {
+            if (File.Exists(dll))
             {
-                var dll = Path.Combine(path, file + ".dll");
-                var pdb = Path.Combine(path, file + ".pdb");
-                var assembly = Plugin.AssemblyBuilder.TryLoad(dll, pdb);
-                if (assembly != null)
-                {
-                    return assembly;
-                }
+                return File.Exists(pdb)
+                    ? domain.TryLoad(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debugging
+                    : domain.TryLoad(File.ReadAllBytes(dll));
             }
             return null;
         }
     }
 }
+
 
 #region License
 /*

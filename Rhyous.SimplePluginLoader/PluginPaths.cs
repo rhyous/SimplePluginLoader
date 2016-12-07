@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -48,7 +49,7 @@ namespace Rhyous.SimplePluginLoader
 
         public IEnumerable<string> GetDefaultPluginDirectories()
         {
-            return new[] { PluginDirectoryName, UserProfilePlugins, ApplicationDataPlugins, RelativePathPlugins };
+            return new[] { PluginDirectoryName, UserProfilePlugins, ApplicationDataPlugins, RelativePathPlugins }.Distinct();
         }
     }
 }
@@ -58,7 +59,7 @@ namespace Rhyous.SimplePluginLoader
 /*
 Simple Plugin Loader - A library that makes loading plugins quick and easy. It
                        creates instances of interfaces or base classes from
-					   plugins with a few lines of code.
+                       plugins with a few lines of code.
 
 Copyright (c) 2012, Jared Barneck (Rhyous)
 All rights reserved.

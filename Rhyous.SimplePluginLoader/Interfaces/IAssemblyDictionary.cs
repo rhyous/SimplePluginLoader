@@ -3,8 +3,8 @@ using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public interface ILoadInstancesOfType<T>
+    public interface IAssemblyDictionary
     {
-        List<T> LoadInstances(Assembly assembly);
+        Dictionary<string, Assembly> Assemblies { get; }
     }
 }
