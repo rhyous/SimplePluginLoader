@@ -10,7 +10,7 @@ namespace Rhyous.SimplePluginLoader
     /// <summary>
     /// A singleton that load plugins
     /// </summary>
-    public class PluginLoader<T> : ILoadPlugins<T> 
+    public class PluginLoader<T> : ILoadPlugins<T>
         where T : class
     {
         public List<Plugin<T>> Plugins
@@ -66,9 +66,14 @@ namespace Rhyous.SimplePluginLoader
         public PluginCollection<T> LoadPlugins(IEnumerable<string> dirs)
         {
             var plugins = new PluginCollection<T>();
+            var fullPaths = new List<string>();
             foreach (var dir in dirs.Where(Directory.Exists))
             {
-                plugins.AddRange(LoadPlugins(Directory.GetFiles(dir, PluginPaths.DefaultDllSearchString)));
+                var info = new DirectoryInfo(dir);
+                if (fullPaths.Contains(info.FullName))
+                    continue;
+                fullPaths.Add(info.FullName);
+                plugins.AddRange(LoadPlugins(Directory.GetFiles(info.FullName, PluginPaths.DefaultDllSearchString)));
             }
             return plugins;
         }
@@ -78,8 +83,17 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         public PluginCollection<T> LoadPlugins(string[] pluginFiles)
         {
-            return new PluginCollection<T>(pluginFiles.Select(LoadPlugin)
-                .Where(plugin => plugin?.PluginObjects != null && plugin.PluginObjects.Count > 0));
+            var plugins = new PluginCollection<T>();
+            foreach (var pluginFile in pluginFiles)
+            {
+                var plugin = LoadPlugin(pluginFile);
+                plugin.Loader.LoadInstances(plugin.Assembly);
+                if (plugin?.PluginObjects?.Count == 0)
+                    continue;
+                plugin.RemoveDependencyResolver(); // Remove resolver after load
+                plugins.Add(plugin);
+            }
+            return plugins;
         }
 
         /// <summary>

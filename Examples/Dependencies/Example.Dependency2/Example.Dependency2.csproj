@@ -1,16 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C0BE9BCA-DF56-4350-93E0-A9F53623E507}</ProjectGuid>
+    <ProjectGuid>{61435035-ADB7-4B04-AE07-1DDAC69AF8FA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Tool.Plugin1</RootNamespace>
-    <AssemblyName>Tool.Plugin1</AssemblyName>
+    <RootNamespace>Example.Dependency</RootNamespace>
+    <AssemblyName>Example.Dependency</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,9 +30,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -39,41 +37,14 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CaveManTool.cs" />
-    <Compile Include="Rock.cs" />
-    <Compile Include="Screwdriver.cs" />
-    <Compile Include="Wrench.cs" />
+    <Compile Include="Localizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Dependencies\Example.Dependency\Example.Dependency.csproj">
-      <Project>{88691206-bfef-4ad3-876d-1f4646a4d1e1}</Project>
-      <Name>Example.Dependency</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Tool\Tool.csproj">
-      <Project>{3b20b597-0a54-454d-9cf6-6ab7d28b24f2}</Project>
-      <Name>Tool</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>SET copyToDir="$(ProjectDir)..\Tool\$(OutDir)\Plugins\"
-ECHO %25copyToDir%25
-IF NOT EXIST %25copyToDir%25 MKDIR %25copyToDir%25
-COPY /Y "$(TargetPath)" %25copyToDir%25
-COPY /Y "$(TargetDir)$(TargetName).pdb" %25copyToDir%25
-
-SET dllDir="$(ProjectDir)..\Tool\$(OutDir)\Plugins\$(TargetName)"
-ECHO %25dllDir%25
-IF NOT EXIST %25dllDir%25 MKDIR %25dllDir%25
-COPY /Y "$(Targetdir)*.dll" %25dllDir%25
-COPY /Y "$(Targetdir)*.pdb" %25dllDir%25
-DEL /Q "$(TargetPath)"
-DEL /Q "$(TargetDir)$(TargetName).pdb"</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

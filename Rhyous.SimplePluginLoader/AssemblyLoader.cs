@@ -48,7 +48,7 @@ namespace Rhyous.SimplePluginLoader
             {
                 assembly = Domain.TryLoad(dll, pdb);
                 if (assembly != null)
-                    AssemblyDictionary.Assemblies.Add(GetKeyFromDll(dll), assembly);
+                    AssemblyDictionary.Assemblies.Add(GetKey(dll), assembly);
             }
             return assembly;
         }
@@ -56,13 +56,36 @@ namespace Rhyous.SimplePluginLoader
         private Assembly FindAlreadyLoadedAssembly(string dll)
         {
             Assembly assembly;
-            return AssemblyDictionary.Assemblies.TryGetValue(GetKeyFromDll(dll), out assembly) ? assembly : null;
+            return AssemblyDictionary.Assemblies.TryGetValue(GetKey(dll), out assembly) ? assembly : null;
         }
 
-        private static string GetKeyFromDll(string dll)
+        public Assembly TryLoad(string dll, string pdb, string version)
+        {
+            var assembly = FindAlreadyLoadedAssembly(dll, version);
+            if (assembly == null)
+            {
+                assembly = Domain.TryLoad(dll, pdb);
+                if (assembly != null)
+                    AssemblyDictionary.Assemblies.Add(GetKey(dll, version), assembly);
+            }
+            return assembly;
+        }
+
+        private Assembly FindAlreadyLoadedAssembly(string dll, string version)
+        {
+            Assembly assembly;
+            return AssemblyDictionary.Assemblies.TryGetValue(GetKey(dll, version), out assembly) ? assembly : null;
+        }
+
+        private static string GetKey(string dll)
         {
             var key = Path.GetFileName(dll) + File.GetLastWriteTime(dll).ToFileTimeUtc();
             return key;
+        }
+
+        private static string GetKey(string dll, string version)
+        {
+            return Path.GetFileName(dll) + version + File.GetLastWriteTime(dll).ToFileTimeUtc();
         }
 
         internal AssemblyDictionary AssemblyDictionary

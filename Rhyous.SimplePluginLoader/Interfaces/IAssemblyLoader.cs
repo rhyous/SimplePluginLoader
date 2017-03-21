@@ -8,5 +8,6 @@ namespace Rhyous.SimplePluginLoader
         AppDomain Domain { get; }
         Assembly Load(string dll, string pdb);
         Assembly TryLoad(string dll, string pdb);
+        Assembly TryLoad(string dll, string pdb, string version);
     }
 }

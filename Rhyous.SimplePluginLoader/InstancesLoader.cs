@@ -26,7 +26,15 @@ namespace Rhyous.SimplePluginLoader
                 IEnumerable<Type> typesToLoad = objTypes.Where(o => o.IsTypeToLoad<T>());
                 if (typesToLoad == null)
                     return null;
-                try { listOfT.AddRange(typesToLoad.Select(Create).Where(o => o != null)); }
+                try
+                {
+                    foreach (var typeToLoad in typesToLoad)
+                    {
+                        var obj = Create(typeToLoad);
+                        if (obj != null)
+                            listOfT.Add(obj);
+                    }
+                }
                 catch { if (ThrowExceptionsOnLoad) throw; }
             }
             return listOfT;

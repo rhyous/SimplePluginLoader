@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rhyous.SimplePluginLoader.Tests.TestClasses;
 
 namespace Rhyous.SimplePluginLoader.Tests.Extensions
 {
@@ -10,6 +11,37 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
         public class A<T> : IA<T> { public T Item { get; set; } };
         public class B { }
         public class C : A<B> { }
+
+        public interface IWith3<T1, T2, T3> { }
+        public class With3 : IWith3<int, int, int> { }
+
+        [TestMethod]
+        public void IsAssignableFrom_With3Generics()
+        {
+            // Arrange
+            var type1 = typeof(IWith3<int, int, int>);
+            var type2 = typeof(With3);
+
+            // Act
+            var actual = type1.IsAssignableFrom(type2);
+
+            // Assert
+            Assert.IsTrue(actual);
+        }
+
+        [TestMethod]
+        public void IsAssignableFrom_With3GenericsOrg()
+        {
+            // Arrange
+            var type1 = typeof(IRepository<Org, IOrg, int>);
+            var type2 = typeof(OrgRepository);
+
+            // Act
+            var actual = type1.IsAssignableFrom(type2);
+
+            // Assert
+            Assert.IsTrue(actual);
+        }
 
         [TestMethod]
         public void IsGenericInterfaceOf_EmptyConcreteGeneric()

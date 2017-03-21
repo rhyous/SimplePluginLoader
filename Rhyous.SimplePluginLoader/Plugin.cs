@@ -17,7 +17,7 @@ namespace Rhyous.SimplePluginLoader
 
         public Plugin(ResolveEventHandler handler = null)
         {
-                AddDependencyResolver(handler);
+            AddDependencyResolver(handler);
         }
 
         public string Name { get { return Path.GetFileNameWithoutExtension(File); } }
@@ -94,12 +94,13 @@ namespace Rhyous.SimplePluginLoader
 
         public void AddDependencyResolver(ResolveEventHandler handler = null)
         {
-            RemoveDependencyResolver(handler); // Remove it first
+            RemoveDependencyResolver(handler); // Remove it first in case it is already added.
             AssemblyBuilder.Domain.AssemblyResolve += handler; // Add
         }
 
         public void RemoveDependencyResolver(ResolveEventHandler handler = null)
         {
+            handler = handler ?? DependencyResolver.AssemblyResolveHandler;
             AssemblyBuilder.Domain.AssemblyResolve -= handler;
         }
 

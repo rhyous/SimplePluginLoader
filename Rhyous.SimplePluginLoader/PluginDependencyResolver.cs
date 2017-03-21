@@ -21,18 +21,22 @@ namespace Rhyous.SimplePluginLoader
 
         public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
         {
+            if (args.RequestingAssembly != Plugin.Assembly)
+                return null;
             var paths = new List<string>();
             paths.Add("");                                             // Try current path
             paths.Add(Plugin.Directory);                               // Try plugin directory
             paths.Add(Path.Combine(Plugin.Directory, "bin"));          // Try plugin/bin directory
             paths.Add(Path.Combine(Plugin.Directory, Plugin.Name));    // Try plugin/<pluginName> directory
 
-            var file = args.Name.Split(',').First();
+            var assemblyDetails = args.Name.Split(", ".ToArray(), StringSplitOptions.RemoveEmptyEntries);
+            var file = assemblyDetails.First();
+            var version = assemblyDetails.Skip(1).First().Split("=".ToArray(), StringSplitOptions.RemoveEmptyEntries).Skip(1).First();
             foreach (var path in paths)
             {
                 var dll = Path.Combine(path, file + ".dll");
                 var pdb = Path.Combine(path, file + ".pdb");
-                var assembly = Plugin.AssemblyBuilder.TryLoad(dll, pdb);
+                var assembly = Plugin.AssemblyBuilder.TryLoad(dll, pdb, version);
                 if (assembly != null)
                 {
                     return assembly;
