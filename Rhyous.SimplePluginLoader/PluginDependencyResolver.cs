@@ -29,12 +29,16 @@ namespace Rhyous.SimplePluginLoader
 
             var assemblyDetails = args.Name.Split(", ".ToArray(), StringSplitOptions.RemoveEmptyEntries);
             var file = assemblyDetails.First();
-            var version = assemblyDetails.Skip(1).First().Split("=".ToArray(), StringSplitOptions.RemoveEmptyEntries).Skip(1).First();
+            var version = assemblyDetails.FirstOrDefault(ad => ad.StartsWith("Version="))?
+                                         .Split("=".ToArray(), StringSplitOptions.RemoveEmptyEntries)
+                                         .Skip(1)?.First();
             foreach (var path in paths)
             {
                 var dll = Path.Combine(path, file + ".dll");
                 var pdb = Path.Combine(path, file + ".pdb");
-                var assembly = Plugin.AssemblyBuilder.TryLoad(dll, pdb, version);
+                var assembly = (string.IsNullOrWhiteSpace(version))
+                    ? Plugin.AssemblyBuilder.TryLoad(dll, pdb)
+                    : Plugin.AssemblyBuilder.TryLoad(dll, pdb, version);
                 if (assembly != null)
                 {
                     return assembly;
