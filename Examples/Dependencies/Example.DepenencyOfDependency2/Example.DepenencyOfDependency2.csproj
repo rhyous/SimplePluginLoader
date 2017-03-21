@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{88691206-BFEF-4AD3-876D-1F4646A4D1E1}</ProjectGuid>
+    <ProjectGuid>{329C45C5-3E59-46FA-94F4-A30B81224805}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Example.Dependency</RootNamespace>
-    <AssemblyName>Example.Dependency</AssemblyName>
+    <RootNamespace>Example.DepenencyOfDependency2</RootNamespace>
+    <AssemblyName>Example.DepenencyOfDependency2</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -41,14 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Localizer.cs" />
+    <Compile Include="Sentence.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Example.DependencyOfDependency\Example.DependencyOfDependency.csproj">
-      <Project>{9c0683b2-ae0e-4fbf-9776-ec6b076c5ac7}</Project>
-      <Name>Example.DependencyOfDependency</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

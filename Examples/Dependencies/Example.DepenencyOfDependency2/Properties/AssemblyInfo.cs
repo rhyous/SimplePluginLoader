@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("SimplePluginLoader")]
+[assembly: AssemblyTitle("Example.DepenencyOfDependency2")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Rhyous Publishing LLC")]
-[assembly: AssemblyProduct("SimplePluginLoader")]
-[assembly: AssemblyCopyright("Copyright © Rhyous Publishing LLC 2015")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Example.DepenencyOfDependency2")]
+[assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("179300a6-60e5-491c-90d3-cf04c5c77f15")]
+[assembly: Guid("329c45c5-3e59-46fa-94f4-a30b81224805")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,7 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.1.7.0")]
-[assembly: AssemblyFileVersion("1.1.7.0")]
-
-[assembly: InternalsVisibleTo("Rhyous.SimplePluginLoader.Tests")]
+[assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyFileVersion("2.0.0.0")]

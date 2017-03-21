@@ -66,7 +66,12 @@ namespace Rhyous.SimplePluginLoader
             {
                 assembly = Domain.TryLoad(dll, pdb);
                 if (assembly != null)
-                    AssemblyDictionary.Assemblies.Add(GetKey(dll, version), assembly);
+                {
+                    var assemblyVersion = assembly.GetName().Version.ToString();
+                    if (assemblyVersion != version)
+                       return null;
+                    AssemblyDictionary.Assemblies.Add(GetKey(dll, assemblyVersion), assembly);
+                }
             }
             return assembly;
         }

@@ -14,6 +14,6 @@ public class Rock : ITool
             return string.Format(_localizer.RockAction, ++_ThingsHammered);
         if (_ThingsHammered == 3)
             return string.Format(_localizer.RockAction, ++_ThingsHammered) + " " + _localizer.RockBroke;
-        return _localizer.RockUnusable;
+        return _localizer.GetRockUnusableSentence();
     }
 }

@@ -44,6 +44,12 @@
     <Compile Include="Localizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Example.DepenencyOfDependency2\Example.DepenencyOfDependency2.csproj">
+      <Project>{329c45c5-3e59-46fa-94f4-a30b81224805}</Project>
+      <Name>Example.DepenencyOfDependency2</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

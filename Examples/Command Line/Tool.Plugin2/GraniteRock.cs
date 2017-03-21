@@ -15,7 +15,7 @@ namespace Tool.Plugin2
                 return string.Format(_localizer.RockAction, ++_ThingsHammered);
             if (_ThingsHammered == 5)
                 return string.Format(_localizer.RockAction, ++_ThingsHammered) + " " + _localizer.RockBroke;
-            return _localizer.RockUnusable;
+            return _localizer.GetRockUnusableSentence();
         }
     }
 }

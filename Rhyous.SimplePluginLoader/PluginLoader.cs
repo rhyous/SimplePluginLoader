@@ -90,7 +90,6 @@ namespace Rhyous.SimplePluginLoader
                 plugin.Loader.LoadInstances(plugin.Assembly);
                 if (plugin?.PluginObjects?.Count == 0)
                     continue;
-                plugin.RemoveDependencyResolver(); // Remove resolver after load
                 plugins.Add(plugin);
             }
             return plugins;

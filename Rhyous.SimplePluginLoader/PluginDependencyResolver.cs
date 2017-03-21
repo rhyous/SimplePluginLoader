@@ -21,8 +21,6 @@ namespace Rhyous.SimplePluginLoader
 
         public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
         {
-            if (args.RequestingAssembly != Plugin.Assembly)
-                return null;
             var paths = new List<string>();
             paths.Add("");                                             // Try current path
             paths.Add(Plugin.Directory);                               // Try plugin directory

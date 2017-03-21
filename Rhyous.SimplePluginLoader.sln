@@ -32,6 +32,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.Dependency2", "Exam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.Plugin2", "Examples\Command Line\Tool.Plugin2\Tool.Plugin2.csproj", "{DCE80A30-86D7-4960-8FF1-C867B1BE3EC6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.DependencyOfDependency", "Examples\Dependencies\Example.DependencyOfDependency\Example.DependencyOfDependency.csproj", "{9C0683B2-AE0E-4FBF-9776-EC6B076C5AC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.DepenencyOfDependency2", "Examples\Dependencies\Example.DepenencyOfDependency2\Example.DepenencyOfDependency2.csproj", "{329C45C5-3E59-46FA-94F4-A30B81224805}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +74,14 @@ Global
 		{DCE80A30-86D7-4960-8FF1-C867B1BE3EC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCE80A30-86D7-4960-8FF1-C867B1BE3EC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCE80A30-86D7-4960-8FF1-C867B1BE3EC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C0683B2-AE0E-4FBF-9776-EC6B076C5AC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C0683B2-AE0E-4FBF-9776-EC6B076C5AC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C0683B2-AE0E-4FBF-9776-EC6B076C5AC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C0683B2-AE0E-4FBF-9776-EC6B076C5AC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{329C45C5-3E59-46FA-94F4-A30B81224805}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{329C45C5-3E59-46FA-94F4-A30B81224805}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{329C45C5-3E59-46FA-94F4-A30B81224805}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{329C45C5-3E59-46FA-94F4-A30B81224805}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -85,5 +97,7 @@ Global
 		{88691206-BFEF-4AD3-876D-1F4646A4D1E1} = {F5813784-49EC-4D7F-863D-1B02331D29E1}
 		{61435035-ADB7-4B04-AE07-1DDAC69AF8FA} = {F5813784-49EC-4D7F-863D-1B02331D29E1}
 		{DCE80A30-86D7-4960-8FF1-C867B1BE3EC6} = {F2996B35-A240-4909-93C7-9C0812635790}
+		{9C0683B2-AE0E-4FBF-9776-EC6B076C5AC7} = {F5813784-49EC-4D7F-863D-1B02331D29E1}
+		{329C45C5-3E59-46FA-94F4-A30B81224805} = {F5813784-49EC-4D7F-863D-1B02331D29E1}
 	EndGlobalSection
 EndGlobal

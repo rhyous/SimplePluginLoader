@@ -60,7 +60,7 @@
     <None Include="tools\uninstall.ps1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="src\App_Packages\Rhyous.SimplePluginLoader.Sources.1.1.6\" />
+    <Folder Include="src\App_Packages\Rhyous.SimplePluginLoader.Sources.1.1.7\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="exclude.txt" />
