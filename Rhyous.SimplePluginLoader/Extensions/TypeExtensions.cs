@@ -13,7 +13,7 @@ namespace Rhyous.SimplePluginLoader
             return left == right || left.IsSubclassOf(right);
         }
 
-        public static bool IsTypeToLoad<T>(this Type type)
+        public static bool IsPluginType<T>(this Type type)
         {
             return type.IsSameOrSubclassAs(typeof(T)) || typeof(T).IsAssignableFrom(type) || typeof(T).IsGenericInterfaceOf(type);
         }
@@ -37,7 +37,7 @@ namespace Rhyous.SimplePluginLoader
 
         public static bool IsInstantiable(this Type type)
         {
-            return !type.IsInterface && !type.IsAbstract && (!type.IsGenericType || !type.GetGenericArguments().Any(t => t.IsInterface || !t.IsAbstract));
+            return !type.IsInterface && !type.IsAbstract && (!type.IsGenericType || !type.GetGenericArguments().Any(t => t.IsInterface || t.IsAbstract));
         }
 
         public static MethodInfo GetGenericMethod(this Type type, string methodName)

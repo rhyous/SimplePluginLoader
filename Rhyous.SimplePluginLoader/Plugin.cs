@@ -59,6 +59,12 @@ namespace Rhyous.SimplePluginLoader
             set { _Assembly = value; }
         } private Assembly _Assembly;
 
+        public List<Type> PluginTypes
+        {
+            get { return _PluginTypes ?? (_PluginTypes = Loader.GetPluginTypes(Assembly)); }
+            set { _PluginTypes = value; }
+        } private List<Type> _PluginTypes;
+
         public List<T> PluginObjects
         {
             get { return _PluginObjects ?? (_PluginObjects = Loader.LoadInstances(Assembly)); }

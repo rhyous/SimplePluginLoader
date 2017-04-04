@@ -73,7 +73,9 @@ namespace Rhyous.SimplePluginLoader
                 if (fullPaths.Contains(info.FullName))
                     continue;
                 fullPaths.Add(info.FullName);
-                plugins.AddRange(LoadPlugins(Directory.GetFiles(info.FullName, PluginPaths.DefaultDllSearchString)));
+                var allfiles = Directory.GetFiles(info.FullName, PluginPaths.DefaultDllSearchString, SearchOption.AllDirectories);
+                var foundplugins = LoadPlugins(allfiles.Where(s => !s.Contains(@"\bin\"))).ToArray();
+                plugins.AddRange(foundplugins);
             }
             return plugins;
         }

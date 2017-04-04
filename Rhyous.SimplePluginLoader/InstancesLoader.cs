@@ -17,26 +17,29 @@ namespace Rhyous.SimplePluginLoader
             return LoadTypes(assembly);
         }
 
+        public List<Type> GetPluginTypes(Assembly assembly)
+        {
+            if (assembly == null)
+                return null;
+            return assembly.GetTypes().Where(o => o.IsPluginType<T>()).ToList();
+        }
+
         public List<T> LoadTypes(Assembly assembly)
         {
+            var typesToLoad = GetPluginTypes(assembly);
+            if (typesToLoad == null)
+                return null;
             var listOfT = new List<T>();
-            if (assembly != null)
+            try
             {
-                Type[] objTypes = assembly.GetTypes();
-                IEnumerable<Type> typesToLoad = objTypes.Where(o => o.IsTypeToLoad<T>());
-                if (typesToLoad == null)
-                    return null;
-                try
+                foreach (var typeToLoad in typesToLoad.Where(t=>t.IsInstantiable()))
                 {
-                    foreach (var typeToLoad in typesToLoad)
-                    {
-                        var obj = Create(typeToLoad);
-                        if (obj != null)
-                            listOfT.Add(obj);
-                    }
+                    var obj = Create(typeToLoad);
+                    if (obj != null)
+                        listOfT.Add(obj);
                 }
-                catch { if (ThrowExceptionsOnLoad) throw; }
             }
+            catch { if (ThrowExceptionsOnLoad) throw; }
             return listOfT;
         }
 
