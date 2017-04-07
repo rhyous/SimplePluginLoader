@@ -74,7 +74,7 @@ namespace Rhyous.SimplePluginLoader
                     continue;
                 fullPaths.Add(info.FullName);
                 var allfiles = Directory.GetFiles(info.FullName, PluginPaths.DefaultDllSearchString, SearchOption.AllDirectories);
-                var foundplugins = LoadPlugins(allfiles.Where(s => !s.Contains(@"\bin\")).ToArray());
+                var foundplugins = LoadPlugins(allfiles.Where(s => !Path.GetDirectoryName(s).EndsWith(@"\bin")).ToArray());
                 plugins.AddRange(foundplugins);
             }
             return plugins;
@@ -89,8 +89,10 @@ namespace Rhyous.SimplePluginLoader
             foreach (var pluginFile in pluginFiles)
             {
                 var plugin = LoadPlugin(pluginFile);
-                plugin.Loader.LoadInstances(plugin.Assembly);
-                if (plugin?.PluginObjects?.Count == 0)
+                if (plugin == null)
+                    continue;
+                plugin.PluginObjects = plugin.Loader.LoadInstances(plugin.Assembly);
+                if (plugin.PluginObjects?.Count == 0)
                     continue;
                 plugins.Add(plugin);
             }
