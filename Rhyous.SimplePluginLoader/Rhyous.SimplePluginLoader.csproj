@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="AssemblyDictionary.cs" />
     <Compile Include="AssemblyLoader.cs" />
+    <Compile Include="Exceptions\PluginTypeLoadException.cs" />
     <Compile Include="Extensions\AppDomainExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Interfaces\IAssemblyDictionary.cs" />

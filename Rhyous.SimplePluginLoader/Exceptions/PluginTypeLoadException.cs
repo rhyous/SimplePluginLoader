@@ -1,75 +1,37 @@
 ﻿// See License at the end of the file
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class InstancesLoader<T> : ILoadInstancesOfType<T>
-        where T : class
+    [Serializable]
+    internal class PluginTypeLoadException : Exception
     {
-        public static bool ThrowExceptionsOnLoad = false;
+        private Exception e;
 
-        public List<T> LoadInstances(Assembly assembly)
+        public PluginTypeLoadException()
         {
-            return LoadTypes(assembly);
         }
 
-        public List<Type> GetPluginTypes(Assembly assembly)
+        public PluginTypeLoadException(Exception e) : this(e.Message, e)
         {
-            if (assembly == null)
-                return null;
-            return assembly.GetTypes().Where(o => o.IsPluginType<T>()).ToList();
         }
 
-        public List<T> LoadTypes(Assembly assembly)
+        public PluginTypeLoadException(string message) : base(message)
         {
-            try
-            {
-                var typesToLoad = GetPluginTypes(assembly);
-                if (typesToLoad == null)
-                    return null;
-                var listOfT = new List<T>();
-                foreach (var typeToLoad in typesToLoad.Where(t => t.IsInstantiable()))
-                {
-                    var obj = Create(typeToLoad);
-                    if (obj != null)
-                        listOfT.Add(obj);
-                }
-                return listOfT;
-            }
-            catch (Exception e)
-            {
-                if (ThrowExceptionsOnLoad) throw new PluginTypeLoadException("Failed to load plugin types.", e);
-                else return null;
-            }
         }
 
-        private static T Create(Type type)
+        public PluginTypeLoadException(string message, Exception innerException) : base(message, innerException)
         {
-            if (type.IsGenericType)
-            {
-                return CreateGenericType(type, typeof(T).GetGenericArguments());
-            }
-            var obj = Activator.CreateInstance(type);
-            var objAsT = obj as T;
-            if (objAsT != null)
-                return objAsT;
-            return null;
         }
 
-        private static T CreateGenericType(Type genericType, params Type[] genericParams)
+        protected PluginTypeLoadException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
-            Type constructedType = genericType.MakeGenericType(genericParams);
-            var methodInfo = typeof(Activator).GetGenericMethod("CreateInstance");
-            var genMethod = methodInfo.MakeGenericMethod(constructedType);
-            var obj = genMethod.Invoke(null, null);
-            return obj as T;
         }
     }
 }
+
 
 #region License
 /*
