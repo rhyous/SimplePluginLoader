@@ -53,7 +53,6 @@
     <Compile Include="Interfaces\IAssemblyLoader.cs" />
     <Compile Include="Interfaces\ILoadInstancesOfType.cs" />
     <Compile Include="Interfaces\ILoadPlugins.cs" />
-    <Compile Include="Interfaces\IName.cs" />
     <Compile Include="Interfaces\IPluginDependencyResolver.cs" />
     <Compile Include="Interfaces\IPluginFinder.cs" />
     <Compile Include="Plugin.cs" />
