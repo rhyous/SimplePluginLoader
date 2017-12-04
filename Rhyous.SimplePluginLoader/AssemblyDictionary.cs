@@ -9,6 +9,8 @@ namespace Rhyous.SimplePluginLoader
         #region Singleton
 
         private static readonly Lazy<AssemblyDictionary> Lazy = new Lazy<AssemblyDictionary>(() => new AssemblyDictionary());
+        
+        internal readonly object IsLocked = new object();
 
         public static AssemblyDictionary Instance { get { return Lazy.Value; } }
 
