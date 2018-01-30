@@ -16,6 +16,8 @@ namespace Rhyous.SimplePluginLoader
         public const string PluginDirConfig = "PluginDirectory";
 
         public static string AppRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        // After creating a concrete (non-generic) version of this class, you need to update these values.
+        // RuntimePluginLoaderBase<MyPlugins>.Company = "ABC, Inc."
         public static string Company = "Rhyous";
         public static string AppName = "App1";
         public static string PluginFolder = "Plugins";
