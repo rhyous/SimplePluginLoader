@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib\net40-client\" />
+    <Folder Include="lib\netstandard2.0\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -89,7 +90,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>SET Project=Rhyous.SimplePluginLoader
-copy /Y "$(SolutionDir)..\%25Project%25\$(OutDir)%25Project%25.dll" "$(ProjectDir)lib\net40-client\"
-copy /Y "$(SolutionDir)..\%25Project%25\$(OutDir)%25Project%25.pdb" "$(ProjectDir)lib\net40-client\"</PreBuildEvent>
+copy /Y "$(SolutionDir)%25Project%25.Net40-Client\$(OutDir)%25Project%25.dll" "$(ProjectDir)lib\net40-client\"
+copy /Y "$(SolutionDir)%25Project%25.NetStandard2.0\$(OutDir)NetStandard2.0\%25Project%25.dll" "$(ProjectDir)lib\netstandard2.0\"</PreBuildEvent>
   </PropertyGroup>
 </Project>

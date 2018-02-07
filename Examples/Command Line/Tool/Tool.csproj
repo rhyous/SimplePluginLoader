@@ -51,7 +51,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Rhyous.SimplePluginLoader\Rhyous.SimplePluginLoader.csproj">
+    <ProjectReference Include="..\..\..\Rhyous.SimplePluginLoader.Net40-Client\Rhyous.SimplePluginLoader.csproj">
       <Project>{8eb7535d-c90c-4e91-804e-052b67dd308e}</Project>
       <Name>Rhyous.SimplePluginLoader</Name>
     </ProjectReference>

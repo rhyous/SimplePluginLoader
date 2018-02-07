@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader", "Rhyous.SimplePluginLoader\Rhyous.SimplePluginLoader.csproj", "{8EB7535D-C90C-4E91-804E-052B67DD308E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader", "Rhyous.SimplePluginLoader.Net40-Client\Rhyous.SimplePluginLoader.csproj", "{8EB7535D-C90C-4E91-804E-052B67DD308E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{3B152766-5529-45BE-88A6-D0A2DF070E3A}"
 EndProject
@@ -36,7 +36,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.DependencyOfDepende
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example.DepenencyOfDependency2", "Examples\Dependencies\Example.DepenencyOfDependency2\Example.DepenencyOfDependency2.csproj", "{329C45C5-3E59-46FA-94F4-A30B81224805}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rhyous.SimplePluginLoader.Shared", "Rhyous.SimplePluginLoader.Shared\Rhyous.SimplePluginLoader.Shared.shproj", "{E804DA1E-C5D5-4908-B639-248EA1E78B47}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhyous.SimplePluginLoader.NetStandard2.0", "Rhyous.SimplePluginLoader.NetStandard2.0\Rhyous.SimplePluginLoader.NetStandard2.0.csproj", "{7FCECB59-528B-4771-9D90-D46F02736540}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.NuGet", "NuGet\Rhyous.SimplePluginLoader.NuGet\Rhyous.SimplePluginLoader.NuGet.csproj", "{0451BAEF-DF2E-4B98-8644-94EE9415E389}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{CBC03BE4-55E7-4ED9-AA96-333DC2C5AB95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.NuGet.Sources", "NuGet\Rhyous.SimplePluginLoader.NuGet.Sources\Rhyous.SimplePluginLoader.NuGet.Sources.csproj", "{0451BAEF-DF2E-4B98-8644-94EE9415E391}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Rhyous.SimplePluginLoader.Shared\Rhyous.SimplePluginLoader.Shared.projitems*{8eb7535d-c90c-4e91-804e-052b67dd308e}*SharedItemsImports = 4
+		Rhyous.SimplePluginLoader.Shared\Rhyous.SimplePluginLoader.Shared.projitems*{e804da1e-c5d5-4908-b639-248ea1e78b47}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -82,6 +96,14 @@ Global
 		{329C45C5-3E59-46FA-94F4-A30B81224805}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{329C45C5-3E59-46FA-94F4-A30B81224805}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{329C45C5-3E59-46FA-94F4-A30B81224805}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FCECB59-528B-4771-9D90-D46F02736540}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FCECB59-528B-4771-9D90-D46F02736540}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FCECB59-528B-4771-9D90-D46F02736540}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FCECB59-528B-4771-9D90-D46F02736540}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E389}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E389}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E391}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E391}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,5 +121,10 @@ Global
 		{DCE80A30-86D7-4960-8FF1-C867B1BE3EC6} = {F2996B35-A240-4909-93C7-9C0812635790}
 		{9C0683B2-AE0E-4FBF-9776-EC6B076C5AC7} = {F5813784-49EC-4D7F-863D-1B02331D29E1}
 		{329C45C5-3E59-46FA-94F4-A30B81224805} = {F5813784-49EC-4D7F-863D-1B02331D29E1}
+		{0451BAEF-DF2E-4B98-8644-94EE9415E389} = {CBC03BE4-55E7-4ED9-AA96-333DC2C5AB95}
+		{0451BAEF-DF2E-4B98-8644-94EE9415E391} = {CBC03BE4-55E7-4ED9-AA96-333DC2C5AB95}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5D26C380-6CAE-406D-B257-398649EF0712}
 	EndGlobalSection
 EndGlobal

@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Rhyous.SimplePluginLoader.Sources</id>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
     <title>Rhyous.SimplePluginLoader.Sources</title>
     <authors>Jared Barneck (Rhyous)</authors>
     <owners>Jared Barneck (Rhyous)</owners>
@@ -16,6 +16,13 @@
     <licenseUrl>https://github.com/rhyous/SimplePluginLoader/blob/master/Fork%20and%20Contribute%20License.txt</licenseUrl>
     <copyright>Copyright Jared Barneck (Rhyous) 2015</copyright>
     <tags>plugin interface create instance extension extensibility</tags>
+    <dependencies>
+      <group targetFramework="netstandard2.0">
+        <dependency id="System.Runtime.Serialization.Formatters" version="4.3.0" />
+        <dependency id="System.Threading.Tasks.Parallel" version="4.3.0" />
+      </group>
+      <group targetFramework="net4-client" />
+    </dependencies>
   </metadata>
   <files>
     <file src="src\" target="src" />
