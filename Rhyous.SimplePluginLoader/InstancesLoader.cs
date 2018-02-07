@@ -21,7 +21,7 @@ namespace Rhyous.SimplePluginLoader
         {
             if (assembly == null)
                 return null;
-            return assembly.GetTypes().Where(o => o.IsPluginType<T>()).ToList();
+            return assembly.GetTypes().Where(o => o.IsPluginType<T>())?.ToList() ?? null;
         }
 
         public List<T> LoadTypes(Assembly assembly)
