@@ -11,6 +11,10 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         public static bool ThrowExceptionsOnLoad = false;
+        
+        internal IPluginLoaderLogger Logger;
+
+        public InstancesLoader(IPluginLoaderLogger logger) { Logger = logger; }
 
         public List<T> LoadInstances(Assembly assembly)
         {
@@ -42,7 +46,9 @@ namespace Rhyous.SimplePluginLoader
             }
             catch (Exception e)
             {
-                if (ThrowExceptionsOnLoad) throw new PluginTypeLoadException("Failed to load plugin types.", e);
+                Logger?.Write(PluginLoaderLogLevel.Debug, e.Message);
+                if (ThrowExceptionsOnLoad)
+                    throw new PluginTypeLoadException("Failed to load plugin types.", e);
                 else return null;
             }
         }

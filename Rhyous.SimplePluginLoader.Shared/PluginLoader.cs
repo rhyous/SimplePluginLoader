@@ -16,8 +16,7 @@ namespace Rhyous.SimplePluginLoader
         public List<Plugin<T>> Plugins
         {
             get { return _Plugins.Value; }
-        }
-        private Lazy<List<Plugin<T>>> _Plugins = new Lazy<List<Plugin<T>>>(true);
+        } private Lazy<List<Plugin<T>>> _Plugins = new Lazy<List<Plugin<T>>>(true);
 
         public string DefaultAppName
         {
@@ -26,7 +25,7 @@ namespace Rhyous.SimplePluginLoader
 
         public PluginPaths Paths
         {
-            get { return _Paths ?? (_Paths = new PluginPaths(DefaultAppName)); }
+            get { return _Paths ?? (_Paths = new PluginPaths(DefaultAppName, Logger)); }
         } private PluginPaths _Paths;
 
         public AppDomain Domain
@@ -34,15 +33,24 @@ namespace Rhyous.SimplePluginLoader
             get { return _Domain ?? (_Domain = AppDomain.CurrentDomain); }
         } private AppDomain _Domain;
 
+        public IPluginLoaderLogger Logger
+        {
+            get { return _Logger ?? (_Logger = new PluginLoaderLogger()); }
+            set { _Logger = value; }
+        } private IPluginLoaderLogger _Logger;
+
         #region Constructors
 
-        public PluginLoader()
-        {
-        }
+        public PluginLoader() { }
 
-        public PluginLoader(string pluginDirectory)
+        public PluginLoader(string pluginDirectory) { Paths.PluginDirectoryName = pluginDirectory; }
+        
+        public PluginLoader(IPluginLoaderLogger logger) { Logger = logger; }
+
+        public PluginLoader(string pluginDirectory, IPluginLoaderLogger logger)
         {
             Paths.PluginDirectoryName = pluginDirectory;
+            Logger = logger;
         }
 
         #endregion
@@ -106,7 +114,7 @@ namespace Rhyous.SimplePluginLoader
         {
             if (!File.Exists(pluginFile))
                 return null;
-            var plugin = new Plugin<T>
+            var plugin = new Plugin<T>(Logger)
             {
                 Directory = Path.GetDirectoryName(pluginFile),
                 File = Path.GetFileName(pluginFile)

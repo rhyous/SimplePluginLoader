@@ -12,10 +12,12 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         private Plugin<T> _Plugin;
+        internal IPluginLoaderLogger Logger;
 
-        public AssemblyLoader(Plugin<T> plugin)
+        public AssemblyLoader(Plugin<T> plugin, IPluginLoaderLogger logger)
         {
             _Plugin = plugin;
+            Logger = logger;
         }
 
         public AppDomain Domain
@@ -30,7 +32,8 @@ namespace Rhyous.SimplePluginLoader
             {
                 return TryLoad(dll, pdb);
             }
-            foreach (var path in new PluginPaths(_Plugin.AssemblyBuilder.Domain.BaseDirectory).GetDefaultPluginDirectories())
+            var defaultDirs = new PluginPaths(_Plugin.AssemblyBuilder.Domain.BaseDirectory, Logger).GetDefaultPluginDirectories();
+            foreach (var path in defaultDirs)
             {
                 var dllPath = Path.Combine(path, dll);
                 var assembly = TryLoad(dllPath, pdb);
@@ -52,15 +55,16 @@ namespace Rhyous.SimplePluginLoader
                 assembly = FindAlreadyLoadedAssembly(dll);
                 if (assembly != null)
                     return assembly;
-                assembly = Domain.TryLoad(dll, pdb);
+                assembly = Domain.TryLoad(dll, pdb, Logger);
                 if (assembly == null)
                     return null;
                 try
                 {
                     AssemblyDictionary.Assemblies.Add(GetKey(dll), assembly);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
                     throw;
                 }
             }
@@ -77,7 +81,7 @@ namespace Rhyous.SimplePluginLoader
                 assembly = FindAlreadyLoadedAssembly(dll, version);
                 if (assembly != null)
                     return assembly;
-                assembly = Domain.TryLoad(dll, pdb);
+                assembly = Domain.TryLoad(dll, pdb, Logger);
                 if (assembly == null)
                     return null;
                 var assemblyVersion = assembly.GetName().Version.ToString();
@@ -87,8 +91,9 @@ namespace Rhyous.SimplePluginLoader
                 {
                     AssemblyDictionary.Assemblies.Add(GetKey(dll, assemblyVersion), assembly);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
                     throw;
                 }
             }
@@ -126,8 +131,7 @@ namespace Rhyous.SimplePluginLoader
             get { return _AssemblyDictionary ?? (_AssemblyDictionary = AssemblyDictionary.Instance); }
             set { _AssemblyDictionary = value; }
         } private AssemblyDictionary _AssemblyDictionary;
-
-
+        
         #region IDisposable
         bool _disposed;
 

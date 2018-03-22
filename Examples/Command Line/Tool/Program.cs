@@ -14,11 +14,12 @@ namespace Tool
             {
                 new Hammer()
             };
-            var pluginLoader = new PluginLoader<ITool>();
+            var logger = new PluginLoaderLogger();
+            var pluginLoader = new PluginLoader<ITool>(logger);
             var plugins = pluginLoader.LoadPlugins();
             tools.AddRange(plugins.AllObjects);
 
-            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>();
+            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(logger);
             var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
             tools.AddRange(caveManPlugins.AllObjects.Select(o => o.Tool));
             

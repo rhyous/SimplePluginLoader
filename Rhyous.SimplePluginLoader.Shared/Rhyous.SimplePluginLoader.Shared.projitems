@@ -6,27 +6,31 @@
     <SharedGUID>e804da1e-c5d5-4908-b639-248ea1e78b47</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Rhyous.SimplePluginLoader.Shared</Import_RootNamespace>
+    <Import_RootNamespace>Rhyous.SimplePluginLoader</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\PluginTypeLoadException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\AppDomainExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TypeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InstancesLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAssemblyDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAssemblyLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ILoadInstancesOfType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ILoadPlugins.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginLoaderLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginDependencyResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginFinder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRuntimePluginLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\PluginLoaderLogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginDependencyResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginFinder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\PluginLoaderLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginPaths.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimePluginLoaderBase.cs" />
   </ItemGroup>

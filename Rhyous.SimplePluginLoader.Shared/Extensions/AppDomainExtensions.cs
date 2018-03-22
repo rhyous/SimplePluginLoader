@@ -6,32 +6,40 @@ namespace Rhyous.SimplePluginLoader.Extensions
 {
     public static class AppDomainExtensions
     {
-        public static Assembly TryLoad(this AppDomain domain, byte[] rawAssembly)
+        public static Assembly TryLoad(this AppDomain domain, byte[] rawAssembly, IPluginLoaderLogger logger)
         {
             try { return domain.Load(rawAssembly); }
-            catch { return null; }
+            catch (Exception e)
+            {
+                logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
+                return null;
+            }
         }
 
-        public static Assembly TryLoad(this AppDomain domain, byte[] rawAssembly, byte[] rawSymbolStore)
+        public static Assembly TryLoad(this AppDomain domain, byte[] rawAssembly, byte[] rawSymbolStore, IPluginLoaderLogger logger)
         {
             try { return domain.Load(rawAssembly, rawSymbolStore); }
-            catch { return null; }
+            catch(Exception e)
+            {
+                logger?.Write(PluginLoaderLogLevel.Debug, e.Message);
+                return null;
+            }
         }
 
-        public static Assembly TryLoad(this AppDomain domain, string dll)
+        public static Assembly TryLoad(this AppDomain domain, string dll, IPluginLoaderLogger logger)
         {
             if (File.Exists(dll))
-                return domain.TryLoad(File.ReadAllBytes(dll));
+                return domain.TryLoad(File.ReadAllBytes(dll), logger);
             return null;
         }
 
-        public static Assembly TryLoad(this AppDomain domain, string dll, string pdb)
+        public static Assembly TryLoad(this AppDomain domain, string dll, string pdb, IPluginLoaderLogger logger)
         {
             if (File.Exists(dll))
             {
                 return File.Exists(pdb)
-                    ? domain.TryLoad(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debugging
-                    : domain.TryLoad(File.ReadAllBytes(dll));
+                    ? domain.TryLoad(File.ReadAllBytes(dll), File.ReadAllBytes(pdb), logger) // Allow debugging
+                    : domain.TryLoad(File.ReadAllBytes(dll), logger);
             }
             return null;
         }

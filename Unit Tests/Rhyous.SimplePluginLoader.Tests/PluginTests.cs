@@ -10,7 +10,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         public void PdbTest()
         {
             var dll = @"C:\test\library.dll";
-            var pdb = @"C:\test\library.pdb";
+            var pdb = @"C:\test\library.pdb";            
             Plugin<ITestPlugin> plugin = new Plugin<ITestPlugin> { File = dll };
 
             Assert.AreEqual(pdb, plugin.FilePdb);

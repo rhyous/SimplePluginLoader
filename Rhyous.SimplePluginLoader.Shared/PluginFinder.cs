@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -9,6 +10,9 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         private const string DllExtension = "*.dll";
+        
+        public PluginFinder() { }
+        public PluginFinder(IPluginLoaderLogger logger) { Logger = logger; }
 
         /// <summary>
         /// Find a plugin by name. The plugin must implement a Name property.
@@ -23,8 +27,12 @@ namespace Rhyous.SimplePluginLoader
             FoundPlugin = null;
             FoundPluginObject = null;
             var plugins = PluginLoader.LoadPlugins(Directory.GetFiles(dir, DllExtension));
+            if (plugins == null || !plugins.Any())
+                return null;
             foreach (var plugin in plugins)
             {
+                if (plugin.PluginObjects == null)
+                    continue;
                 foreach (var obj in plugin.PluginObjects)
                 {
                     dynamic namedObj = obj;
@@ -47,11 +55,16 @@ namespace Rhyous.SimplePluginLoader
 
         public ILoadPlugins<T> PluginLoader
         {
-            get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>()); }
+            get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>(Logger)); }
             set { _PluginLoader = value; } // Allows for use of a custom plugin
         } private ILoadPlugins<T> _PluginLoader;
 
-
+        public IPluginLoaderLogger Logger
+        {
+            get { return _Logger ?? (_Logger = new PluginLoaderLogger()); }
+            set { _Logger = value; }
+        } private IPluginLoaderLogger _Logger;
+        
         #region IDisposable
         bool _disposed;
 

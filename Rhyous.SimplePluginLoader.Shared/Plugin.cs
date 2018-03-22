@@ -10,16 +10,25 @@ namespace Rhyous.SimplePluginLoader
     public class Plugin<T> : IDisposable
         where T : class
     {
+        internal IPluginLoaderLogger Logger;
+
         public Plugin()
         {
             AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
         }
 
-        public Plugin(ResolveEventHandler handler = null)
+        public Plugin(IPluginLoaderLogger logger)
         {
-            AddDependencyResolver(handler);
+            Logger = logger;
+            AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
         }
 
+        public Plugin(ResolveEventHandler handler, IPluginLoaderLogger logger)
+        {
+            Logger = logger;
+            AddDependencyResolver(handler);
+        }
+        
         public string Name { get { return Path.GetFileNameWithoutExtension(File); } }
 
         public string Directory { get; set; }
@@ -76,7 +85,7 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         internal ILoadInstancesOfType<T> Loader
         {
-            get { return _Loader ?? (_Loader = new InstancesLoader<T>()); }
+            get { return _Loader ?? (_Loader = new InstancesLoader<T>(Logger)); }
             set { _Loader = value; }
         } private ILoadInstancesOfType<T> _Loader;
 
@@ -85,7 +94,7 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         internal IAssemblyBuilder AssemblyBuilder
         {
-            get { return _AssemblyBuilder ?? (_AssemblyBuilder = new AssemblyLoader<T>(this)); }
+            get { return _AssemblyBuilder ?? (_AssemblyBuilder = new AssemblyLoader<T>(this, Logger)); }
             set { _AssemblyBuilder = value; }
         } private IAssemblyBuilder _AssemblyBuilder;
 
@@ -97,7 +106,7 @@ namespace Rhyous.SimplePluginLoader
             get { return _DependencyResolver ?? (_DependencyResolver = new PluginDependencyResolver<T>(this)); }
             set { _DependencyResolver = value; }
         } private IPluginDependencyResolver _DependencyResolver;
-
+        
         public void AddDependencyResolver(ResolveEventHandler handler = null)
         {
             RemoveDependencyResolver(handler); // Remove it first in case it is already added.
