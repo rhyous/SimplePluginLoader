@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader", "Rhyous.SimplePluginLoader.Net40-Client\Rhyous.SimplePluginLoader.csproj", "{8EB7535D-C90C-4E91-804E-052B67DD308E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.Net40", "Rhyous.SimplePluginLoader.Net40-Client\Rhyous.SimplePluginLoader.Net40.csproj", "{8EB7535D-C90C-4E91-804E-052B67DD308E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{3B152766-5529-45BE-88A6-D0A2DF070E3A}"
 EndProject
