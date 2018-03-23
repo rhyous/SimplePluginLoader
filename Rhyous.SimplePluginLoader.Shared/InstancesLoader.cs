@@ -39,17 +39,26 @@ namespace Rhyous.SimplePluginLoader
                 foreach (var typeToLoad in typesToLoad.Where(t => t.IsInstantiable()))
                 {
                     var obj = Create(typeToLoad);
-                    if (obj != null)
-                        listOfT.Add(obj);
+                    if (obj == null)
+                        continue;
+                    listOfT.Add(obj);
+                    Logger?.WriteLine(PluginLoaderLogLevel.Info, $"A plugin type was found and added: {obj}");
                 }
                 return listOfT;
             }
             catch (Exception e)
             {
-                Logger?.Write(PluginLoaderLogLevel.Debug, e.Message);
                 if (ThrowExceptionsOnLoad)
-                    throw new PluginTypeLoadException("Failed to load plugin types.", e);
-                else return null;
+                {
+                    var e2 = new PluginTypeLoadException("Failed to load plugin types. See inner exception.", e);
+                    Logger?.WriteLine(PluginLoaderLogLevel.Debug, e2.Message);
+                    throw e2;
+                }
+                else
+                {
+                    Logger?.WriteLines(PluginLoaderLogLevel.Debug, $"Exception occurred loading a plugin type.", e.Message);
+                    return null;
+                }
             }
         }
 
@@ -60,10 +69,7 @@ namespace Rhyous.SimplePluginLoader
                 return CreateGenericType(type, typeof(T).GetGenericArguments());
             }
             var obj = Activator.CreateInstance(type);
-            var objAsT = obj as T;
-            if (objAsT != null)
-                return objAsT;
-            return null;
+            return obj as T;
         }
 
         private static T CreateGenericType(Type genericType, params Type[] genericParams)

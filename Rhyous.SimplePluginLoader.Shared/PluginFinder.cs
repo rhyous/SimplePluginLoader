@@ -24,6 +24,7 @@ namespace Rhyous.SimplePluginLoader
         /// <returns>A found plugin of type T.</returns>
         public T FindPlugin(string pluginName, string dir)
         {
+            Logger?.WriteLine(PluginLoaderLogLevel.Info, $"Attempting to find plugin: {pluginName}; from path: dir");
             FoundPlugin = null;
             FoundPluginObject = null;
             var plugins = PluginLoader.LoadPlugins(Directory.GetFiles(dir, DllExtension));
@@ -61,7 +62,7 @@ namespace Rhyous.SimplePluginLoader
 
         public IPluginLoaderLogger Logger
         {
-            get { return _Logger ?? (_Logger = new PluginLoaderLogger()); }
+            get { return _Logger ?? (_Logger = new PluginLoaderLogger()); } 
             set { _Logger = value; }
         } private IPluginLoaderLogger _Logger;
         
