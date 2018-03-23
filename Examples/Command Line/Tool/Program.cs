@@ -27,7 +27,8 @@ namespace Tool
             int input = ReadLine(tools);
             while (input != 0)
             {
-                Console.WriteLine(tools[input - 1].DoWork());
+                if (input < tools.Count)
+                    Console.WriteLine(tools[input - 1].DoWork());
                 ShowPrompt(tools);
                 input = ReadLine(tools);
             }
@@ -48,11 +49,9 @@ namespace Tool
         private static int ReadLine(List<ITool> tools)
         {
             int input;
-            while (!int.TryParse(Console.ReadLine(), out input) || input > tools.Count)
+            if (!int.TryParse(Console.ReadLine(), out input) || input > tools.Count)
             {
                 Console.WriteLine("Invalid entry!");
-                ShowPrompt(tools);
-                ReadLine(tools);
             }
             return input;
         }
