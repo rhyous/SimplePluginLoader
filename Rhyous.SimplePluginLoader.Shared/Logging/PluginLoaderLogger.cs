@@ -60,7 +60,7 @@ namespace Rhyous.SimplePluginLoader
         {
             get { return _LogLevel ?? LogLevelConfiguration.ToEnum(PluginLoaderLogLevel.Debug); }
             internal set { _LogLevel = value; }
-        } private PluginLoaderLogLevel? _LogLevel; // Alwasy get from config unless overridden
+        } private PluginLoaderLogLevel? _LogLevel; // Always get from config unless overridden
 
         public string LogFileName { get; set; } = $"PluginLoader.{DateTime.Now.ToFileTime()}.log";
 
@@ -74,8 +74,11 @@ namespace Rhyous.SimplePluginLoader
                 
         public void Write(PluginLoaderLogLevel level, string msg)
         {
-            Writer.Write(msg);
-            Writer.Flush();
+            if (level >= LogLevel)
+            {
+                Writer.Write(msg);
+                Writer.Flush();
+            }
         }
 
         public void WriteLine(PluginLoaderLogLevel level, string msg)
