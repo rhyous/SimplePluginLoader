@@ -21,7 +21,7 @@ namespace Tool
 
             var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(logger);
             var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
-            tools.AddRange(caveManPlugins.AllObjects.Select(o => o.Tool));
+            tools.AddRange(caveManPlugins.AllObjects);
             
             ShowPrompt(tools);
             int input = ReadLine(tools);

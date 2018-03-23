@@ -66,7 +66,10 @@ namespace Rhyous.SimplePluginLoader
         {
             if (type.IsGenericType)
             {
-                return CreateGenericType(type, typeof(T).GetGenericArguments());
+                var genericArgs = typeof(T).GetGenericArguments();
+                if (genericArgs == null || !genericArgs.Any())
+                    return null;
+                return CreateGenericType(type, genericArgs);
             }
             var obj = Activator.CreateInstance(type);
             return obj as T;

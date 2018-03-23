@@ -10,5 +10,13 @@
             get { return _Tool ?? (_Tool = new T()); }
             set { _Tool = value; }
         } private T _Tool;
+
+        public string Name => $"CaveMan {Tool.Name}";
+              
+
+        public string DoWork()
+        {
+            return Tool.DoWork();
+        }
     }
 }

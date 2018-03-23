@@ -13,7 +13,7 @@ namespace Tool.Plugin1
 
         public string DoWork()
         {
-            return "Twist. Twist. Twist. " + _ScrewsTurned++ + " screws turned.";
+            return "Twist. Twist. Twist. " + ++_ScrewsTurned + " screws turned.";
         }
     }
 }

@@ -51,23 +51,30 @@
     <ProjectReference Include="..\Tool\Tool.csproj">
       <Project>{3b20b597-0a54-454d-9cf6-6ab7d28b24f2}</Project>
       <Name>Tool</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>SET copyToDir="$(ProjectDir)..\Tool\$(OutDir)\Plugins\$(TargetName)"
-ECHO %25copyToDir%25
-IF NOT EXIST %25copyToDir%25 MKDIR %25copyToDir%25
-COPY /Y "$(TargetPath)" %25copyToDir%25
-COPY /Y "$(TargetDir)$(TargetName).pdb" %25copyToDir%25
+    <PostBuildEvent>SET proj=$(ProjectName)
+SET entity=%25proj:*.=%25
+ECHO entity = %25entity%25
+SET copyToDir=$(SolutionDir)Examples\Command Line\Tool\$(OutDir)\Plugins\$(TargetName)
+ECHO "%25copyToDir%25"
+IF NOT EXIST "%25copyToDir%25" MKDIR "%25copyToDir%25"
+COPY /Y "$(TargetPath)" "%25copyToDir%25"
+COPY /Y "$(TargetDir)$(TargetName).pdb" "%25copyToDir%25"
 
+REM Uncomment this to copy additional dll dependencies
 SET dllDir=%25copyToDir%25\bin
-ECHO %25dllDir%25
-IF NOT EXIST %25dllDir%25 MKDIR %25dllDir%25
-COPY /Y "$(Targetdir)*.dll" %25dllDir%25
-COPY /Y "$(Targetdir)*.pdb" %25dllDir%25
-DEL /Q "$(TargetPath)"
-DEL /Q "$(TargetDir)$(TargetName).pdb"</PostBuildEvent>
+ECHO "%25dllDir%25"
+IF NOT EXIST "%25dllDir%25" MKDIR "%25dllDir%25"
+FOR %25%25X in ("$(Targetdir)*.dll") DO (
+   IF NOT "%25%25X"=="$(TargetPath)" COPY /Y "%25%25X" "%25dllDir%25"
+)
+FOR %25%25X in ("$(Targetdir)*.pdb") DO (
+   IF NOT "%25%25X"=="$(TargetDir)$(TargetName).pdb" COPY /Y "%25%25X" "%25dllDir%25"
+)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
