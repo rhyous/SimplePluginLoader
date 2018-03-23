@@ -25,7 +25,7 @@ namespace Rhyous.SimplePluginLoader
         public virtual bool ThrowExceptionIfNoPluginFound => true;
 
         public RuntimePluginLoaderBase() { }
-        public RuntimePluginLoaderBase(IPluginLoaderLogger logger) { Logger = logger; }
+        public RuntimePluginLoaderBase(IPluginLoaderLogger logger) { _Logger = logger; }
 
         /// <inheritdoc />
         public virtual string DefaultPluginDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Company, AppName, PluginFolder);

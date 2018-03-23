@@ -12,7 +12,7 @@ namespace Rhyous.SimplePluginLoader
         private const string DllExtension = "*.dll";
         
         public PluginFinder() { }
-        public PluginFinder(IPluginLoaderLogger logger) { Logger = logger; }
+        public PluginFinder(IPluginLoaderLogger logger) { _Logger = logger; }
 
         /// <summary>
         /// Find a plugin by name. The plugin must implement a Name property.

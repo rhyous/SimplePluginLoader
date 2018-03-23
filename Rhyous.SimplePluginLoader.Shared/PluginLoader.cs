@@ -45,12 +45,12 @@ namespace Rhyous.SimplePluginLoader
 
         public PluginLoader(string pluginDirectory) { Paths.PluginDirectoryName = pluginDirectory; }
         
-        public PluginLoader(IPluginLoaderLogger logger) { Logger = logger; }
+        public PluginLoader(IPluginLoaderLogger logger) { _Logger = logger; }
 
         public PluginLoader(string pluginDirectory, IPluginLoaderLogger logger)
         {
             Paths.PluginDirectoryName = pluginDirectory;
-            Logger = logger;
+            _Logger = logger;
         }
 
         #endregion
