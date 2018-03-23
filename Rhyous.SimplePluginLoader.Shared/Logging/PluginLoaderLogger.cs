@@ -50,7 +50,7 @@ namespace Rhyous.SimplePluginLoader
             get
             {
                 return _LogPath ?? (_LogPath = string.IsNullOrWhiteSpace(LogPathConfiguration)
-                    ? AppDomain.CurrentDomain.BaseDirectory
+                    ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log")
                     : LogPathConfiguration);
             }
             set { _LogPath = value; }
