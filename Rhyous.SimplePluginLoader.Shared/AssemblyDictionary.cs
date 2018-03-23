@@ -8,16 +8,32 @@ namespace Rhyous.SimplePluginLoader
     {
         #region Singleton
 
-        private static readonly Lazy<AssemblyDictionary> Lazy = new Lazy<AssemblyDictionary>(() => new AssemblyDictionary());
-        
+        internal static readonly object InstanceLock = new object();
         internal readonly object IsLocked = new object();
+        internal IPluginLoaderLogger Logger;
 
-        public static AssemblyDictionary Instance { get { return Lazy.Value; } }
-
-        internal AssemblyDictionary()
+        public static AssemblyDictionary GetInstance(AppDomain domain, IPluginLoaderLogger logger)
         {
+            if (_Instance != null)
+                return _Instance;
+            lock (InstanceLock)
+            {
+                if (_Instance != null)
+                    return _Instance;
+                return _Instance = new AssemblyDictionary(domain, logger);
+            }
+        } private static AssemblyDictionary _Instance;
+
+        internal AssemblyDictionary(AppDomain domain, IPluginLoaderLogger logger)
+        {
+            Logger = logger;
+            domain.AssemblyLoad += OnAssemblyLoad;
         }
 
+        private void OnAssemblyLoad(object sender, AssemblyLoadEventArgs args)
+        {
+            Logger?.WriteLines(PluginLoaderLogLevel.Info, "An assembly was loaded", args.LoadedAssembly.CodeBase, args.LoadedAssembly.Location);
+        }
         #endregion
 
         public Dictionary<string, Assembly> Assemblies

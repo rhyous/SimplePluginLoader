@@ -23,8 +23,7 @@ namespace Rhyous.SimplePluginLoader
         public AppDomain Domain
         {
             get { return _Domain ?? (_Domain = AppDomain.CurrentDomain); }
-        }
-        private AppDomain _Domain;
+        } private AppDomain _Domain;
 
         public virtual Assembly Load(string dll, string pdb)
         {
@@ -128,7 +127,7 @@ namespace Rhyous.SimplePluginLoader
 
         internal AssemblyDictionary AssemblyDictionary
         {
-            get { return _AssemblyDictionary ?? (_AssemblyDictionary = AssemblyDictionary.Instance); }
+            get { return _AssemblyDictionary ?? (_AssemblyDictionary = AssemblyDictionary.GetInstance(Domain, Logger)); }
             set { _AssemblyDictionary = value; }
         } private AssemblyDictionary _AssemblyDictionary;
         
