@@ -24,6 +24,9 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual bool ThrowExceptionIfNoPluginFound => true;
 
+        public RuntimePluginLoaderBase() { }
+        public RuntimePluginLoaderBase(IPluginLoaderLogger logger) { Logger = logger; }
+
         /// <inheritdoc />
         public virtual string DefaultPluginDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Company, AppName, PluginFolder);
 
@@ -44,7 +47,7 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual ILoadPlugins<T> PluginLoader
         {
-            get { return _PluginLoader ?? new PluginLoader<T>(DefaultPluginDirectory); }
+            get { return _PluginLoader ?? new PluginLoader<T>(DefaultPluginDirectory, Logger); }
             internal set { _PluginLoader = value; } // Set exposed as internal for unit tests
         } private ILoadPlugins<T> _PluginLoader;
 
@@ -75,5 +78,11 @@ namespace Rhyous.SimplePluginLoader
             }
             return plugins;
         }
+        
+        public IPluginLoaderLogger Logger
+        {
+            get { return _Logger ?? (_Logger = new PluginLoaderLogger()); }
+            set { _Logger = value; }
+        } private IPluginLoaderLogger _Logger;
     }
 }
