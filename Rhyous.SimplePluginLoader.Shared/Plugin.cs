@@ -10,22 +10,25 @@ namespace Rhyous.SimplePluginLoader
     public class Plugin<T> : IDisposable
         where T : class
     {
-        internal IPluginLoaderLogger Logger;
+        private IPluginLoaderLogger _Logger;
+        private IAppDomain _AppDomain;
 
         public Plugin()
         {
             AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
         }
 
-        public Plugin(IPluginLoaderLogger logger)
+        public Plugin(IAppDomain appDomain, IPluginLoaderLogger logger)
         {
-            Logger = logger;
+            _AppDomain = appDomain;
+            _Logger = logger;
             AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
         }
 
-        public Plugin(ResolveEventHandler handler, IPluginLoaderLogger logger)
+        public Plugin(IAppDomain appDomain, ResolveEventHandler handler, IPluginLoaderLogger logger)
         {
-            Logger = logger;
+            _AppDomain = appDomain;
+            _Logger = logger;
             AddDependencyResolver(handler);
         }
         
@@ -85,7 +88,7 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         internal ILoadInstancesOfType<T> Loader
         {
-            get { return _Loader ?? (_Loader = new InstancesLoader<T>(Logger)); }
+            get { return _Loader ?? (_Loader = new InstancesLoader<T>(_Logger)); }
             set { _Loader = value; }
         } private ILoadInstancesOfType<T> _Loader;
 
@@ -94,7 +97,7 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         internal IAssemblyBuilder AssemblyBuilder
         {
-            get { return _AssemblyBuilder ?? (_AssemblyBuilder = new AssemblyLoader<T>(this, Logger)); }
+            get { return _AssemblyBuilder ?? (_AssemblyBuilder = new AssemblyLoader<T>(_AppDomain, _Logger)); }
             set { _AssemblyBuilder = value; }
         } private IAssemblyBuilder _AssemblyBuilder;
 
@@ -110,13 +113,13 @@ namespace Rhyous.SimplePluginLoader
         public void AddDependencyResolver(ResolveEventHandler handler = null)
         {
             RemoveDependencyResolver(handler); // Remove it first in case it is already added.
-            AssemblyBuilder.Domain.AssemblyResolve += handler; // Add
+            _AppDomain.AssemblyResolve += handler; // Add
         }
 
         public void RemoveDependencyResolver(ResolveEventHandler handler = null)
         {
             handler = handler ?? DependencyResolver.AssemblyResolveHandler;
-            AssemblyBuilder.Domain.AssemblyResolve -= handler;
+            _AppDomain.AssemblyResolve -= handler;
         }
 
         #region IDisposable

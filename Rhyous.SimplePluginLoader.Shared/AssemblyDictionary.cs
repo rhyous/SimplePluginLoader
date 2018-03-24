@@ -12,7 +12,7 @@ namespace Rhyous.SimplePluginLoader
         internal readonly object IsLocked = new object();
         internal IPluginLoaderLogger Logger;
 
-        public static AssemblyDictionary GetInstance(AppDomain domain, IPluginLoaderLogger logger)
+        public static AssemblyDictionary GetInstance(IAppDomain domain, IPluginLoaderLogger logger)
         {
             if (_Instance != null)
                 return _Instance;
@@ -24,7 +24,7 @@ namespace Rhyous.SimplePluginLoader
             }
         } private static AssemblyDictionary _Instance;
 
-        internal AssemblyDictionary(AppDomain domain, IPluginLoaderLogger logger)
+        internal AssemblyDictionary(IAppDomain domain, IPluginLoaderLogger logger)
         {
             Logger = logger;
             domain.AssemblyLoad += OnAssemblyLoad;

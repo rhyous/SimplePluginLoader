@@ -18,22 +18,27 @@ namespace Rhyous.SimplePluginLoader
         }
 
         public Plugin<T> Plugin { get; set; }
-
+        public List<string> Paths
+        {
+            get { return _Paths ?? (_Paths = GetPaths()); }
+            set { _Paths = value; }
+        } private List<String> _Paths;
+        
         public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
         {
-            var paths = new List<string>();
-            paths.Add("");                                             // Try current path
-            paths.Add(Plugin.Directory);                               // Try plugin directory
-            paths.Add(Path.Combine(Plugin.Directory, "bin"));          // Try plugin/bin directory
-            paths.Add(Path.Combine(Plugin.Directory, Plugin.Name));    // Try plugin/<pluginName> directory
-
             var assemblyDetails = args.Name.Split(", ".ToArray(), StringSplitOptions.RemoveEmptyEntries);
             var file = assemblyDetails.First();
             var version = assemblyDetails.FirstOrDefault(ad => ad.StartsWith("Version="))?
                                          .Split("=".ToArray(), StringSplitOptions.RemoveEmptyEntries)
                                          .Skip(1)?.First();
+            var paths = Paths.ToList();        
             foreach (var path in paths)
             {
+                if (!Directory.Exists(path))
+                {
+                    Paths.Remove(path);
+                    continue;
+                }
                 var dll = Path.Combine(path, file + ".dll");
                 var pdb = Path.Combine(path, file + ".pdb");
                 var assembly = (string.IsNullOrWhiteSpace(version))
@@ -45,6 +50,25 @@ namespace Rhyous.SimplePluginLoader
                 }
             }
             return null;
+        }
+
+        private List<string> GetPaths()
+        {
+            return new List<string>
+                {
+                    "",                                             // Try current path
+                    Plugin.Directory,                               // Try plugin directory
+                    Path.Combine(Plugin.Directory, "bin"),          // Try plugin/bin directory
+                    Path.Combine(Plugin.Directory, Plugin.Name)    // Try plugin/<pluginName> directory
+                };
+        }
+
+        public AssemblyName GetAssemblyName(string dll)
+        {
+            if (!File.Exists(dll))
+                return null;
+            try { return AssemblyName.GetAssemblyName(dll); }
+            catch (Exception) { return null; }
         }
     }
 }

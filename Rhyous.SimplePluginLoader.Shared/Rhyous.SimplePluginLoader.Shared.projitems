@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TypeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InstancesLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAppDomain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAssemblyDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAssemblyLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ILoadInstancesOfType.cs" />
@@ -24,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginDependencyResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginFinder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRuntimePluginLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AppDomainLocator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging\PluginLoaderLogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginCollection.cs" />
@@ -31,7 +33,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)PluginFinder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging\PluginLoaderLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logging\PluginLoaderLoggerCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginPaths.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimePluginLoaderBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wrappers\AppDomainWrapper.cs" />
   </ItemGroup>
 </Project>

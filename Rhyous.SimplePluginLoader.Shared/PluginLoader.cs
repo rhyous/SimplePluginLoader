@@ -25,30 +25,34 @@ namespace Rhyous.SimplePluginLoader
 
         public PluginPaths Paths
         {
-            get { return _Paths ?? (_Paths = new PluginPaths(DefaultAppName, Logger)); }
+            get { return _Paths ?? (_Paths = new PluginPaths(DefaultAppName, _AppDomain, _Logger)); }
         } private PluginPaths _Paths;
 
-        public AppDomain Domain
+        public IAppDomain Domain
         {
-            get { return _Domain ?? (_Domain = AppDomain.CurrentDomain); }
-        } private AppDomain _Domain;
+            get { return _Domain ?? (_Domain = new AppDomainWrapper(AppDomain.CurrentDomain)); }
+        } private IAppDomain _Domain;
 
-        public IPluginLoaderLogger Logger
-        {
-            get { return _Logger ?? (_Logger = new PluginLoaderLogger()); }
-            set { _Logger = value; }
-        } private IPluginLoaderLogger _Logger;
+        private IPluginLoaderLogger _Logger;
+        private IAppDomain _AppDomain;
 
         #region Constructors
 
-        public PluginLoader() { }
-
-        public PluginLoader(string pluginDirectory) { Paths.PluginDirectoryName = pluginDirectory; }
-        
-        public PluginLoader(IPluginLoaderLogger logger) { _Logger = logger; }
-
-        public PluginLoader(string pluginDirectory, IPluginLoaderLogger logger)
+        public PluginLoader(IAppDomain domain, string pluginDirectory)
         {
+            _AppDomain = domain;
+            Paths.PluginDirectoryName = pluginDirectory;
+        }
+        
+        public PluginLoader(IAppDomain domain, IPluginLoaderLogger logger)
+        {
+            _AppDomain = domain;
+            _Logger = logger;
+        }
+
+        public PluginLoader(IAppDomain domain, string pluginDirectory, IPluginLoaderLogger logger)
+        {
+            _AppDomain = domain;
             Paths.PluginDirectoryName = pluginDirectory;
             _Logger = logger;
         }
@@ -114,7 +118,7 @@ namespace Rhyous.SimplePluginLoader
         {
             if (!File.Exists(pluginFile))
                 return null;
-            var plugin = new Plugin<T>(Logger)
+            var plugin = new Plugin<T>(_AppDomain, _Logger)
             {
                 Directory = Path.GetDirectoryName(pluginFile),
                 File = Path.GetFileName(pluginFile)

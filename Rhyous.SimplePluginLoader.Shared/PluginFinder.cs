@@ -10,9 +10,13 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         private const string DllExtension = "*.dll";
-        
-        public PluginFinder() { }
-        public PluginFinder(IPluginLoaderLogger logger) { _Logger = logger; }
+        private IAppDomain _AppDomain;
+        public PluginFinder(IAppDomain appDomain) { _AppDomain = appDomain; }
+        public PluginFinder(IAppDomain appDomain, IPluginLoaderLogger logger)
+        {
+            _AppDomain = appDomain;
+            _Logger = logger;
+        }
 
         /// <summary>
         /// Find a plugin by name. The plugin must implement a Name property.
@@ -56,7 +60,7 @@ namespace Rhyous.SimplePluginLoader
 
         public ILoadPlugins<T> PluginLoader
         {
-            get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>(Logger)); }
+            get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>(_AppDomain, Logger)); }
             set { _PluginLoader = value; } // Allows for use of a custom plugin
         } private ILoadPlugins<T> _PluginLoader;
 

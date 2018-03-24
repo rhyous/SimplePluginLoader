@@ -10,12 +10,14 @@ namespace Rhyous.SimplePluginLoader
         public const string DefaultPluginDirectory = "Plugins";
         public const string DefaultDllSearchString = "*.dll";
 
-        internal IPluginLoaderLogger Logger;
+        private IPluginLoaderLogger _Logger;
+        private IAppDomain _AppDomain;
 
-        public PluginPaths(string appName, IPluginLoaderLogger logger)
+        public PluginPaths(string appName, IAppDomain appDomain, IPluginLoaderLogger logger)
         {
             AppName = appName;
-            Logger = logger;
+            _Logger = logger;
+            _AppDomain = appDomain;
         }
 
         public string AppName { get; set; }
@@ -47,13 +49,13 @@ namespace Rhyous.SimplePluginLoader
 
         public string RelativePathPlugins
         {
-            get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, PluginDirectoryName); }
+            get { return Path.Combine(_AppDomain.BaseDirectory, PluginDirectoryName); }
         }
 
         public IEnumerable<string> GetDefaultPluginDirectories()
         {
             var distinctPaths = new[] { PluginDirectoryName, UserProfilePlugins, ApplicationDataPlugins, RelativePathPlugins }.Distinct();
-            Logger?.WriteLine(PluginLoaderLogLevel.Info, "Paths: " + string.Join(Environment.NewLine, distinctPaths));
+            _Logger?.WriteLine(PluginLoaderLogLevel.Info, "Paths: " + string.Join(Environment.NewLine, distinctPaths));
             return distinctPaths;
         }
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using Rhyous.SimplePluginLoader;
 using Tool;
@@ -21,8 +22,8 @@ namespace Tools.Ui
         {
             base.OnStartup(e);
             Tools.Add(new Hammer());
-
-            var pluginLoader = new PluginLoader<ITool>();
+            var domain = new AppDomainWrapper(AppDomain.CurrentDomain);
+            var pluginLoader = new PluginLoader<ITool>(domain, new PluginLoaderLogger());
             var plugins = pluginLoader.LoadPlugins();
             Tools.AddRange(plugins.AllObjects);
         }

@@ -1,7 +1,6 @@
 ﻿using Rhyous.SimplePluginLoader;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Tool.Tools;
 
 namespace Tool
@@ -15,11 +14,12 @@ namespace Tool
                 new Hammer()
             };
             var logger = new PluginLoaderLogger();
-            var pluginLoader = new PluginLoader<ITool>(logger);
+            var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
+            var pluginLoader = new PluginLoader<ITool>(appDomain, logger);
             var plugins = pluginLoader.LoadPlugins();
             tools.AddRange(plugins.AllObjects);
 
-            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(logger);
+            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(appDomain, logger);
             var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
             tools.AddRange(caveManPlugins.AllObjects);
             
