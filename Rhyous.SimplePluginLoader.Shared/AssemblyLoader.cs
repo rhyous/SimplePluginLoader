@@ -43,7 +43,7 @@ namespace Rhyous.SimplePluginLoader
 
         public Assembly TryLoad(string dll, string pdb)
         {
-            var assemblyName = GetAssemblyName(dll);
+            var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
             if (assemblyName == null)
                 return null;
             return TryLoad(dll, pdb, assemblyName.Version.ToString());
@@ -82,28 +82,35 @@ namespace Rhyous.SimplePluginLoader
             return assembly;
         }
 
-        private Assembly FindAlreadyLoadedAssembly(string dll, string version)
+        internal Assembly FindAlreadyLoadedAssembly(string dll, string version)
         {
             var key = GetKey(dll, version);
             Assembly assembly = AssemblyDictionary.Assemblies.TryGetValue(key, out assembly) ? assembly : null;
             if (assembly == null)
             {
-                var assemblyName = GetAssemblyName(dll);
+                var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
                 if (assemblyName == null)
                     return null;
-                assembly = _AppDomain.GetAssemblies().FirstOrDefault(a => a.GetName().FullName == assemblyName.FullName);
+                key = GetKey(dll, assemblyName.Version.ToString());
+                assembly = AssemblyDictionary.Assemblies.TryGetValue(key, out assembly) ? assembly : null;
+                if (assembly != null && assembly.GetName().Version.ToString() == version)
+                    return assembly;
+                assembly = _AppDomain.GetAssemblies().FirstOrDefault(a => a.GetName().FullName == assemblyName.FullName && a.GetName().Version.ToString() == version);
                 if (assembly != null)
-                    AssemblyDictionary.Assemblies.Add(GetKey(dll, assemblyName.Version.ToString()), assembly);
+                {
+                    key = GetKey(dll, assembly.GetName().Version.ToString());
+                    AssemblyDictionary.Assemblies.Add(key, assembly);
+                }
             }
             return assembly;
         }
 
-        private static string GetKey(string dll)
+        internal static string GetKey(string dll)
         {
             return string.Format("{0}_{1}", Path.GetFileNameWithoutExtension(dll), File.GetLastWriteTime(dll).ToFileTimeUtc());
         }
 
-        private static string GetKey(string dll, string version)
+        internal static string GetKey(string dll, string version)
         {
             return string.Format("{0}_{1}_{2}", Path.GetFileNameWithoutExtension(dll), version, File.GetLastWriteTime(dll).ToFileTimeUtc());
         }
@@ -114,14 +121,14 @@ namespace Rhyous.SimplePluginLoader
             set { _AssemblyDictionary = value; }
         } private AssemblyDictionary _AssemblyDictionary;
 
-        private void ProactivelyLoadDependencies(string binPath)
+        internal void ProactivelyLoadDependencies(string binPath)
         {
             if (!Directory.Exists(binPath))
                 return;
             foreach (var file in Directory.GetFiles(binPath, "*.dll"))
             {
                 var dll = file;
-                var assemblyName = GetAssemblyName(dll);
+                var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
                 if (assemblyName == null)
                     continue;
                 var pdb = file.Substring(0, file.Length - 3) + ".pdb";
@@ -131,13 +138,13 @@ namespace Rhyous.SimplePluginLoader
                     : TryLoad(dll, pdb, version);
             }
         }
-        private AssemblyName GetAssemblyName(string dll)
+
+        public IAssemblyNameReader AssemblyNameReader
         {
-            if (!File.Exists(dll))
-                return null;
-            try { return AssemblyName.GetAssemblyName(dll); }
-            catch (Exception) { return null; }
-        }
+            get { return _AssemblyNameReader ?? (_AssemblyNameReader = new AssemblyNameReader()); }
+            set { _AssemblyNameReader = value; }
+        } private IAssemblyNameReader _AssemblyNameReader;
+
 
         #region IDisposable
         bool _disposed;

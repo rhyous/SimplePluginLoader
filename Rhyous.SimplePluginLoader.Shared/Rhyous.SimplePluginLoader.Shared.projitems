@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssemblyNameReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\PluginTypeLoadException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\AppDomainExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensions.cs" />
@@ -19,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAppDomain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAssemblyDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAssemblyLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAssemblyNameReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ILoadInstancesOfType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ILoadPlugins.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginLoaderLogger.cs" />

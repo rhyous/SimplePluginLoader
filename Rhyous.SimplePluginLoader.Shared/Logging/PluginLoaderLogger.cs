@@ -94,6 +94,14 @@ namespace Rhyous.SimplePluginLoader
                 WriteLine(level, msg);
         }
 
+        public void Log(Exception e)
+        {
+            if (LogLevel == PluginLoaderLogLevel.Debug)
+                WriteLines(PluginLoaderLogLevel.Debug, e.ToString());
+            if (LogLevel == PluginLoaderLogLevel.Info)
+                WriteLines(PluginLoaderLogLevel.Info, e.Message);
+        }
+
         private void CreateDirectory()
         {
             if (!Directory.Exists(LogPath))

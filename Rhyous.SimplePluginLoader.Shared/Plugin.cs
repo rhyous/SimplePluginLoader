@@ -15,6 +15,7 @@ namespace Rhyous.SimplePluginLoader
 
         public Plugin()
         {
+            _AppDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
             AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
         }
 

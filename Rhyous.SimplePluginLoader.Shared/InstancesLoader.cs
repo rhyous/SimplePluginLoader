@@ -51,12 +51,13 @@ namespace Rhyous.SimplePluginLoader
                 if (ThrowExceptionsOnLoad)
                 {
                     var e2 = new PluginTypeLoadException("Failed to load plugin types. See inner exception.", e);
-                    Logger?.WriteLine(PluginLoaderLogLevel.Debug, e2.Message);
+                    Logger?.Log(e2);
                     throw e2;
                 }
                 else
                 {
-                    Logger?.WriteLines(PluginLoaderLogLevel.Debug, $"Exception occurred loading a plugin type.", e.Message);
+                    Logger.Write(PluginLoaderLogLevel.Info, $"Exception occurred loading a plugin type.");
+                    Logger?.Log(e);
                     return null;
                 }
             }
