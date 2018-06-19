@@ -38,6 +38,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Logging\PluginLoaderLoggerCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginPaths.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimePluginLoaderBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SharedBinPathManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Wrappers\AppDomainWrapper.cs" />
   </ItemGroup>
 </Project>

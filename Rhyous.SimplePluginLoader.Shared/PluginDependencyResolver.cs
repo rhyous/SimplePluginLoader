@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -20,7 +21,7 @@ namespace Rhyous.SimplePluginLoader
         public Plugin<T> Plugin { get; set; }
         public List<string> Paths
         {
-            get { return _Paths ?? (_Paths = GetPaths()); }
+            get { return _Paths ?? (_Paths = GetPaths(SharedBinPathManager)); }
             set { _Paths = value; }
         } private List<String> _Paths;
         
@@ -52,15 +53,21 @@ namespace Rhyous.SimplePluginLoader
             return null;
         }
 
-        private List<string> GetPaths()
+        internal List<string> GetPaths(SharedBinPathManager pathManager)
         {
-            return new List<string>
+            var paths = new List<string>
                 {
                     "",                                             // Try current path
                     Plugin.Directory,                               // Try plugin directory
                     Path.Combine(Plugin.Directory, "bin"),          // Try plugin/bin directory
-                    Path.Combine(Plugin.Directory, Plugin.Name)    // Try plugin/<pluginName> directory
+                    Path.Combine(Plugin.Directory, Plugin.Name)     // Try plugin/<pluginName> directory
                 };
+            
+            // This allows for two plugins that a share a dll to have Copy Local set to false, and both look to the same folder
+            if (pathManager?.SharedPaths.Any() != null)
+                paths.AddRange(pathManager.SharedPaths);
+
+            return paths;
         }
 
         public AssemblyName GetAssemblyName(string dll)
@@ -70,6 +77,12 @@ namespace Rhyous.SimplePluginLoader
             try { return AssemblyName.GetAssemblyName(dll); }
             catch (Exception) { return null; }
         }
+
+        internal SharedBinPathManager SharedBinPathManager
+        {
+            get { return _SharedBinPathManager ?? (_SharedBinPathManager = new SharedBinPathManager()); }
+            set { _SharedBinPathManager = value; }
+        } private SharedBinPathManager _SharedBinPathManager;
     }
 }
 

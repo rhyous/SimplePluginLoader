@@ -74,6 +74,8 @@
     <Compile Include="TestClasses\Org.cs" />
     <Compile Include="TestClasses\OrgRepository.cs" />
     <Compile Include="AssemblyLoaderTests.cs" />
+    <Compile Include="SharedBinPathManagerTests.cs" />
+    <Compile Include="PluginDependencyResolverTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Rhyous.SimplePluginLoader.Net40-Client\Rhyous.SimplePluginLoader.Net40.csproj">
