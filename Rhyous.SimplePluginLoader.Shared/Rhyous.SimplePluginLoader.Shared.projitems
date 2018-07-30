@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAssemblyNameReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ILoadInstancesOfType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ILoadPlugins.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginLoaderLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginDependencyResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginFinder.cs" />
