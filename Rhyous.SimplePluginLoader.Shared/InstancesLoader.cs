@@ -11,7 +11,7 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         public static bool ThrowExceptionsOnLoad = false;
-        
+
         internal IPluginLoaderLogger Logger;
 
         public InstancesLoader(IPluginLoaderLogger logger) { Logger = logger; }
@@ -23,28 +23,11 @@ namespace Rhyous.SimplePluginLoader
 
         public List<Type> GetPluginTypes(Assembly assembly)
         {
-            if (assembly == null)
-                return null;
-            return assembly.GetTypes().Where(o => o.IsPluginType<T>())?.ToList() ?? null;
-        }
-
-        public List<T> LoadTypes(Assembly assembly)
-        {
             try
             {
-                var typesToLoad = GetPluginTypes(assembly);
-                if (typesToLoad == null)
+                if (assembly == null)
                     return null;
-                var listOfT = new List<T>();
-                foreach (var typeToLoad in typesToLoad.Where(t => t.IsInstantiable()))
-                {
-                    var obj = Create(typeToLoad);
-                    if (obj == null)
-                        continue;
-                    listOfT.Add(obj);
-                    Logger?.WriteLine(PluginLoaderLogLevel.Info, $"A plugin type was found and added: {obj}");
-                }
-                return listOfT;
+                return assembly.GetTypes().Where(o => o.IsPluginType<T>())?.ToList() ?? null;
             }
             catch (Exception e)
             {
@@ -61,6 +44,40 @@ namespace Rhyous.SimplePluginLoader
                     return null;
                 }
             }
+        }
+
+        public List<T> LoadTypes(Assembly assembly)
+        {
+            var typesToLoad = GetPluginTypes(assembly);
+            if (typesToLoad == null)
+                return null;
+            var listOfT = new List<T>();
+            foreach (var typeToLoad in typesToLoad.Where(t => t.IsInstantiable()))
+            {
+                try
+                {
+                    var obj = Create(typeToLoad);
+                    if (obj == null)
+                        continue;
+                    listOfT.Add(obj);
+                    Logger?.WriteLine(PluginLoaderLogLevel.Info, $"A plugin type was found and added: {obj}");
+                }
+                catch (Exception e)
+                {
+                    if (ThrowExceptionsOnLoad)
+                    {
+                        var e2 = new PluginTypeLoadException($"Failed to load plugin type: {typeToLoad.Name}. See inner exception.", e);
+                        Logger?.Log(e2);
+                        throw e2;
+                    }
+                    else
+                    {
+                        Logger.Write(PluginLoaderLogLevel.Info, $"Exception occurred loading the plugin of type: {typeToLoad.Name}.");
+                        Logger?.Log(e);
+                    }
+                }
+            }
+            return listOfT;
         }
 
         private static T Create(Type type)
