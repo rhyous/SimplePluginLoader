@@ -13,6 +13,23 @@ namespace Rhyous.SimplePluginLoader
     public class PluginLoader<T> : ILoadPlugins<T>
         where T : class
     {
+        private readonly IAppDomain _AppDomain;
+        private readonly IObjectCreator<T> _ObjectCreator;
+        private readonly IPluginLoaderLogger _Logger;
+
+        #region Constructors
+
+        public PluginLoader(PluginPaths paths, IAppDomain appDomain, IObjectCreator<T> objectCreator, IPluginLoaderLogger logger)
+        {
+            _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
+            Paths = paths ?? new PluginPaths(DefaultAppName, appDomain, logger);
+            _ObjectCreator = objectCreator ?? throw new ArgumentNullException(nameof(_ObjectCreator));
+            _Logger = logger;
+        }
+
+        #endregion
+
+        #region Properties
         public List<Plugin<T>> Plugins
         {
             get { return _Plugins.Value; }
@@ -20,42 +37,10 @@ namespace Rhyous.SimplePluginLoader
 
         public string DefaultAppName
         {
-            get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(Domain.BaseDirectory)); }
+            get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(_AppDomain.BaseDirectory)); }
         } private string _DefaultAppName;
 
-        public PluginPaths Paths
-        {
-            get { return _Paths ?? (_Paths = new PluginPaths(DefaultAppName, _AppDomain, _Logger)); }
-        } private PluginPaths _Paths;
-
-        public IAppDomain Domain
-        {
-            get { return _Domain ?? (_Domain = new AppDomainWrapper(AppDomain.CurrentDomain)); }
-        } private IAppDomain _Domain;
-
-        private IPluginLoaderLogger _Logger;
-        private IAppDomain _AppDomain;
-
-        #region Constructors
-
-        public PluginLoader(IAppDomain domain, string pluginDirectory)
-        {
-            _AppDomain = domain;
-            Paths.PluginDirectoryName = pluginDirectory;
-        }
-        
-        public PluginLoader(IAppDomain domain, IPluginLoaderLogger logger)
-        {
-            _AppDomain = domain;
-            _Logger = logger;
-        }
-
-        public PluginLoader(IAppDomain domain, string pluginDirectory, IPluginLoaderLogger logger)
-        {
-            _AppDomain = domain;
-            Paths.PluginDirectoryName = pluginDirectory;
-            _Logger = logger;
-        }
+        public PluginPaths Paths { get; set; }
 
         #endregion
 
@@ -118,7 +103,7 @@ namespace Rhyous.SimplePluginLoader
         {
             if (!File.Exists(pluginFile))
                 return null;
-            var plugin = new Plugin<T>(_AppDomain, _Logger)
+            var plugin = new Plugin<T>(_AppDomain, _ObjectCreator, _Logger)
             {
                 Directory = Path.GetDirectoryName(pluginFile),
                 File = Path.GetFileName(pluginFile)

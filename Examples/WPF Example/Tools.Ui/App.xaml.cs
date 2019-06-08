@@ -22,8 +22,10 @@ namespace Tools.Ui
         {
             base.OnStartup(e);
             Tools.Add(new Hammer());
-            var domain = new AppDomainWrapper(AppDomain.CurrentDomain);
-            var pluginLoader = new PluginLoader<ITool>(domain, new PluginLoaderLogger());
+            var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
+            var iToolObjectCreator = new ObjectCreator<ITool>();
+            var logger = new PluginLoaderLogger();
+            var pluginLoader = new PluginLoader<ITool>(null, appDomain, iToolObjectCreator, logger);
             var plugins = pluginLoader.LoadPlugins();
             Tools.AddRange(plugins.AllObjects);
         }

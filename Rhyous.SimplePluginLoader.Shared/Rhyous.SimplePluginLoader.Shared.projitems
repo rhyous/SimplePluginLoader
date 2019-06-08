@@ -23,12 +23,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAssemblyNameReader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ILoadInstancesOfType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ILoadPlugins.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginLoaderLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginDependencyResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IPluginFinder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRuntimePluginLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AppDomainLocator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectCreator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IObjectCreator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logging\PluginLoaderLogLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginCollection.cs" />
