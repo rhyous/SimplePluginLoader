@@ -63,11 +63,11 @@ namespace Rhyous.SimplePluginLoader
 
         public T FoundPluginObject { get; set; }
 
-        public ILoadPlugins<T> PluginLoader
+        public IPluginLoader<T> PluginLoader
         {
             get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>(_PluginPaths, _AppDomain, _ObjectCreator, _Logger)); }
             set { _PluginLoader = value; } // Allows for use of a custom plugin
-        } private ILoadPlugins<T> _PluginLoader;
+        } private IPluginLoader<T> _PluginLoader;
         
         #region IDisposable
         bool _disposed;

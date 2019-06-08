@@ -10,7 +10,7 @@ namespace Rhyous.SimplePluginLoader
     /// <summary>
     /// A singleton that load plugins
     /// </summary>
-    public class PluginLoader<T> : ILoadPlugins<T>
+    public class PluginLoader<T> : IPluginLoader<T>
         where T : class
     {
         private readonly IAppDomain _AppDomain;

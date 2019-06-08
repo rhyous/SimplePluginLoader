@@ -27,7 +27,7 @@ namespace Tool
                                      c.Resolve<IAppDomain>(),
                                      c.Resolve<IObjectCreator<ITool>>(),
                                      c.Resolve<IPluginLoaderLogger>()))
-                   .As<ILoadPlugins<ITool>>()
+                   .As<IPluginLoader<ITool>>()
                    .SingleInstance();
             builder.RegisterType<ObjectCreator<ICaveManTool<Hammer>>>()
                    .As<IObjectCreator<ICaveManTool<Hammer>>>()
@@ -36,12 +36,12 @@ namespace Tool
                                      c.Resolve<IAppDomain>(),
                                      c.Resolve<IObjectCreator<ICaveManTool<Hammer>>>(),
                                      c.Resolve<IPluginLoaderLogger>()))
-                   .As<ILoadPlugins<ICaveManTool<Hammer>>>()
+                   .As<IPluginLoader<ICaveManTool<Hammer>>>()
                    .SingleInstance();
             var container = builder.Build();
             using (var scope = container.BeginLifetimeScope())
             {
-                var pluginLoader = scope.Resolve<ILoadPlugins<ITool>>();
+                var pluginLoader = scope.Resolve<IPluginLoader<ITool>>();
                 var tools = new List<ITool>
                 {
                     new Hammer()
@@ -50,7 +50,7 @@ namespace Tool
                 var plugins = pluginLoader.LoadPlugins();
                 tools.AddRange(plugins.AllObjects);
 
-                var pluginLoaderCaveMan = scope.Resolve<ILoadPlugins<ICaveManTool<Hammer>>>();
+                var pluginLoaderCaveMan = scope.Resolve<IPluginLoader<ICaveManTool<Hammer>>>();
                 var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
                 tools.AddRange(caveManPlugins.AllObjects);
 

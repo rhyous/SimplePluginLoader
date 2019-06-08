@@ -29,7 +29,7 @@ namespace Rhyous.SimplePluginLoader
         /// <summary>
         /// The actual plugin Loader.
         /// </summary>
-        ILoadPlugins<T> PluginLoader { get; }
+        IPluginLoader<T> PluginLoader { get; }
         /// <summary>
         /// The plugin loader.
         /// </summary>
