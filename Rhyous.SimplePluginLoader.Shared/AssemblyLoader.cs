@@ -77,7 +77,7 @@ namespace Rhyous.SimplePluginLoader
             {
                 var dir = Path.GetDirectoryName(dll);
                 if (!dir.EndsWith("bin"))
-                    ProactivelyLoadDependencies(Path.Combine(Path.GetDirectoryName(dll), "bin"));
+                    ProactivelyLoadDependencies(Path.Combine(dir, "bin"));
             }
             return assembly;
         }

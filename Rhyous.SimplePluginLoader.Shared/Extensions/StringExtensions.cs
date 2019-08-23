@@ -12,7 +12,7 @@ namespace Rhyous.SimplePluginLoader.Extensions
                 throw new ArgumentException("T must be an enum", "T");
             if (string.IsNullOrWhiteSpace(str))
                 return defaultValue;
-            var isNumeric = str.All(c => Char.IsDigit(c));
+            var isNumeric = str.All(c => char.IsDigit(c));
             if ((allowNumeric || !isNumeric) && Enum.TryParse(str, ignoreCase, out T ret))
                 return ret;
             return defaultValue;
