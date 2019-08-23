@@ -23,8 +23,10 @@ namespace Rhyous.SimplePluginLoader
         {
             get { return _Paths ?? (_Paths = GetPaths(SharedBinPathManager)); }
             set { _Paths = value; }
-        } private List<String> _Paths;
-        
+        } private List<string> _Paths;
+
+        Dictionary<string, List<string>> AttemptedPaths = new Dictionary<string, List<string>>();
+
         public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
         {
             var assemblyDetails = args.Name.Split(", ".ToArray(), StringSplitOptions.RemoveEmptyEntries);
@@ -32,9 +34,24 @@ namespace Rhyous.SimplePluginLoader
             var version = assemblyDetails.FirstOrDefault(ad => ad.StartsWith("Version="))?
                                          .Split("=".ToArray(), StringSplitOptions.RemoveEmptyEntries)
                                          .Skip(1)?.First();
-            var paths = Paths.ToList();        
+            var paths = Paths.ToList();
+            List<string> alreadyTriedPaths = null;
+            if (!AttemptedPaths.TryGetValue(args.Name, out alreadyTriedPaths))
+            {
+                alreadyTriedPaths = new List<string>();
+                AttemptedPaths.Add(args.Name, alreadyTriedPaths);
+            }
+            foreach (var path in alreadyTriedPaths)
+            {
+                paths.Remove(path);
+            }
+            if (!paths.Any())
+            {
+                throw new FileNotFoundException("Could not find dll.", args.Name);
+            }
             foreach (var path in paths)
             {
+                alreadyTriedPaths.Add(path);
                 if (!Directory.Exists(path))
                 {
                     Paths.Remove(path);
