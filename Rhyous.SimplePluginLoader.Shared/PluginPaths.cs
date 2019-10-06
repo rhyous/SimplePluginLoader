@@ -12,12 +12,14 @@ namespace Rhyous.SimplePluginLoader
 
         private IPluginLoaderLogger _Logger;
         private IAppDomain _AppDomain;
+        private readonly string _PluginSubFolder;
 
-        public PluginPaths(string appName, IAppDomain appDomain, IPluginLoaderLogger logger)
+        public PluginPaths(string appName, IAppDomain appDomain, string PluginSubFolder, IPluginLoaderLogger logger)
         {
             AppName = appName;
             _Logger = logger;
             _AppDomain = appDomain;
+            _PluginSubFolder = PluginSubFolder;
         }
 
         public string AppName { get; set; }
@@ -31,7 +33,9 @@ namespace Rhyous.SimplePluginLoader
             get
             {
                 return (string.IsNullOrWhiteSpace(_PluginDirectoryName))
-                    ? (_PluginDirectoryName = DefaultPluginDirectory)
+                    ? (_PluginDirectoryName = string.IsNullOrWhiteSpace(_PluginSubFolder) 
+                                            ? DefaultPluginDirectory
+                                            : Path.Combine(DefaultPluginDirectory, _PluginSubFolder))
                     : _PluginDirectoryName;
             }
             set { _PluginDirectoryName = value; }

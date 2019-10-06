@@ -22,7 +22,7 @@ namespace Rhyous.SimplePluginLoader
         public PluginLoader(PluginPaths paths, IAppDomain appDomain, IObjectCreator<T> objectCreator = null, IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
-            Paths = paths ?? new PluginPaths(DefaultAppName, appDomain, logger);
+            Paths = paths ?? new PluginPaths(DefaultAppName, appDomain, null, logger);
             _ObjectCreator = objectCreator ?? new ObjectCreator<T>();
             _Logger = logger;
         }
@@ -30,10 +30,10 @@ namespace Rhyous.SimplePluginLoader
         #endregion
 
         #region Properties
-        public List<Plugin<T>> Plugins
+        public List<IPlugin<T>> Plugins
         {
             get { return _Plugins.Value; }
-        } private Lazy<List<Plugin<T>>> _Plugins = new Lazy<List<Plugin<T>>>(true);
+        } private Lazy<List<IPlugin<T>>> _Plugins = new Lazy<List<IPlugin<T>>>(true);
 
         public string DefaultAppName
         {
@@ -99,7 +99,7 @@ namespace Rhyous.SimplePluginLoader
         /// <summary>
         /// Loads the single plugin specificied. 
         /// </summary>
-        public Plugin<T> LoadPlugin(string pluginFile)
+        public IPlugin<T> LoadPlugin(string pluginFile)
         {
             if (!File.Exists(pluginFile))
                 return null;

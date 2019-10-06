@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class PluginCollection<T> : List<Plugin<T>> where T : class
+    public class PluginCollection<T> : List<IPlugin<T>> where T : class
     {
         public PluginCollection()
         {
@@ -15,7 +15,7 @@ namespace Rhyous.SimplePluginLoader
         {
         }
 
-        public PluginCollection(IEnumerable<Plugin<T>> list)
+        public PluginCollection(IEnumerable<IPlugin<T>> list)
             : base(list)
         {
         }

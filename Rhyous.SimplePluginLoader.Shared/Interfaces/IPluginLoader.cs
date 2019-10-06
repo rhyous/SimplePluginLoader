@@ -29,6 +29,6 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         /// <param name="pluginFile">The plugin file.</param>
         /// <returns>A single Plugin.</returns>
-        Plugin<T> LoadPlugin(string pluginFile);
+        IPlugin<T> LoadPlugin(string pluginFile);
     }
 }

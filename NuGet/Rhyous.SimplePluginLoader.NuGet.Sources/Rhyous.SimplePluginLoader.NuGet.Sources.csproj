@@ -60,7 +60,7 @@
     <None Include="tools\uninstall.ps1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="src\App_Packages\Rhyous.SimplePluginLoader.Sources.1.3.1\" />
+    <Folder Include="src\App_Packages\Rhyous.SimplePluginLoader.Sources.1.3.3\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="exclude.txt" />
@@ -90,13 +90,7 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>SET PROJECT=Rhyous.SimplePluginLoader
-pushd "$(ProjectDir)src\App_Packages\%25PROJECT%25.Sources.*\"
-del /q *
-for /d %25%25x in (*) do @rd /s /q "%25%25x"
-copy /Y "$(ProjectDir)exclude.txt"
-xcopy /S /Y /Exclude:exclude.txt "$(SolutionDir)%25PROJECT%25.Shared"
-del /F exclude.txt
-popd</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>

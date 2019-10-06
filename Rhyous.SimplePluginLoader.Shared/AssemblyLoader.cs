@@ -28,7 +28,7 @@ namespace Rhyous.SimplePluginLoader
             {
                 return TryLoad(dll, pdb);
             }
-            var defaultDirs = new PluginPaths(_AppDomain.BaseDirectory, _AppDomain, _Logger).GetDefaultPluginDirectories();
+            var defaultDirs = new PluginPaths(_AppDomain.BaseDirectory, _AppDomain, null, _Logger).GetDefaultPluginDirectories();
             foreach (var path in defaultDirs)
             {
                 var dllPath = Path.Combine(path, dll);

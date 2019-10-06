@@ -19,7 +19,7 @@ namespace Rhyous.SimplePluginLoader
         {
             _PluginPaths = pluginPaths;
             _AppDomain = appDomain;
-            _ObjectCreator = objectCreator;
+            _ObjectCreator = objectCreator ?? new ObjectCreator<T>();
             _Logger = logger;
         }
 
@@ -59,7 +59,7 @@ namespace Rhyous.SimplePluginLoader
             return null;
         }
 
-        public Plugin<T> FoundPlugin { get; set; }
+        public IPlugin<T> FoundPlugin { get; set; }
 
         public T FoundPluginObject { get; set; }
 

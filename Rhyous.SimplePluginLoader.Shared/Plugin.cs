@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class Plugin<T> : IDisposable
+    public class Plugin<T> : IPlugin<T>
         where T : class
     {
         private readonly IAppDomain _AppDomain;
@@ -77,7 +77,7 @@ namespace Rhyous.SimplePluginLoader
         /// <summary>
         /// Internal so tests can mock this with InternalsVisibleTo, but it isn't exposed in the API.
         /// </summary>
-        internal ILoadInstancesOfType<T> Loader
+        public ILoadInstancesOfType<T> Loader
         {
             get { return _Loader ?? (_Loader = new InstancesLoader<T>(_ObjectCreator, _Logger)); }
             set { _Loader = value; }

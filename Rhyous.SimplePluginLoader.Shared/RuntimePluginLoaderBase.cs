@@ -55,7 +55,7 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual IPluginLoader<T> PluginLoader
         {
-            get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, _Logger), _AppDomain, _ObjectCreator, _Logger); }
+            get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, PluginSubFolder, _Logger), _AppDomain, _ObjectCreator, _Logger); }
             set { _PluginLoader = value; }
         } private IPluginLoader<T> _PluginLoader;
 
