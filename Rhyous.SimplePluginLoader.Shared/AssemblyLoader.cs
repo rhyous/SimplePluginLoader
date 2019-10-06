@@ -68,7 +68,7 @@ namespace Rhyous.SimplePluginLoader
                     AssemblyDictionary.Assemblies.Add(GetKey(dll, assemblyVersion), assembly);
                 }
                 catch (Exception e)
-                {
+                { 
                     _Logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
                     throw;
                 }

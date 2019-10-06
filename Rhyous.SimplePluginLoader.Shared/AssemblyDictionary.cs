@@ -32,7 +32,10 @@ namespace Rhyous.SimplePluginLoader
 
         private void OnAssemblyLoad(object sender, AssemblyLoadEventArgs args)
         {
-            Logger?.WriteLines(PluginLoaderLogLevel.Info, "An assembly was loaded", args.LoadedAssembly.CodeBase, args.LoadedAssembly.Location);
+            if (args.LoadedAssembly.IsDynamic)
+                Logger?.WriteLines(PluginLoaderLogLevel.Info, "An assembly was loaded", args.LoadedAssembly.FullName);
+            else
+                Logger?.WriteLines(PluginLoaderLogLevel.Info, "An assembly was loaded", args.LoadedAssembly.CodeBase, args.LoadedAssembly.Location);
         }
         #endregion
 

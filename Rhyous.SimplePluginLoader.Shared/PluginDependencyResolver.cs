@@ -47,7 +47,8 @@ namespace Rhyous.SimplePluginLoader
             }
             if (!paths.Any())
             {
-                throw new FileNotFoundException("Could not find dll.", args.Name);
+                // Changed this from throwing an exception because it threw when it shouldn't.
+                return null; 
             }
             foreach (var path in paths)
             {
