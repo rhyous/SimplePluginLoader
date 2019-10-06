@@ -46,8 +46,12 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Example.DepenencyOfDependency2\Example.DepenencyOfDependency2.csproj">
-      <Project>{329c45c5-3e59-46fa-94f4-a30b81224805}</Project>
+      <Project>{329C45C5-3E59-46FA-94F4-A30B81224805}</Project>
       <Name>Example.DepenencyOfDependency2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Interfaces.Localization\Interfaces.Localization.csproj">
+      <Project>{4fb5881a-4167-488b-9fe0-2d02a757c654}</Project>
+      <Name>Interfaces.Localization</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

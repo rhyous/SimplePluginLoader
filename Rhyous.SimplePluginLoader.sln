@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{3B
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Command Line", "Command Line", "{F2996B35-A240-4909-93C7-9C0812635790}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool", "Examples\Command Line\Tool\Tool.csproj", "{3B20B597-0A54-454D-9CF6-6AB7D28B24F2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.CommandLine", "Examples\Command Line\Tool\Tool.CommandLine.csproj", "{3B20B597-0A54-454D-9CF6-6AB7D28B24F2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.Plugin1", "Examples\Command Line\Tool.Plugin1\Tool.Plugin1.csproj", "{C0BE9BCA-DF56-4350-93E0-A9F53623E507}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -51,6 +51,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{C7754468-24AA-4E16-966A-B92B720C754C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.DependencyInjection", "Examples\Autofac\Tool.DependencyInection\Tool.DependencyInjection.csproj", "{B203B597-405A-454D-9CF6-4F36AB7D28B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interfaces.Localization", "Examples\Dependencies\Interfaces.Localization\Interfaces.Localization.csproj", "{4FB5881A-4167-488B-9FE0-2D02A757C654}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -114,6 +116,10 @@ Global
 		{B203B597-405A-454D-9CF6-4F36AB7D28B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B203B597-405A-454D-9CF6-4F36AB7D28B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B203B597-405A-454D-9CF6-4F36AB7D28B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FB5881A-4167-488B-9FE0-2D02A757C654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FB5881A-4167-488B-9FE0-2D02A757C654}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FB5881A-4167-488B-9FE0-2D02A757C654}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FB5881A-4167-488B-9FE0-2D02A757C654}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -136,6 +142,7 @@ Global
 		{C5E2F000-AEFC-4087-ACA7-F848F15DD659} = {3B152766-5529-45BE-88A6-D0A2DF070E3A}
 		{C7754468-24AA-4E16-966A-B92B720C754C} = {3B152766-5529-45BE-88A6-D0A2DF070E3A}
 		{B203B597-405A-454D-9CF6-4F36AB7D28B2} = {C5E2F000-AEFC-4087-ACA7-F848F15DD659}
+		{4FB5881A-4167-488B-9FE0-2D02A757C654} = {F5813784-49EC-4D7F-863D-1B02331D29E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5D26C380-6CAE-406D-B257-398649EF0712}

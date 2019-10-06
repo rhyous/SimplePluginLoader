@@ -8,8 +8,6 @@ namespace Rhyous.SimplePluginLoader
     [Serializable]
     internal class PluginTypeLoadException : Exception
     {
-        private Exception e;
-
         public PluginTypeLoadException()
         {
         }

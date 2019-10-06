@@ -7,8 +7,8 @@
     <ProjectGuid>{B203B597-405A-454D-9CF6-4F36AB7D28B2}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Tool</RootNamespace>
-    <AssemblyName>Tool</AssemblyName>
+    <RootNamespace>Tool.DependencyInjection</RootNamespace>
+    <AssemblyName>Tool.DependencyInjection</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,8 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=4.9.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Autofac.4.9.2\lib\net45\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=4.9.4.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.4.9.4\lib\net45\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -44,11 +44,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Tools\ICaveManTool.cs" />
-    <Compile Include="Tools\ITool.cs" />
+    <Compile Include="Autofac\AutofacObjectCreator.cs" />
+    <Compile Include="Autofac\IDependencyRegistrar.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tools\Hammer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -58,6 +57,10 @@
     <ProjectReference Include="..\..\..\Rhyous.SimplePluginLoader.Net40-Client\Rhyous.SimplePluginLoader.Net40.csproj">
       <Project>{8eb7535d-c90c-4e91-804e-052b67dd308e}</Project>
       <Name>Rhyous.SimplePluginLoader.Net40</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Command Line\Tool\Tool.CommandLine.csproj">
+      <Project>{3b20b597-0a54-454d-9cf6-6ab7d28b24f2}</Project>
+      <Name>Tool.CommandLine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

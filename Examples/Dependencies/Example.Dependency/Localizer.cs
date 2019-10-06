@@ -1,12 +1,31 @@
 ﻿using Example.DepencyOfDependency;
+using Interfaces.Localization;
+using System.Collections.Generic;
 
 namespace Example.Dependency
 {
-    public class Localizer
+    public class Localizer : ILocalizer
     {
-        public string Rock = "Rock";
-        public string RockAction = "Whack. Whack. Whack. {0} thing(s) smashed.";
-        public string RockBroke = "Your rock broke.";
-        public string GetRockUnusableSentence() { return new Sentence().RockUnusable;  }
+        Dictionary<string, string> _Dictionary = new Dictionary<string, string>();
+
+        public Localizer()
+        {
+            _Dictionary.Add("Rock", "Rock");
+            _Dictionary.Add("RockAction", "Whack. Whack. Whack. {0} thing(s) smashed.");
+            _Dictionary.Add("RockBroke", "Your rock broke.");
+            _Dictionary.Add("RockUnusable", GetRockUnusableSentence());
+            _Dictionary.Add("Wrench", "Crescent Wrench");
+            _Dictionary.Add("Saw", "Hand Saw");
+        }
+
+
+        public string Localize(string key)
+        {
+            if (_Dictionary.TryGetValue(key, out string localized))
+                return localized;
+            return "No localized string found";
+        }
+
+        internal string GetRockUnusableSentence() { return new Sentence().RockUnusable; }
     }
 }

@@ -18,6 +18,7 @@ namespace Rhyous.SimplePluginLoader
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             _ObjectCreator = objectCreator ?? throw new ArgumentNullException(nameof(objectCreator));
+            _ObjectCreator.Plugin = this;
             _Logger = logger;
             AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
         }

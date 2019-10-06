@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using Tool.Tools;
 using Autofac;
+using Autofac.Features.ResolveAnything;
+using System.Linq;
 
-namespace Tool
+namespace Tool.DependencyInjection
 {
     class Program
     {
@@ -20,7 +22,7 @@ namespace Tool
             builder.Register(c => new AppDomainWrapper(c.Resolve<AppDomain>()))
                    .As<IAppDomain>()
                    .SingleInstance();
-            builder.RegisterType<ObjectCreator<ITool>>()
+            builder.RegisterType<AutofacObjectCreator<ITool>>()
                    .As<IObjectCreator<ITool>>()
                    .SingleInstance();
             builder.Register(c => new PluginLoader<ITool>(null,
@@ -29,6 +31,12 @@ namespace Tool
                                      c.Resolve<IPluginLoaderLogger>()))
                    .As<IPluginLoader<ITool>>()
                    .SingleInstance();
+            builder.Register(c => new PluginLoader<IDependencyRegistrar<ContainerBuilder>>(null,
+                         c.Resolve<IAppDomain>(),
+                         null,
+                         c.Resolve<IPluginLoaderLogger>()))
+               .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>()
+               .SingleInstance();
             builder.RegisterType<ObjectCreator<ICaveManTool<Hammer>>>()
                    .As<IObjectCreator<ICaveManTool<Hammer>>>()
                    .SingleInstance();
@@ -39,18 +47,15 @@ namespace Tool
                    .As<IPluginLoader<ICaveManTool<Hammer>>>()
                    .SingleInstance();
             var container = builder.Build();
-            using (var scope = container.BeginLifetimeScope())
+            using (var globalScope = container.BeginLifetimeScope())
             {
-                var pluginLoader = scope.Resolve<IPluginLoader<ITool>>();
-                var tools = new List<ITool>
-                {
-                    new Hammer()
-                };
+                var pluginLoader = globalScope.Resolve<IPluginLoader<ITool>>();
+                var tools = new List<ITool> { new Hammer() };
 
                 var plugins = pluginLoader.LoadPlugins();
                 tools.AddRange(plugins.AllObjects);
 
-                var pluginLoaderCaveMan = scope.Resolve<IPluginLoader<ICaveManTool<Hammer>>>();
+                var pluginLoaderCaveMan = globalScope.Resolve<IPluginLoader<ICaveManTool<Hammer>>>();
                 var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
                 tools.AddRange(caveManPlugins.AllObjects);
 

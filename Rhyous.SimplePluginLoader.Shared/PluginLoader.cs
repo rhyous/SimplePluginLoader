@@ -19,11 +19,11 @@ namespace Rhyous.SimplePluginLoader
 
         #region Constructors
 
-        public PluginLoader(PluginPaths paths, IAppDomain appDomain, IObjectCreator<T> objectCreator, IPluginLoaderLogger logger)
+        public PluginLoader(PluginPaths paths, IAppDomain appDomain, IObjectCreator<T> objectCreator = null, IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             Paths = paths ?? new PluginPaths(DefaultAppName, appDomain, logger);
-            _ObjectCreator = objectCreator ?? throw new ArgumentNullException(nameof(_ObjectCreator));
+            _ObjectCreator = objectCreator ?? new ObjectCreator<T>();
             _Logger = logger;
         }
 

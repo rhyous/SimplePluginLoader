@@ -98,5 +98,18 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
             // Assert
             Assert.IsFalse(actual);
         }
+
+        [TestMethod]
+        public void IsPluginType_Test()
+        {
+            // Arrange
+            var type = typeof(With3);
+
+            // Act
+            var actual = type.IsPluginType<IWith3<int, int, int>>();
+
+            // Assert
+            Assert.IsTrue(actual);
+        }
     }
 }
