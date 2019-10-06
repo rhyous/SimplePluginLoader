@@ -10,11 +10,16 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         private const string DllExtension = "*.dll";
-        private IAppDomain _AppDomain;
-        public PluginFinder(IAppDomain appDomain) { _AppDomain = appDomain; }
-        public PluginFinder(IAppDomain appDomain, IPluginLoaderLogger logger)
+        private readonly PluginPaths _PluginPaths;
+        private readonly IAppDomain _AppDomain;
+        private readonly IObjectCreator<T> _ObjectCreator;
+        private readonly IPluginLoaderLogger _Logger;
+
+        public PluginFinder(PluginPaths pluginPaths, IAppDomain appDomain, IObjectCreator<T> objectCreator, IPluginLoaderLogger logger)
         {
+            _PluginPaths = pluginPaths;
             _AppDomain = appDomain;
+            _ObjectCreator = objectCreator;
             _Logger = logger;
         }
 
@@ -28,7 +33,7 @@ namespace Rhyous.SimplePluginLoader
         /// <returns>A found plugin of type T.</returns>
         public T FindPlugin(string pluginName, string dir)
         {
-            Logger?.WriteLine(PluginLoaderLogLevel.Info, $"Attempting to find plugin: {pluginName}; from path: {dir}");
+            _Logger?.WriteLine(PluginLoaderLogLevel.Info, $"Attempting to find plugin: {pluginName}; from path: {dir}");
             FoundPlugin = null;
             FoundPluginObject = null;
             var plugins = PluginLoader.LoadPlugins(Directory.GetFiles(dir, DllExtension));
@@ -58,17 +63,11 @@ namespace Rhyous.SimplePluginLoader
 
         public T FoundPluginObject { get; set; }
 
-        public ILoadPlugins<T> PluginLoader
+        public IPluginLoader<T> PluginLoader
         {
-            get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>(_AppDomain, Logger)); }
+            get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>(_PluginPaths, _AppDomain, _ObjectCreator, _Logger)); }
             set { _PluginLoader = value; } // Allows for use of a custom plugin
-        } private ILoadPlugins<T> _PluginLoader;
-
-        public IPluginLoaderLogger Logger
-        {
-            get { return _Logger ?? (_Logger = new PluginLoaderLogger()); } 
-            set { _Logger = value; }
-        } private IPluginLoaderLogger _Logger;
+        } private IPluginLoader<T> _PluginLoader;
         
         #region IDisposable
         bool _disposed;

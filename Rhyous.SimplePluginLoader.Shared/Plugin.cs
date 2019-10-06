@@ -10,27 +10,16 @@ namespace Rhyous.SimplePluginLoader
     public class Plugin<T> : IDisposable
         where T : class
     {
-        private IPluginLoaderLogger _Logger;
-        private IAppDomain _AppDomain;
+        private readonly IAppDomain _AppDomain;
+        private readonly IObjectCreator<T> _ObjectCreator;
+        private readonly IPluginLoaderLogger _Logger;
 
-        public Plugin()
+        public Plugin(IAppDomain appDomain, IObjectCreator<T> objectCreator, IPluginLoaderLogger logger)
         {
-            _AppDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
-            AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
-        }
-
-        public Plugin(IAppDomain appDomain, IPluginLoaderLogger logger)
-        {
-            _AppDomain = appDomain;
+            _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
+            _ObjectCreator = objectCreator ?? throw new ArgumentNullException(nameof(objectCreator));
             _Logger = logger;
             AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
-        }
-
-        public Plugin(IAppDomain appDomain, ResolveEventHandler handler, IPluginLoaderLogger logger)
-        {
-            _AppDomain = appDomain;
-            _Logger = logger;
-            AddDependencyResolver(handler);
         }
         
         public string Name { get { return Path.GetFileNameWithoutExtension(File); } }
@@ -89,7 +78,7 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         internal ILoadInstancesOfType<T> Loader
         {
-            get { return _Loader ?? (_Loader = new InstancesLoader<T>(_Logger)); }
+            get { return _Loader ?? (_Loader = new InstancesLoader<T>(_ObjectCreator, _Logger)); }
             set { _Loader = value; }
         } private ILoadInstancesOfType<T> _Loader;
 

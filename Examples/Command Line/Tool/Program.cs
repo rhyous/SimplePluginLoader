@@ -15,11 +15,13 @@ namespace Tool
             };
             var logger = new PluginLoaderLogger();
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
-            var pluginLoader = new PluginLoader<ITool>(appDomain, logger);
+            var iToolObjectCreator = new ObjectCreator<ITool>();
+            var pluginLoader = new PluginLoader<ITool>(null, appDomain, iToolObjectCreator, logger);
             var plugins = pluginLoader.LoadPlugins();
             tools.AddRange(plugins.AllObjects);
 
-            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(appDomain, logger);
+            var iICaveManToolObjectCreator = new ObjectCreator<ICaveManTool<Hammer>>();
+            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(null, appDomain, iICaveManToolObjectCreator, logger);
             var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
             tools.AddRange(caveManPlugins.AllObjects);
             
@@ -27,7 +29,7 @@ namespace Tool
             int input = ReadLine(tools);
             while (input != 0)
             {
-                if (input < tools.Count)
+                if (input <= tools.Count)
                     Console.WriteLine(tools[input - 1].DoWork());
                 ShowPrompt(tools);
                 input = ReadLine(tools);

@@ -74,7 +74,29 @@ FOR %25%25X in ("$(Targetdir)*.dll") DO (
 )
 FOR %25%25X in ("$(Targetdir)*.pdb") DO (
    IF NOT "%25%25X"=="$(TargetDir)$(TargetName).pdb" COPY /Y "%25%25X" "%25dllDir%25"
-)</PostBuildEvent>
+)
+
+
+REM For WPF Example
+SET proj=$(ProjectName)
+SET entity=%25proj:*.=%25
+ECHO entity = %25entity%25
+SET copyToDir=$(SolutionDir)Examples\WPF Example\Tools.UI\$(OutDir)\Plugins\$(TargetName)
+ECHO "%25copyToDir%25"
+IF NOT EXIST "%25copyToDir%25" MKDIR "%25copyToDir%25"
+COPY /Y "$(TargetPath)" "%25copyToDir%25"
+COPY /Y "$(TargetDir)$(TargetName).pdb" "%25copyToDir%25"
+
+REM Uncomment this to copy additional dll dependencies
+SET dllDir=%25copyToDir%25\bin
+ECHO "%25dllDir%25"
+IF NOT EXIST "%25dllDir%25" MKDIR "%25dllDir%25"
+FOR %25%25X in ("$(Targetdir)*.dll") DO (
+   IF NOT "%25%25X"=="$(TargetPath)" COPY /Y "%25%25X" "%25dllDir%25"
+)
+FOR %25%25X in ("$(Targetdir)*.pdb") DO (
+   IF NOT "%25%25X"=="$(TargetDir)$(TargetName).pdb" COPY /Y "%25%25X" "%25dllDir%25"
+</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

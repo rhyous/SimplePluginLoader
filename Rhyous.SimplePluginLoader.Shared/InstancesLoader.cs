@@ -11,10 +11,14 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         public static bool ThrowExceptionsOnLoad = false;
-
+        private readonly IObjectCreator<T> _ObjectCreator;
         internal IPluginLoaderLogger Logger;
 
-        public InstancesLoader(IPluginLoaderLogger logger) { Logger = logger; }
+        public InstancesLoader(IObjectCreator<T> objectCreator, IPluginLoaderLogger logger)
+        {
+            _ObjectCreator = objectCreator ?? throw new ArgumentNullException(nameof(objectCreator));
+            Logger = logger;
+        }
 
         public List<T> LoadInstances(Assembly assembly)
         {
@@ -56,7 +60,7 @@ namespace Rhyous.SimplePluginLoader
             {
                 try
                 {
-                    var obj = Create(typeToLoad);
+                    var obj = _ObjectCreator.Create(typeToLoad);
                     if (obj == null)
                         continue;
                     listOfT.Add(obj);
@@ -78,28 +82,6 @@ namespace Rhyous.SimplePluginLoader
                 }
             }
             return listOfT;
-        }
-
-        private static T Create(Type type)
-        {
-            if (type.IsGenericType)
-            {
-                var genericArgs = typeof(T).GetGenericArguments();
-                if (genericArgs == null || !genericArgs.Any())
-                    return null;
-                return CreateGenericType(type, genericArgs);
-            }
-            var obj = Activator.CreateInstance(type);
-            return obj as T;
-        }
-
-        private static T CreateGenericType(Type genericType, params Type[] genericParams)
-        {
-            Type constructedType = genericType.MakeGenericType(genericParams);
-            var methodInfo = typeof(Activator).GetGenericMethod("CreateInstance");
-            var genMethod = methodInfo.MakeGenericMethod(constructedType);
-            var obj = genMethod.Invoke(null, null);
-            return obj as T;
         }
     }
 }

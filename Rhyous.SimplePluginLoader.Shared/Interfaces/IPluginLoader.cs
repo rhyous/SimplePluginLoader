@@ -2,28 +2,33 @@
 
 namespace Rhyous.SimplePluginLoader
 {
-    /// <summary>
-    /// The inerfaces that helps ILoadPlugins know here to go to load plugins.
-    /// </summary>
-    /// <typeparam name="T">The type of plugin to load.</typeparam>
-    public interface IPluginLoader<T>
-        where T : class
+    public interface IPluginLoader<T> where T : class
     {
         /// <summary>
-        /// The collection of loaded plugins.
-        /// </summary>
-        PluginCollection<T> PluginCollection { get; }
+        /// Load plugins.  
+        /// </summary> 
+        /// <returns>A collection of loaded plugins.</returns>
+        PluginCollection<T> LoadPlugins();
+
         /// <summary>
-        /// The plugin loader.
+        /// Load plugins from the list of files.
         /// </summary>
-        ILoadPlugins<T> PluginLoader { get; }
+        /// <param name="pluginFiles">A list of files.</param>
+        /// <returns>A collection of loaded plugins.</returns>
+        PluginCollection<T> LoadPlugins(IEnumerable<string> dirs);
+
         /// <summary>
-        /// A list of loaded plugins.
+        /// Load plugins from the list of files.
         /// </summary>
-        List<T> Plugins { get; }
+        /// <param name="pluginFiles">A list of files.</param>
+        /// <returns>A collection of loaded plugins.</returns>
+        PluginCollection<T> LoadPlugins(string[] pluginFiles);
+
         /// <summary>
-        /// The subfolder underneath the Plugins directory to search.
+        /// Load a single plugin from a specified file.
         /// </summary>
-        string PluginSubFolder { get; }
+        /// <param name="pluginFile">The plugin file.</param>
+        /// <returns>A single Plugin.</returns>
+        Plugin<T> LoadPlugin(string pluginFile);
     }
 }
