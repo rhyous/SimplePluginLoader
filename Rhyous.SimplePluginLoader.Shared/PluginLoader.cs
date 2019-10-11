@@ -88,8 +88,8 @@ namespace Rhyous.SimplePluginLoader
                 var plugin = LoadPlugin(pluginFile);
                 if (plugin == null)
                     continue;
-                plugin.PluginObjects = plugin.Loader.LoadInstances(plugin.Assembly);
-                if (plugin.PluginObjects?.Count == 0)
+                plugin.PluginTypes = plugin.Loader.GetPluginTypes(plugin.Assembly);
+                if (plugin.PluginTypes?.Count == 0)
                     continue;
                 plugins.Add(plugin);
             }
