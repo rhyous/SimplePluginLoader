@@ -3,16 +3,14 @@
     using Tools;
 
     public class CaveManTool<T> : ICaveManTool<T>
-        where T: class, ITool, new()
+        where T : class, ITool
     {
-        public T Tool
-        {
-            get { return _Tool ?? (_Tool = new T()); }
-            set { _Tool = value; }
-        } private T _Tool;
+        public CaveManTool(T tool) { Tool = tool; }
+
+        public T Tool { get; set; }
 
         public string Name => $"CaveMan {Tool.Name}";
-              
+
 
         public string DoWork()
         {

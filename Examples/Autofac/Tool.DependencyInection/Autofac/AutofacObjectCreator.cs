@@ -6,7 +6,7 @@ using Tool.DependencyInjection;
 
 namespace Tool
 {
-    public class AutofacObjectCreator<T> : IObjectCreator<T>
+    public class AutofacObjectCreator<T> : Module, IObjectCreator<T>
         where T : class
     {
         private readonly IComponentContext _ComponentContext;
@@ -32,11 +32,13 @@ namespace Tool
                 }
                 if (!type.IsGenericTypeDefinition)
                     builder.RegisterType(type);
+                else
+                    builder.RegisterGeneric(type.GetGenericTypeDefinition());
             }))
             {
-                return type.IsGenericTypeDefinition 
-                    ? null 
-                    : pluginScope.Resolve(type) as T;
+                if (type.IsGenericTypeDefinition)
+                    return null;
+                return pluginScope.Resolve(type) as T;
             }
         }
     }

@@ -12,6 +12,7 @@ namespace Tool.Plugin1
             containerBuilder.Register(c => new Localizer())
                 .As<ILocalizer>()
                 .SingleInstance();
+            containerBuilder.RegisterType<Rock>();
         }
     }
 }
