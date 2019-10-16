@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 
@@ -13,6 +15,10 @@ namespace Rhyous.SimplePluginLoader
     public abstract class RuntimePluginLoaderBase<T> : IRuntimePluginLoader<T>
         where T : class
     {
+        /// <summary>
+        /// If you set this appSettings in the app.config or the web.config, the DefaultPluginDirectory will
+        /// be the configured path.
+        /// </summary>
         public const string PluginDirConfig = "PluginDirectory";
 
         public static string AppRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -36,7 +42,8 @@ namespace Rhyous.SimplePluginLoader
         }
 
         /// <inheritdoc />
-        public virtual string DefaultPluginDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Company, AppName, PluginFolder);
+        public virtual string DefaultPluginDirectory => AppSettings.Get(PluginDirConfig) ??
+                              Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Company, AppName, PluginFolder);
 
         /// <inheritdoc />
         public abstract string PluginSubFolder { get; }
@@ -55,7 +62,7 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual IPluginLoader<T> PluginLoader
         {
-            get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, PluginSubFolder, _Logger), _AppDomain, _ObjectCreator, _Logger); }
+            get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, DefaultPluginDirectory, _Logger), _AppDomain, _ObjectCreator, _Logger); }
             set { _PluginLoader = value; }
         } private IPluginLoader<T> _PluginLoader;
 
@@ -86,5 +93,14 @@ namespace Rhyous.SimplePluginLoader
             }
             return plugins;
         }
+
+        /// <summary>
+        /// Allows for replacing this during unit tests
+        /// </summary>
+        internal NameValueCollection AppSettings
+        {
+            get { return _AppSettings ?? (_AppSettings = ConfigurationManager.AppSettings); }
+            set { _AppSettings = value; }
+        } private NameValueCollection _AppSettings;
     }
 }

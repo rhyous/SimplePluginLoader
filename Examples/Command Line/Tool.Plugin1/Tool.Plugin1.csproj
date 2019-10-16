@@ -56,6 +56,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Rhyous.SimplePluginLoader.Autofac.Net45\Rhyous.SimplePluginLoader.Autofac.Net45.csproj">
+      <Project>{4FF93BD1-042F-4197-B50E-0192A9A8D76E}</Project>
+      <Name>Rhyous.SimplePluginLoader.Autofac.Net45</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Autofac\Tool.DependencyInection\Tool.DependencyInjection.csproj">
       <Project>{b203b597-405a-454d-9cf6-4f36ab7d28b2}</Project>
       <Name>Tool.DependencyInjection</Name>

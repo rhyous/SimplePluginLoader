@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Rhyous.SimplePluginLoader.Tests.TestClasses
+namespace Rhyous.SimplePluginLoader.Tests
 {
     public class OrgRepository : IRepository<Org, IOrg, int>
     {

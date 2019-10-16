@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Rhyous.SimplePluginLoader.Tests.TestClasses;
+using Rhyous.SimplePluginLoader.Tests;
 
 namespace Rhyous.SimplePluginLoader.Tests
 {

@@ -1,7 +1,5 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhyous.SimplePluginLoader.Tests.TestClasses;
-
 namespace Rhyous.SimplePluginLoader.Tests.Extensions
 {
     [TestClass]

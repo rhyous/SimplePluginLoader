@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rhyous.SimplePluginLoader.Tests.TestClasses;
 
 namespace Rhyous.SimplePluginLoader.Tests
 {

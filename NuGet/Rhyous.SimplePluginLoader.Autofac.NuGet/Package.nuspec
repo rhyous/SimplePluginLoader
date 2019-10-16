@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Rhyous.SimplePluginLoader.Autofac</id>
+    <version>1.0.0</version>
+    <title>Rhyous.SimplePluginLoader.Autofac</title>
+    <authors>Jared Barneck (Rhyous)</authors>
+    <owners>Jared Barneck (Rhyous)</owners>
+    <description>An Autofac extension to Rhyous.SimplePluginLoader.</description>
+    <releaseNotes></releaseNotes>
+    <summary>SimplePluginLoader is a library that makes loading plugins quick and easy. This extension allows it to use Autofac for object plugin instantiation.</summary>
+    <language>en-US</language>
+    <projectUrl>https://github.com/rhyous/SimplePluginLoader/wiki</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/rhyous/SimplePluginLoader/master/Images/SimplePluginLoaderLogo.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="file">License.txt</license> 
+    <copyright>Copyright Jared Barneck (Rhyous) 2019</copyright>
+    <tags>plugin interface create instance extension extensibility</tags>
+    <dependencies>
+      <group targetFramework="netstandard2.0">
+        <dependency id="Autofac" version="4.9.4" />
+        <dependency id="Rhyous.SimplePluginLoader" version="1.3.5" />
+      </group>
+      <group targetFramework="net45">
+        <dependency id="Autofac" version="4.9.4" />
+        <dependency id="Rhyous.SimplePluginLoader" version="1.3.5" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\" target="lib" />
+    <file src="tools\" target="tools" />
+    <file src="License.txt" target="" />
+  </files>
+</package>

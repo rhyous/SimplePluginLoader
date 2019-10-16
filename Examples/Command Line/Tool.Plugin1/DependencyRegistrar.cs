@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using Example.Dependency;
 using Interfaces.Localization;
-using Tool.DependencyInjection;
+using Rhyous.SimplePluginLoader.DependencyInjection;
 
 namespace Tool.Plugin1
 {

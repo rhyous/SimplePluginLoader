@@ -1,4 +1,4 @@
-namespace Rhyous.SimplePluginLoader.Tests.TestClasses
+namespace Rhyous.SimplePluginLoader.Tests
 {
     public interface IOrg
     {
