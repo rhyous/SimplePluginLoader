@@ -42,8 +42,18 @@ namespace Rhyous.SimplePluginLoader
         }
 
         /// <inheritdoc />
-        public virtual string DefaultPluginDirectory => AppSettings.Get(PluginDirConfig) ??
-                              Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Company, AppName, PluginFolder);
+        public virtual string DefaultPluginDirectory
+        {
+            get
+            {
+                var _DefaultPluginDirectory = AppSettings.Get(PluginDirConfig);
+                if (_DefaultPluginDirectory == null)
+                    _DefaultPluginDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Company, AppName, PluginFolder);
+                if (!string.IsNullOrWhiteSpace(PluginSubFolder))
+                    _DefaultPluginDirectory = Path.Combine(_DefaultPluginDirectory, PluginSubFolder);
+                return _DefaultPluginDirectory;
+            }
+        } internal string _DefaultPluginDirectory;
 
         /// <inheritdoc />
         public abstract string PluginSubFolder { get; }
