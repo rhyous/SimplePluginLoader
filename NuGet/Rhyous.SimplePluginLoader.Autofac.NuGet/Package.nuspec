@@ -19,11 +19,11 @@
     <dependencies>
       <group targetFramework="netstandard2.0">
         <dependency id="Autofac" version="4.9.4" />
-        <dependency id="Rhyous.SimplePluginLoader" version="1.3.5" />
+        <dependency id="Rhyous.SimplePluginLoader" version="1.3.6" />
       </group>
       <group targetFramework="net45">
         <dependency id="Autofac" version="4.9.4" />
-        <dependency id="Rhyous.SimplePluginLoader" version="1.3.5" />
+        <dependency id="Rhyous.SimplePluginLoader" version="1.3.6" />
       </group>
     </dependencies>
   </metadata>
