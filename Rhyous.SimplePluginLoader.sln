@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.Net40", "Rhyous.SimplePluginLoader.Net40-Client\Rhyous.SimplePluginLoader.Net40.csproj", "{8EB7535D-C90C-4E91-804E-052B67DD308E}"
 EndProject
@@ -54,8 +54,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.DependencyInjection", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interfaces.Localization", "Examples\Dependencies\Interfaces.Localization\Interfaces.Localization.csproj", "{4FB5881A-4167-488B-9FE0-2D02A757C654}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.Autofac.NetStandard2.0", "Rhyous.SimplePluginLoader.Autofac.NetStandard2.0\Rhyous.SimplePluginLoader.Autofac.NetStandard2.0.csproj", "{41997193-428B-4D8E-BDCB-E0B0098C4A15}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rhyous.SimplePluginLoader.Autofac.Shared", "Rhyous.SimplePluginLoader.Autofac.Shared\Rhyous.SimplePluginLoader.Autofac.Shared.shproj", "{7972F2CB-B9DC-4F09-85BF-A90C9B048799}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.Autofac.Net45", "Rhyous.SimplePluginLoader.Autofac.Net45\Rhyous.SimplePluginLoader.Autofac.Net45.csproj", "{4FF93BD1-042F-4197-B50E-0192A9A8D76E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.Autofac.NuGet", "NuGet\Rhyous.SimplePluginLoader.Autofac.NuGet\Rhyous.SimplePluginLoader.Autofac.NuGet.csproj", "{0451BAEF-DF2E-4B98-8644-94EE9415E390}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Rhyous.SimplePluginLoader.Autofac.Shared\Rhyous.SimplePluginLoader.Autofac.Shared.projitems*{4ff93bd1-042f-4197-b50e-0192a9a8d76e}*SharedItemsImports = 4
+		Rhyous.SimplePluginLoader.Autofac.Shared\Rhyous.SimplePluginLoader.Autofac.Shared.projitems*{7972f2cb-b9dc-4f09-85bf-a90c9b048799}*SharedItemsImports = 13
 		Rhyous.SimplePluginLoader.Shared\Rhyous.SimplePluginLoader.Shared.projitems*{8eb7535d-c90c-4e91-804e-052b67dd308e}*SharedItemsImports = 4
 		Rhyous.SimplePluginLoader.Shared\Rhyous.SimplePluginLoader.Shared.projitems*{e804da1e-c5d5-4908-b639-248ea1e78b47}*SharedItemsImports = 13
 	EndGlobalSection
@@ -120,6 +130,17 @@ Global
 		{4FB5881A-4167-488B-9FE0-2D02A757C654}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FB5881A-4167-488B-9FE0-2D02A757C654}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FB5881A-4167-488B-9FE0-2D02A757C654}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41997193-428B-4D8E-BDCB-E0B0098C4A15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41997193-428B-4D8E-BDCB-E0B0098C4A15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41997193-428B-4D8E-BDCB-E0B0098C4A15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41997193-428B-4D8E-BDCB-E0B0098C4A15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FF93BD1-042F-4197-B50E-0192A9A8D76E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FF93BD1-042F-4197-B50E-0192A9A8D76E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FF93BD1-042F-4197-B50E-0192A9A8D76E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FF93BD1-042F-4197-B50E-0192A9A8D76E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E390}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0451BAEF-DF2E-4B98-8644-94EE9415E390}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -143,6 +164,7 @@ Global
 		{C7754468-24AA-4E16-966A-B92B720C754C} = {3B152766-5529-45BE-88A6-D0A2DF070E3A}
 		{B203B597-405A-454D-9CF6-4F36AB7D28B2} = {C5E2F000-AEFC-4087-ACA7-F848F15DD659}
 		{4FB5881A-4167-488B-9FE0-2D02A757C654} = {F5813784-49EC-4D7F-863D-1B02331D29E1}
+		{0451BAEF-DF2E-4B98-8644-94EE9415E390} = {CBC03BE4-55E7-4ED9-AA96-333DC2C5AB95}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5D26C380-6CAE-406D-B257-398649EF0712}

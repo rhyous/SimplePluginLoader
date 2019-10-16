@@ -1,10 +1,9 @@
-﻿using Rhyous.SimplePluginLoader;
+﻿using Autofac;
+using Rhyous.SimplePluginLoader;
+using Rhyous.SimplePluginLoader.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using Tool.Tools;
-using Autofac;
-using Autofac.Features.ResolveAnything;
-using System.Linq;
 
 namespace Tool.DependencyInjection
 {

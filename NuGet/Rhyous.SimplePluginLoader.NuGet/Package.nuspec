@@ -13,7 +13,7 @@
     <projectUrl>https://github.com/rhyous/SimplePluginLoader/wiki</projectUrl>
     <iconUrl>https://raw.githubusercontent.com/rhyous/SimplePluginLoader/master/Images/SimplePluginLoaderLogo.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://github.com/rhyous/SimplePluginLoader/blob/master/Fork%20and%20Contribute%20License.txt</licenseUrl>
+    <license type="file">License.txt</license>
     <copyright>Copyright Jared Barneck (Rhyous) 2015</copyright>
     <tags>plugin interface create instance extension extensibility</tags>
     <dependencies>
@@ -27,5 +27,6 @@
   <files>
     <file src="lib\" target="lib" />
     <file src="tools\" target="tools" />
+    <file src="License.txt" target="" />
   </files>
 </package>
