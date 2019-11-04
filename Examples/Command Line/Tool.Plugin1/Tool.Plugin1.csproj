@@ -48,7 +48,8 @@
   <ItemGroup>
     <Compile Include="CavemanRock.cs" />
     <Compile Include="CaveManTool.cs" />
-    <Compile Include="DependencyRegistrar.cs" />
+    <Compile Include="DependencyInjection\DependencyRegistrar.cs" />
+    <Compile Include="DependencyInjection\LocalizerModule.cs" />
     <Compile Include="Rock.cs" />
     <Compile Include="Screwdriver.cs" />
     <Compile Include="Saw.cs" />

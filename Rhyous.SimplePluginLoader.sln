@@ -54,13 +54,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.DependencyInjection", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interfaces.Localization", "Examples\Dependencies\Interfaces.Localization\Interfaces.Localization.csproj", "{4FB5881A-4167-488B-9FE0-2D02A757C654}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.Autofac.NetStandard2.0", "Rhyous.SimplePluginLoader.Autofac.NetStandard2.0\Rhyous.SimplePluginLoader.Autofac.NetStandard2.0.csproj", "{41997193-428B-4D8E-BDCB-E0B0098C4A15}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rhyous.SimplePluginLoader.Autofac.NetStandard2.0", "Rhyous.SimplePluginLoader.Autofac.NetStandard2.0\Rhyous.SimplePluginLoader.Autofac.NetStandard2.0.csproj", "{41997193-428B-4D8E-BDCB-E0B0098C4A15}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rhyous.SimplePluginLoader.Autofac.Shared", "Rhyous.SimplePluginLoader.Autofac.Shared\Rhyous.SimplePluginLoader.Autofac.Shared.shproj", "{7972F2CB-B9DC-4F09-85BF-A90C9B048799}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.Autofac.Net45", "Rhyous.SimplePluginLoader.Autofac.Net45\Rhyous.SimplePluginLoader.Autofac.Net45.csproj", "{4FF93BD1-042F-4197-B50E-0192A9A8D76E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.Autofac.NuGet", "NuGet\Rhyous.SimplePluginLoader.Autofac.NuGet\Rhyous.SimplePluginLoader.Autofac.NuGet.csproj", "{0451BAEF-DF2E-4B98-8644-94EE9415E390}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhyous.SimplePluginLoader.Autofac.Tests", "Unit Tests\Rhyous.SimplePluginLoader.Autofac.Tests\Rhyous.SimplePluginLoader.Autofac.Tests.csproj", "{3DDB36BF-15F4-431F-8811-BDB884907396}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -141,6 +143,10 @@ Global
 		{0451BAEF-DF2E-4B98-8644-94EE9415E390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0451BAEF-DF2E-4B98-8644-94EE9415E390}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0451BAEF-DF2E-4B98-8644-94EE9415E390}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DDB36BF-15F4-431F-8811-BDB884907396}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DDB36BF-15F4-431F-8811-BDB884907396}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DDB36BF-15F4-431F-8811-BDB884907396}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DDB36BF-15F4-431F-8811-BDB884907396}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -165,6 +171,7 @@ Global
 		{B203B597-405A-454D-9CF6-4F36AB7D28B2} = {C5E2F000-AEFC-4087-ACA7-F848F15DD659}
 		{4FB5881A-4167-488B-9FE0-2D02A757C654} = {F5813784-49EC-4D7F-863D-1B02331D29E1}
 		{0451BAEF-DF2E-4B98-8644-94EE9415E390} = {CBC03BE4-55E7-4ED9-AA96-333DC2C5AB95}
+		{3DDB36BF-15F4-431F-8811-BDB884907396} = {E970C625-C773-4A57-B300-D32F30B4ACEC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5D26C380-6CAE-406D-B257-398649EF0712}

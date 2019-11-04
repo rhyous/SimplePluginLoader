@@ -15,12 +15,8 @@ namespace Tool.DependencyInjection
             builder.RegisterType<PluginLoaderLogger>()
                    .As<IPluginLoaderLogger>()
                    .SingleInstance();
-            builder.Register(c => AppDomain.CurrentDomain)
-                   .As<AppDomain>()
-                   .SingleInstance();
-            builder.Register(c => new AppDomainWrapper(c.Resolve<AppDomain>()))
-                   .As<IAppDomain>()
-                   .SingleInstance();
+            builder.RegisterInstance(AppDomain.CurrentDomain).SingleInstance();
+            builder.RegisterType<AppDomainWrapper>().As<IAppDomain>().SingleInstance();
             builder.RegisterType<AutofacObjectCreator<ITool>>()
                    .As<IObjectCreator<ITool>>()
                    .SingleInstance();
@@ -30,20 +26,19 @@ namespace Tool.DependencyInjection
                                      c.Resolve<IPluginLoaderLogger>()))
                    .As<IPluginLoader<ITool>>()
                    .SingleInstance();
-            builder.Register(c => new PluginLoader<IDependencyRegistrar<ContainerBuilder>>(null,
-                         c.Resolve<IAppDomain>(),
-                         null,
-                         c.Resolve<IPluginLoaderLogger>()))
+            builder.RegisterType<PluginPaths>()
+                   .WithParameter("appName", "sectionName")
+                   .WithParameter("PluginSubFolder", null);
+            builder.RegisterType<PluginLoader<IDependencyRegistrar<ContainerBuilder>>>()
                .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>()
                .SingleInstance();
-            builder.RegisterType<ObjectCreator<ICaveManTool<Hammer>>>()
+            builder.RegisterType<Hammer>();
+            builder.RegisterType<AutofacObjectCreator<ICaveManTool<Hammer>>>()
                    .As<IObjectCreator<ICaveManTool<Hammer>>>()
                    .SingleInstance();
-            builder.Register(c => new PluginLoader<ICaveManTool<Hammer>>(null,
-                                     c.Resolve<IAppDomain>(),
-                                     c.Resolve<IObjectCreator<ICaveManTool<Hammer>>>(),
-                                     c.Resolve<IPluginLoaderLogger>()))
+            builder.RegisterType<PluginLoader<ICaveManTool<Hammer>>>()
                    .As<IPluginLoader<ICaveManTool<Hammer>>>()
+                   .WithParameter("paths", null)
                    .SingleInstance();
             var container = builder.Build();
             using (var globalScope = container.BeginLifetimeScope())

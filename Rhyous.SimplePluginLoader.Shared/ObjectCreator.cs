@@ -6,7 +6,7 @@ namespace Rhyous.SimplePluginLoader
     public class ObjectCreator<T> : IObjectCreator<T>
         where T : class
     {
-        public Plugin<T> Plugin { get; set; }
+        public IPlugin<T> Plugin { get; set; }
 
         public T Create(Type type)
         {

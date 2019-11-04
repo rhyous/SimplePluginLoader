@@ -4,6 +4,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Rhyous.SimplePluginLoader.Autofac</RootNamespace>
     <AssemblyName>Rhyous.SimplePluginLoader.Autofac</AssemblyName>
+    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
   </PropertyGroup>
 
   <Import Project="..\Rhyous.SimplePluginLoader.Autofac.Shared\Rhyous.SimplePluginLoader.Autofac.Shared.projitems" Label="Shared" />
