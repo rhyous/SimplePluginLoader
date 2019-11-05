@@ -11,7 +11,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
 
         public AutofacObjectCreator(IComponentContext componentContext)
         {
-            _ComponentContext = componentContext;
+            _ComponentContext = componentContext ?? throw new ArgumentNullException(nameof(componentContext));
         }
 
         public IPlugin<T> Plugin { get; set; }
