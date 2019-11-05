@@ -11,13 +11,19 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
 
         public AutofacObjectCreator(IComponentContext componentContext)
         {
-            _ComponentContext = componentContext;
+            _ComponentContext = componentContext ?? throw new ArgumentNullException(nameof(componentContext));
         }
 
         public IPlugin<T> Plugin { get; set; }
 
         internal Type TypeToLoad { get; set; }
 
+        /// <summary>
+        /// Create an instance of the given type using Autofac with 
+        /// Just-in-Time (JIT) regisration and resolving.
+        /// </summary>
+        /// <param name="type">The type to create.</param>
+        /// <returns></returns>
         public T Create(Type type)
         {
             var scope = _ComponentContext.Resolve<ILifetimeScope>();
@@ -33,6 +39,11 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             }
         }
 
+        /// <summary>
+        /// This method provides Just-in-time (JIT) dependency registration for a plugin's dependencies.
+        /// </summary>
+        /// <param name="type">The type to </param>
+        /// <param name="builder">The Autofac ContainerBuidler</param>
         internal void RegisterPluginDependencies(Type type, ContainerBuilder builder)
         {
             var dependencyRegistrarPluginLoader = _ComponentContext.Resolve<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
@@ -49,6 +60,11 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             }
         }
 
+        /// <summary>
+        /// This method provides Just-in-time (JIT) dependency registration for the plugin itself.
+        /// </summary>
+        /// <param name="type">The type to </param>
+        /// <param name="builder">The Autofac ContainerBuidler</param>
         internal void RegisterPluginType(Type type, ContainerBuilder builder)
         {
             if (type.IsInterface)
