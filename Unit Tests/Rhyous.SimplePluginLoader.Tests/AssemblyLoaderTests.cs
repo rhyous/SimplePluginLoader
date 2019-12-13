@@ -48,7 +48,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             });
             var loader = new AssemblyLoader<IOrg>(appDomain, mockLogger.Object);
             var assemblyDictionary = AssemblyDictionary.GetInstance(appDomain, mockLogger.Object);
-            var dll = "file.dll";
+            var dll = "file2.dll";
             var oldversion = "1.0.0.0";
             var version = "1.0.0.1";
             var key = AssemblyLoader<IOrg>.GetKey(dll, oldversion);
@@ -79,7 +79,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             });
             var loader = new AssemblyLoader<IOrg>(appDomain, mockLogger.Object);
             var assemblyDictionary = AssemblyDictionary.GetInstance(appDomain, mockLogger.Object);
-            var dll = "file.dll";
+            var dll = "file3.dll";
             var version = "1.0.0.1";
             var key = AssemblyLoader<IOrg>.GetKey(dll, version);
             var testAssembly = appDomain.GetAssemblies().First();
@@ -94,17 +94,6 @@ namespace Rhyous.SimplePluginLoader.Tests
 
             // Assert
             Assert.AreEqual(actual, testAssembly);
-        }
-
-
-        [TestMethod]
-        public void FindAlreadyLoadedAssembly_AlreadyLoadedByAppDomainNotPluginLoader()
-        {
-            // Arrange
-            
-            // Act
-
-            // Assert
         }
     }
 }

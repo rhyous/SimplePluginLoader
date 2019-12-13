@@ -1,0 +1,148 @@
+﻿// See License at the end of the file
+
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+
+namespace Rhyous.SimplePluginLoader
+{
+    [Serializable]
+    public class PluginDependencyResolver<T> : IPluginDependencyResolver
+        where T : class
+    {
+        public PluginDependencyResolver(Plugin<T> plugin)
+        {
+            Plugin = plugin;
+        }
+
+        public Plugin<T> Plugin { get; set; }
+        public List<string> Paths
+        {
+            get { return _Paths ?? (_Paths = GetPaths(SharedBinPathManager)); }
+            set { _Paths = value; }
+        } private List<string> _Paths;
+
+        Dictionary<string, List<string>> AttemptedPaths = new Dictionary<string, List<string>>();
+
+        public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
+        {
+            var assemblyDetails = args.Name.Split(", ".ToArray(), StringSplitOptions.RemoveEmptyEntries);
+            var file = assemblyDetails.First();
+            var version = assemblyDetails.FirstOrDefault(ad => ad.StartsWith("Version="))?
+                                         .Split("=".ToArray(), StringSplitOptions.RemoveEmptyEntries)
+                                         .Skip(1)?.First();
+            var paths = Paths.ToList();
+            List<string> alreadyTriedPaths = null;
+            if (!AttemptedPaths.TryGetValue(args.Name, out alreadyTriedPaths))
+            {
+                alreadyTriedPaths = new List<string>();
+                AttemptedPaths.Add(args.Name, alreadyTriedPaths);
+            }
+            foreach (var path in alreadyTriedPaths)
+            {
+                paths.Remove(path);
+            }
+            if (!paths.Any())
+            {
+                // Changed this from throwing an exception because it threw when it shouldn't.
+                return null; 
+            }
+            foreach (var path in paths)
+            {
+                alreadyTriedPaths.Add(path);
+                if (!Directory.Exists(path))
+                {
+                    Paths.Remove(path);
+                    continue;
+                }
+                var dll = Path.Combine(path, file + ".dll");
+                var pdb = Path.Combine(path, file + ".pdb");
+                var assembly = (string.IsNullOrWhiteSpace(version))
+                    ? Plugin.AssemblyBuilder.TryLoad(dll, pdb)
+                    : Plugin.AssemblyBuilder.TryLoad(dll, pdb, version);
+                if (assembly != null)
+                {
+                    return assembly;
+                }
+            }
+            return null;
+        }
+
+        internal List<string> GetPaths(SharedBinPathManager pathManager)
+        {
+            var paths = new List<string>
+                {
+                    "",                                             // Try current path
+                    Plugin.Directory,                               // Try plugin directory
+                    Path.Combine(Plugin.Directory, "bin"),          // Try plugin/bin directory
+                    Path.Combine(Plugin.Directory, Plugin.Name)     // Try plugin/<pluginName> directory
+                };
+            
+            // This allows for two plugins that a share a dll to have Copy Local set to false, and both look to the same folder
+            if (pathManager?.SharedPaths.Any() != null)
+                paths.AddRange(pathManager.SharedPaths);
+
+            return paths;
+        }
+
+        public AssemblyName GetAssemblyName(string dll)
+        {
+            if (!File.Exists(dll))
+                return null;
+            try { return AssemblyName.GetAssemblyName(dll); }
+            catch (Exception) { return null; }
+        }
+
+        internal SharedBinPathManager SharedBinPathManager
+        {
+            get { return _SharedBinPathManager ?? (_SharedBinPathManager = new SharedBinPathManager()); }
+            set { _SharedBinPathManager = value; }
+        } private SharedBinPathManager _SharedBinPathManager;
+    }
+}
+
+#region License
+/*
+Simple Plugin Loader - A library that makes loading plugins quick and easy. It
+                       creates instances of interfaces or base classes from
+                       plugins with a few lines of code.
+
+Copyright (c) 2012, Jared Barneck (Rhyous)
+All rights reserved.
+ 
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+ 
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+3. Use of the source code or binaries that in any way provides a competing
+   solution, whether open source or commercial, is prohibited unless permission
+   is specifically granted under a separate license by Jared Barneck (Rhyous).
+4. Forking for personal or internal, or non-competing commercial use is 
+   allowed. Distributing compiled releases as part of your non-competing 
+   project is allowed.
+5. Public copies, or forks, of source is allowed, but from such, public
+   distribution of compiled releases is forbidden.
+6. Source code enhancements or additions are the property of the author until
+   the source code is contributed to this project. By contributing the source
+   code to this project, the author immediately grants all rights to the
+   contributed source code to Jared Barneck (Rhyous).
+ 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+#endregion

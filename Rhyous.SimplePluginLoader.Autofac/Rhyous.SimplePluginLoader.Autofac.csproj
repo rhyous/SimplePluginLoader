@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <RootNamespace>Rhyous.SimplePluginLoader.Autofac</RootNamespace>
+    <AssemblyName>Rhyous.SimplePluginLoader.Autofac</AssemblyName>
+    <Authors>Jared Barneck (Rhyous)</Authors>
+    <Company>Rhyous Publishing LLC</Company>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.3.0</FileVersion>
+    <Version>1.0.3</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>An Autofac extension to Rhyous.SimplePluginLoader.</Description>
+    <Copyright>Copyright Jared Barneck (Rhyous) 2019</Copyright>
+    <PackageLicenseFile>License.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/rhyous/SimplePluginLoader/wiki</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/rhyous/SimplePluginLoader</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>plugin extension extensibility</PackageTags>
+    <PackageIcon>SimplePluginLoaderLogo.png</PackageIcon>
+    <PackageIconUrl />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.9.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rhyous.SimplePluginLoader\Rhyous.SimplePluginLoader.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Images\SimplePluginLoaderLogo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\License.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

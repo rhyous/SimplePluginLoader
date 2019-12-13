@@ -84,13 +84,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Rhyous.SimplePluginLoader.Autofac.Net45\Rhyous.SimplePluginLoader.Autofac.Net45.csproj">
-      <Project>{4ff93bd1-042f-4197-b50e-0192a9a8d76e}</Project>
-      <Name>Rhyous.SimplePluginLoader.Autofac.Net45</Name>
+    <ProjectReference Include="..\..\Rhyous.SimplePluginLoader.Autofac\Rhyous.SimplePluginLoader.Autofac.csproj">
+      <Project>{4d84de60-5b0d-4709-b4db-6222fe9062f1}</Project>
+      <Name>Rhyous.SimplePluginLoader.Autofac</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Rhyous.SimplePluginLoader.Net40-Client\Rhyous.SimplePluginLoader.Net40.csproj">
-      <Project>{8eb7535d-c90c-4e91-804e-052b67dd308e}</Project>
-      <Name>Rhyous.SimplePluginLoader.Net40</Name>
+    <ProjectReference Include="..\..\Rhyous.SimplePluginLoader\Rhyous.SimplePluginLoader.csproj">
+      <Project>{def89198-10c2-493b-bfb6-e4a351021ccd}</Project>
+      <Name>Rhyous.SimplePluginLoader</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
