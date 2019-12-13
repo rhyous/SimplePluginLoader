@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C0BE9BCA-DF56-4350-93E0-A9F53623E507}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Tool.Plugin1</RootNamespace>
+    <AssemblyName>Tool.Plugin1</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=4.9.4.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.4.9.4\lib\net45\Autofac.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CavemanRock.cs" />
+    <Compile Include="CaveManTool.cs" />
+    <Compile Include="DependencyInjection\DependencyRegistrar.cs" />
+    <Compile Include="DependencyInjection\LocalizerModule.cs" />
+    <Compile Include="Rock.cs" />
+    <Compile Include="Screwdriver.cs" />
+    <Compile Include="Saw.cs" />
+    <Compile Include="Wrench.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Rhyous.SimplePluginLoader.Autofac\Rhyous.SimplePluginLoader.Autofac.csproj">
+      <Project>{4d84de60-5b0d-4709-b4db-6222fe9062f1}</Project>
+      <Name>Rhyous.SimplePluginLoader.Autofac</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Autofac\Tool.DependencyInection\Tool.DependencyInjection.csproj">
+      <Project>{b203b597-405a-454d-9cf6-4f36ab7d28b2}</Project>
+      <Name>Tool.DependencyInjection</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Dependencies\Example.Dependency\Example.Dependency.csproj">
+      <Project>{88691206-bfef-4ad3-876d-1f4646a4d1e1}</Project>
+      <Name>Example.Dependency</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Dependencies\Interfaces.Localization\Interfaces.Localization.csproj">
+      <Project>{4FB5881A-4167-488B-9FE0-2D02A757C654}</Project>
+      <Name>Interfaces.Localization</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Tool\Tool.CommandLine.csproj">
+      <Project>{3b20b597-0a54-454d-9cf6-6ab7d28b24f2}</Project>
+      <Name>Tool.CommandLine</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>REM For Commandline
+SET proj=$(ProjectName)
+SET entity=%25proj:*.=%25
+ECHO entity = %25entity%25
+SET copyToDir=$(SolutionDir)Examples\Command Line\Tool\$(OutDir)\Plugins\$(TargetName)
+ECHO "%25copyToDir%25"
+IF NOT EXIST "%25copyToDir%25" MKDIR "%25copyToDir%25"
+COPY /Y "$(TargetPath)" "%25copyToDir%25"
+COPY /Y "$(TargetDir)$(TargetName).pdb" "%25copyToDir%25"
+
+REM Uncomment this to copy additional dll dependencies
+SET dllDir=%25copyToDir%25\bin
+ECHO "%25dllDir%25"
+IF NOT EXIST "%25dllDir%25" MKDIR "%25dllDir%25"
+FOR %25%25X in ("$(Targetdir)*.dll") DO (
+   IF NOT "%25%25X"=="$(TargetPath)" COPY /Y "%25%25X" "%25dllDir%25"
+)
+FOR %25%25X in ("$(Targetdir)*.pdb") DO (
+   IF NOT "%25%25X"=="$(TargetDir)$(TargetName).pdb" COPY /Y "%25%25X" "%25dllDir%25"
+)
+
+
+REM For WPF Example
+SET proj=$(ProjectName)
+SET entity=%25proj:*.=%25
+ECHO entity = %25entity%25
+SET copyToDir=$(SolutionDir)Examples\WPF Example\Tools.UI\$(OutDir)\Plugins\$(TargetName)
+ECHO "%25copyToDir%25"
+IF NOT EXIST "%25copyToDir%25" MKDIR "%25copyToDir%25"
+COPY /Y "$(TargetPath)" "%25copyToDir%25"
+COPY /Y "$(TargetDir)$(TargetName).pdb" "%25copyToDir%25"
+
+REM Uncomment this to copy additional dll dependencies
+SET dllDir=%25copyToDir%25\bin
+ECHO "%25dllDir%25"
+IF NOT EXIST "%25dllDir%25" MKDIR "%25dllDir%25"
+FOR %25%25X in ("$(Targetdir)*.dll") DO (
+   IF NOT "%25%25X"=="$(TargetPath)" COPY /Y "%25%25X" "%25dllDir%25"
+)
+FOR %25%25X in ("$(Targetdir)*.pdb") DO (
+   IF NOT "%25%25X"=="$(TargetDir)$(TargetName).pdb" COPY /Y "%25%25X" "%25dllDir%25"
+)
+
+
+REM For Autofac Example
+SET proj=$(ProjectName)
+SET entity=%25proj:*.=%25
+ECHO entity = %25entity%25
+SET copyToDir=$(SolutionDir)Examples\Autofac\Tool.DependencyInection\$(OutDir)\Plugins\$(TargetName)
+ECHO "%25copyToDir%25"
+IF NOT EXIST "%25copyToDir%25" MKDIR "%25copyToDir%25"
+COPY /Y "$(TargetPath)" "%25copyToDir%25"
+COPY /Y "$(TargetDir)$(TargetName).pdb" "%25copyToDir%25"
+
+REM Uncomment this to copy additional dll dependencies
+SET dllDir=%25copyToDir%25\bin
+ECHO "%25dllDir%25"
+IF NOT EXIST "%25dllDir%25" MKDIR "%25dllDir%25"
+FOR %25%25X in ("$(Targetdir)*.dll") DO (
+   IF NOT "%25%25X"=="$(TargetPath)" COPY /Y "%25%25X" "%25dllDir%25"
+)
+FOR %25%25X in ("$(Targetdir)*.pdb") DO (
+   IF NOT "%25%25X"=="$(TargetDir)$(TargetName).pdb" COPY /Y "%25%25X" "%25dllDir%25"
+)</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

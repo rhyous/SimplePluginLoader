@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <AssemblyName>Rhyous.SimplePluginLoader</AssemblyName>
+    <RootNamespace>Rhyous.SimplePluginLoader</RootNamespace>
+    <Authors>Jared Barneck (Rhyous)</Authors>
+    <Company>Rhyous Publishing LLC</Company>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <FileVersion>1.4.0.0</FileVersion>
+    <Version>1.4.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>A simple library for loading plugins.</Description>
+    <Copyright>Copyright Jared Barneck (Rhyous) 2015</Copyright>
+    <PackageLicenseFile>License.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/rhyous/SimplePluginLoader/wiki</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/rhyous/SimplePluginLoader</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>plugin extension extensibility</PackageTags>
+    <PackageIcon>SimplePluginLoaderLogo.png</PackageIcon>
+    <PackageIconUrl />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\Images\SimplePluginLoaderLogo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\License.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
