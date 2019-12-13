@@ -1,0 +1,26 @@
+version: 1.2.{build}
+image: Visual Studio 2019
+dotnet_csproj:
+  patch: false
+  file: '**\*.csproj'
+  version: '{version}'
+  version_prefix: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+before_build:
+- pwsh: nuget restore src/Rhyous.SimplePluginLoader.sln
+build:
+  project: src/Rhyous.SimplePluginLoader.sln
+  verbosity: minimal
+test:
+  categories:
+    except:
+    - slow
+artifacts:
+  - path: '**\*.nupkg'
+deploy:
+- provider: NuGet
+  api_key:
+    secure: YuESu/nQz4WK2RIjra4BXLJ7dDNM/7mJcKJAJQZCiYlKgMBPozzyCSRIBgu/72mC
