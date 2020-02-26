@@ -3,57 +3,36 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class InstancesLoader<T> : ILoadInstancesOfType<T>
+    public class InstanceLoader<T> : IInstanceLoader<T>
         where T : class
     {
-        public static bool ThrowExceptionsOnLoad = false;
         private readonly IObjectCreator<T> _ObjectCreator;
+        private readonly ITypeLoader<T> _TypeLoader;
+        private readonly IPluginLoaderSettings _Settings;
         internal IPluginLoaderLogger Logger;
 
-        public InstancesLoader(IObjectCreator<T> objectCreator, IPluginLoaderLogger logger)
+        public InstanceLoader(IObjectCreator<T> objectCreator, 
+                               ITypeLoader<T> typeLoader,
+                               IPluginLoaderSettings settings,
+                               IPluginLoaderLogger logger)
         {
             _ObjectCreator = objectCreator ?? throw new ArgumentNullException(nameof(objectCreator));
+            _TypeLoader = typeLoader ?? throw new ArgumentNullException(nameof(typeLoader));
+            _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             Logger = logger;
         }
 
-        public List<T> LoadInstances(Assembly assembly)
-        {
-            return LoadTypes(assembly);
-        }
+        public IPlugin<T> Plugin { get => _ObjectCreator.Plugin; set => _ObjectCreator.Plugin = value; }
 
-        public List<Type> GetPluginTypes(Assembly assembly)
+        public List<T> Load(IAssembly assembly)
         {
-            try
-            {
-                if (assembly == null)
-                    return null;
-                return assembly.GetTypes().Where(o => o.IsPluginType<T>())?.ToList() ?? null;
-            }
-            catch (Exception e)
-            {
-                if (ThrowExceptionsOnLoad)
-                {
-                    var e2 = new PluginTypeLoadException("Failed to load plugin types. See inner exception.", e);
-                    Logger?.Log(e2);
-                    throw e2;
-                }
-                else
-                {
-                    Logger.Write(PluginLoaderLogLevel.Info, $"Exception occurred loading a plugin type.");
-                    Logger?.Log(e);
-                    return null;
-                }
-            }
-        }
-
-        public List<T> LoadTypes(Assembly assembly)
-        {
-            var typesToLoad = GetPluginTypes(assembly);
-            if (typesToLoad == null)
+            if (assembly == null)
+                return null;
+            var typesToLoad = _TypeLoader.Load(assembly);
+            if (typesToLoad == null || !typesToLoad.Any())
                 return null;
             var listOfT = new List<T>();
             foreach (var typeToLoad in typesToLoad.Where(t => t.IsInstantiable()))
@@ -68,7 +47,7 @@ namespace Rhyous.SimplePluginLoader
                 }
                 catch (Exception e)
                 {
-                    if (ThrowExceptionsOnLoad)
+                    if (_Settings.ThrowExceptionsOnLoad)
                     {
                         var e2 = new PluginTypeLoadException($"Failed to load plugin type: {typeToLoad.Name}. See inner exception.", e);
                         Logger?.Log(e2);
@@ -76,7 +55,7 @@ namespace Rhyous.SimplePluginLoader
                     }
                     else
                     {
-                        Logger.Write(PluginLoaderLogLevel.Info, $"Exception occurred loading the plugin of type: {typeToLoad.Name}.");
+                        Logger?.Write(PluginLoaderLogLevel.Info, $"Exception occurred loading the plugin of type: {typeToLoad.Name}.");
                         Logger?.Log(e);
                     }
                 }

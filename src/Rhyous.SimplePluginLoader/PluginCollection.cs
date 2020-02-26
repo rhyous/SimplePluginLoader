@@ -1,6 +1,7 @@
 ﻿// See License at the end of the file
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -27,6 +28,7 @@ namespace Rhyous.SimplePluginLoader
                 var list = new List<T>();
                 foreach (var plugin in this)
                 {
+                    if (plugin.PluginObjects!= null && plugin.PluginObjects.Any())
                     list.AddRange(plugin.PluginObjects);
                 }
                 return list;

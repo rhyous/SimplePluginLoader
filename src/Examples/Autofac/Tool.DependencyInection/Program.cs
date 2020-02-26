@@ -17,29 +17,45 @@ namespace Tool.DependencyInjection
                    .SingleInstance();
             builder.RegisterInstance(AppDomain.CurrentDomain).SingleInstance();
             builder.RegisterType<AppDomainWrapper>().As<IAppDomain>().SingleInstance();
-            builder.RegisterType<AutofacObjectCreator<ITool>>()
-                   .As<IObjectCreator<ITool>>()
-                   .SingleInstance();
-            builder.Register(c => new PluginLoader<ITool>(null,
-                                     c.Resolve<IAppDomain>(),
-                                     c.Resolve<IObjectCreator<ITool>>(),
-                                     c.Resolve<IPluginLoaderLogger>()))
-                   .As<IPluginLoader<ITool>>()
-                   .SingleInstance();
+            builder.RegisterInstance(PluginLoaderSettings.Default).As<IPluginLoaderSettings>();
+            builder.RegisterGeneric(typeof(TypeLoader<>)).As(typeof(ITypeLoader<>));
+            builder.RegisterGeneric(typeof(InstanceLoaderFactory<>)).As(typeof(IInstanceLoaderFactory<>));
             builder.RegisterType<PluginPaths>()
                    .WithParameter("appName", "sectionName")
                    .WithParameter("PluginSubFolder", null);
+
+            // Plugin Loader Registration for a plugin's own registration module
             builder.RegisterType<PluginLoader<IDependencyRegistrar<ContainerBuilder>>>()
                .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>()
                .SingleInstance();
+            builder.RegisterType<ObjectCreator<IDependencyRegistrar<ContainerBuilder>>>()
+                   .As<IObjectCreator<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
+            builder.RegisterType<ObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>()
+                               .As<IObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
+
+            // ITool Plugin Loader registrations
+            builder.RegisterType<AutofacObjectCreator<ITool>>()
+                   .As<IObjectCreator<ITool>>();//Instance per dependency
+            builder.RegisterType<AutofacObjectCreatorFactory<ITool>>()
+                   .As<IObjectCreatorFactory<ITool>>();
+            builder.RegisterType<PluginLoader<ITool>>()
+                   .As<IPluginLoader<ITool>>()
+                   .WithParameter("paths", null)
+                   .SingleInstance();
+
+            // ICaveManTool<Hammer>> Plugin Loader registrations
             builder.RegisterType<Hammer>();
             builder.RegisterType<AutofacObjectCreator<ICaveManTool<Hammer>>>()
                    .As<IObjectCreator<ICaveManTool<Hammer>>>()
+                   .SingleInstance(); 
+            builder.RegisterType<AutofacObjectCreatorFactory<ICaveManTool<Hammer>>>()
+                   .As<IObjectCreatorFactory<ICaveManTool<Hammer>>>()
                    .SingleInstance();
             builder.RegisterType<PluginLoader<ICaveManTool<Hammer>>>()
                    .As<IPluginLoader<ICaveManTool<Hammer>>>()
                    .WithParameter("paths", null)
                    .SingleInstance();
+
             var container = builder.Build();
             using (var globalScope = container.BeginLifetimeScope())
             {

@@ -1,7 +1,7 @@
 ﻿namespace Rhyous.SimplePluginLoader.DependencyInjection
 {
-    public interface IDependencyRegistrar<ContainerType>
+    public interface IDependencyRegistrar<TContainerType>
     {
-        void Register(ContainerType containerBuilder);
+        void Register(TContainerType containerBuilder);
     }
 }

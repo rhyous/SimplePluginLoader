@@ -22,7 +22,7 @@ namespace Rhyous.SimplePluginLoader
             _Logger = logger;
         }
 
-        public virtual Assembly Load(string dll, string pdb)
+        public virtual IAssembly Load(string dll, string pdb)
         {
             if (Path.IsPathRooted(dll))
             {
@@ -41,7 +41,7 @@ namespace Rhyous.SimplePluginLoader
             return null;
         }
 
-        public Assembly TryLoad(string dll, string pdb)
+        public IAssembly TryLoad(string dll, string pdb)
         {
             var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
             if (assemblyName == null)
@@ -49,9 +49,9 @@ namespace Rhyous.SimplePluginLoader
             return TryLoad(dll, pdb, assemblyName.Version.ToString());
         }
 
-        public Assembly TryLoad(string dll, string pdb, string version)
+        public IAssembly TryLoad(string dll, string pdb, string version)
         {
-            Assembly assembly = null;
+            IAssembly assembly = null;
             lock (AssemblyDictionary.IsLocked)
             {
                 assembly = FindAlreadyLoadedAssembly(dll, version);
@@ -82,13 +82,11 @@ namespace Rhyous.SimplePluginLoader
             return assembly;
         }
 
-        internal Assembly FindAlreadyLoadedAssembly(string dll, string version)
+        internal IAssembly FindAlreadyLoadedAssembly(string dll, string version)
         {
             var key = GetKey(dll, version);
-            Assembly assembly = AssemblyDictionary.Assemblies.TryGetValue(key, out assembly) ? assembly : null;
-            if (assembly == null)
-            {
-                var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
+            if (!AssemblyDictionary.Assemblies.TryGetValue(key, out IAssembly assembly))
+            {                var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
                 if (assemblyName == null)
                     return null;
                 key = GetKey(dll, assemblyName.Version.ToString());

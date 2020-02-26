@@ -2,8 +2,12 @@
 {
     class TestPluginLoader : RuntimePluginLoaderBase<Org>
     {
-        public TestPluginLoader(IAppDomain appDomain, IObjectCreator<Org> objectCreator, IPluginLoaderLogger logger) 
-            : base(appDomain, objectCreator, logger)
+        public TestPluginLoader(IAppDomain appDomain,
+                                IPluginLoaderSettings settings,
+                                ITypeLoader<Org> typeLoader,
+                                IInstanceLoaderFactory<Org> instanceLoaderFactory,
+                                IPluginLoaderLogger logger) 
+            : base(appDomain,  settings, typeLoader, instanceLoaderFactory, logger)
         {
         }
 
@@ -12,8 +16,12 @@
 
     class TestPluginLoader2 : RuntimePluginLoaderBase<Org>
     {
-        public TestPluginLoader2(IAppDomain appDomain, IObjectCreator<Org> objectCreator, IPluginLoaderLogger logger)
-            : base(appDomain, objectCreator, logger)
+        public TestPluginLoader2(IAppDomain appDomain, 
+                                 IPluginLoaderSettings settings,
+                                 ITypeLoader<Org> typeLoader,
+                                 IInstanceLoaderFactory<Org> instanceLoaderFactory,
+                                 IPluginLoaderLogger logger)
+            : base(appDomain, settings, typeLoader, instanceLoaderFactory, logger)
         {
         }
 

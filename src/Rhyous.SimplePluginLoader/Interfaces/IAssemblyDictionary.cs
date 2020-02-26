@@ -5,6 +5,6 @@ namespace Rhyous.SimplePluginLoader
 {
     public interface IAssemblyDictionary
     {
-        IDictionary<string, Assembly> Assemblies { get; }
+        IDictionary<string, IAssembly> Assemblies { get; }
     }
 }

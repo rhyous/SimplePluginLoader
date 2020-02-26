@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -12,9 +11,8 @@ namespace Rhyous.SimplePluginLoader
         string FilePdb { get; }
         string FullPath { get; }
         string FullPathPdb { get; }
-        Assembly Assembly { get; set; }
+        IAssembly Assembly { get; set; }
         List<T> PluginObjects { get; set; }
         List<Type> PluginTypes { get; set; }
-        ILoadInstancesOfType<T> Loader { get; set; }
     }
 }

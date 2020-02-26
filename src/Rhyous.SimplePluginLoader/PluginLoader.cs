@@ -14,16 +14,25 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         private readonly IAppDomain _AppDomain;
-        private readonly IObjectCreator<T> _ObjectCreator;
+        private readonly IPluginLoaderSettings _Settings;
+        private readonly ITypeLoader<T> _TypeLoader;
+        private readonly IInstanceLoaderFactory<T> _InstanceLoaderFactory;
         private readonly IPluginLoaderLogger _Logger;
 
         #region Constructors
 
-        public PluginLoader(PluginPaths paths, IAppDomain appDomain, IObjectCreator<T> objectCreator = null, IPluginLoaderLogger logger = null)
+        public PluginLoader(PluginPaths paths, 
+                            IAppDomain appDomain,
+                            IPluginLoaderSettings settings = null,
+                            ITypeLoader<T> typeLoader = null,
+                            IInstanceLoaderFactory<T> instanceLoaderFactory = null,
+                            IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             Paths = paths ?? new PluginPaths(DefaultAppName, appDomain, null, logger);
-            _ObjectCreator = objectCreator ?? new ObjectCreator<T>();
+            _Settings = settings ?? PluginLoaderSettings.Default;
+            _TypeLoader = typeLoader ?? new TypeLoader<T>(_Settings, logger);
+            _InstanceLoaderFactory = instanceLoaderFactory ?? new InstanceLoaderFactory<T>(new ObjectCreatorFactory<T>(), _TypeLoader, _Settings, _Logger);
             _Logger = logger;
         }
 
@@ -88,7 +97,6 @@ namespace Rhyous.SimplePluginLoader
                 var plugin = LoadPlugin(pluginFile);
                 if (plugin == null)
                     continue;
-                plugin.PluginTypes = plugin.Loader.GetPluginTypes(plugin.Assembly);
                 if (plugin.PluginTypes?.Count == 0)
                     continue;
                 plugins.Add(plugin);
@@ -103,7 +111,7 @@ namespace Rhyous.SimplePluginLoader
         {
             if (!File.Exists(pluginFile))
                 return null;
-            var plugin = new Plugin<T>(_AppDomain, _ObjectCreator, _Logger)
+            var plugin = new Plugin<T>(_AppDomain,  _TypeLoader, _InstanceLoaderFactory.Create(), _Logger)
             {
                 Directory = Path.GetDirectoryName(pluginFile),
                 File = Path.GetFileName(pluginFile)

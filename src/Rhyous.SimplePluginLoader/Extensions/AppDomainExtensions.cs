@@ -6,7 +6,7 @@ namespace Rhyous.SimplePluginLoader.Extensions
 {
     public static class AppDomainExtensions
     {
-        public static Assembly TryLoad(this IAppDomain domain, byte[] rawAssembly, IPluginLoaderLogger logger)
+        public static IAssembly TryLoad(this IAppDomain domain, byte[] rawAssembly, IPluginLoaderLogger logger)
         {
             try { return domain.Load(rawAssembly); }
             catch (Exception e)
@@ -16,7 +16,7 @@ namespace Rhyous.SimplePluginLoader.Extensions
             }
         }
 
-        public static Assembly TryLoad(this IAppDomain domain, byte[] rawAssembly, byte[] rawSymbolStore, IPluginLoaderLogger logger)
+        public static IAssembly TryLoad(this IAppDomain domain, byte[] rawAssembly, byte[] rawSymbolStore, IPluginLoaderLogger logger)
         {
             try { return domain.Load(rawAssembly, rawSymbolStore); }
             catch(Exception e)
@@ -26,20 +26,21 @@ namespace Rhyous.SimplePluginLoader.Extensions
             }
         }
 
-        public static Assembly TryLoad(this IAppDomain domain, string dll, IPluginLoaderLogger logger)
+        public static IAssembly TryLoad(this IAppDomain domain, string dll, IPluginLoaderLogger logger)
         {
             if (File.Exists(dll))
                 return domain.TryLoad(File.ReadAllBytes(dll), logger);
             return null;
         }
 
-        public static Assembly TryLoad(this IAppDomain domain, string dll, string pdb, IPluginLoaderLogger logger)
+        public static IAssembly TryLoad(this IAppDomain domain, string dll, string pdb, IPluginLoaderLogger logger)
         {
             if (File.Exists(dll))
             {
-                return File.Exists(pdb)
+                var assembly = File.Exists(pdb)
                     ? domain.TryLoad(File.ReadAllBytes(dll), File.ReadAllBytes(pdb), logger) // Allow debugging
                     : domain.TryLoad(File.ReadAllBytes(dll), logger);
+                return assembly;
             }
             return null;
         }

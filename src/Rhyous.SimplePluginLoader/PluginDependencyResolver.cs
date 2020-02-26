@@ -65,7 +65,7 @@ namespace Rhyous.SimplePluginLoader
                     : Plugin.AssemblyBuilder.TryLoad(dll, pdb, version);
                 if (assembly != null)
                 {
-                    return assembly;
+                    return assembly.Instance;
                 }
             }
             return null;
