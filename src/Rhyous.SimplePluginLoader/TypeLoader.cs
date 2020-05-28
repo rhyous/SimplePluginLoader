@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -33,19 +35,24 @@ namespace Rhyous.SimplePluginLoader
             }
             catch (Exception e)
             {
-                if (_Settings.ThrowExceptionsOnLoad)
-                {
-                    _Logger?.Log(e);
-                    var e2 = new PluginTypeLoadException($"Failed to load plugin types of type {typeof(T).Name}. See inner exception.", e);
-                    _Logger?.Log(e2);
-                    throw e2;
-                }
-                else
-                {
-                    _Logger?.Write(PluginLoaderLogLevel.Info, $"Exception occurred loading a plugin type.");
-                    _Logger?.Log(e);
-                    return null;
-                }
+                return HandleException(e);
+            }
+        }
+
+        private List<Type> HandleException(Exception e)
+        {
+            if (_Settings.ThrowExceptionsOnLoad)
+            {
+                var e2 = new PluginTypeLoadException($"Failed to load plugin types of type {typeof(T).Name}. See inner exception.", e);
+                _Logger?.Log(e2);
+                throw e2;
+            }
+            else
+            {
+                _Logger?.Write(PluginLoaderLogLevel.Info, $"Exception occurred loading a plugin type.");
+                _Logger?.Log(e);
+                e.LogReflectionTypeLoadExceptions(_Logger);
+                return null;
             }
         }
     }

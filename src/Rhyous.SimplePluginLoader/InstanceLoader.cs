@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -12,7 +13,7 @@ namespace Rhyous.SimplePluginLoader
         private readonly IObjectCreator<T> _ObjectCreator;
         private readonly ITypeLoader<T> _TypeLoader;
         private readonly IPluginLoaderSettings _Settings;
-        internal IPluginLoaderLogger Logger;
+        private readonly IPluginLoaderLogger _Logger;
 
         public InstanceLoader(IObjectCreator<T> objectCreator, 
                                ITypeLoader<T> typeLoader,
@@ -22,7 +23,7 @@ namespace Rhyous.SimplePluginLoader
             _ObjectCreator = objectCreator ?? throw new ArgumentNullException(nameof(objectCreator));
             _TypeLoader = typeLoader ?? throw new ArgumentNullException(nameof(typeLoader));
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            Logger = logger;
+            _Logger = logger;
         }
 
         public IPlugin<T> Plugin { get => _ObjectCreator.Plugin; set => _ObjectCreator.Plugin = value; }
@@ -43,24 +44,25 @@ namespace Rhyous.SimplePluginLoader
                     if (obj == null)
                         continue;
                     listOfT.Add(obj);
-                    Logger?.WriteLine(PluginLoaderLogLevel.Info, $"A plugin type was found and added: {obj}");
+                    _Logger?.WriteLine(PluginLoaderLogLevel.Info, $"A plugin type was found and added: {obj}");
                 }
                 catch (Exception e)
                 {
-                    if (_Settings.ThrowExceptionsOnLoad)
-                    {
-                        var e2 = new PluginTypeLoadException($"Failed to load plugin type: {typeToLoad.Name}. See inner exception.", e);
-                        Logger?.Log(e2);
-                        throw e2;
-                    }
-                    else
-                    {
-                        Logger?.Write(PluginLoaderLogLevel.Info, $"Exception occurred loading the plugin of type: {typeToLoad.Name}.");
-                        Logger?.Log(e);
-                    }
+                    LogException(typeToLoad, e);
                 }
             }
             return listOfT;
+        }
+
+        private void LogException(Type typeToLoad, Exception e)
+        {
+            var e2 = new PluginTypeLoadException($"Failed to load plugin type: {typeToLoad.Name}. See inner exception.", e);
+            _Logger?.Log(e2);
+            e.LogReflectionTypeLoadExceptions(_Logger);
+            if (_Settings.ThrowExceptionsOnLoad)
+            {
+                throw e2;
+            }
         }
     }
 }
