@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <Authors>Jared Barneck (Rhyous)</Authors>
-    <Company>Ivanti</Company>
+    <Company>Rhyous Publishing LLC</Company>
     <RootNamespace>Rhyous.SimplePluginLoader.Tests</RootNamespace>
     <AssemblyName>Rhyous.SimplePluginLoader.Tests</AssemblyName>
     <Copyright>Copyright © Rhyous Publishing LLC 2013</Copyright>
@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Rhyous.SimplePluginLoader\Rhyous.SimplePluginLoader.csproj" />
+    <ProjectReference Include="..\Rhyous.SimplePluginLoader\Rhyous.SimplePluginLoader.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,5 +34,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="copy &quot;$(SolutionDir)\Examples\Dependencies\Example.Dependency\bin\$(ConfigurationName)\Example.Dependency.dll&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.Dependency\bin\$(ConfigurationName)\Example.Dependency.pdb&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.DependencyOfDependency\bin\$(ConfigurationName)\Example.DepencyOfDependency.dll&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.DependencyOfDependency\bin\$(ConfigurationName)\Example.DepencyOfDependency.pdb&quot; &quot;$(ProjectDir)\PluginDLLs&quot;" />
+  </Target>
 
 </Project>
