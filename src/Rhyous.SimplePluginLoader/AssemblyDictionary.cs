@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -40,9 +39,9 @@ namespace Rhyous.SimplePluginLoader
         }
         #endregion
 
-        public IDictionary<string, Assembly> Assemblies
+        public IDictionary<string, IAssembly> Assemblies
         {
             get { return _Assemblies.Value; }
-        } private Lazy<ConcurrentDictionary<string, Assembly>> _Assemblies = new Lazy<ConcurrentDictionary<string, Assembly>>();
+        } private readonly Lazy<ConcurrentDictionary<string, IAssembly>> _Assemblies = new Lazy<ConcurrentDictionary<string, IAssembly>>();
     }
 }

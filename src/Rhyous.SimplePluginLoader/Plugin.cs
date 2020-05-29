@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -11,14 +10,19 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         private readonly IAppDomain _AppDomain;
-        private readonly IObjectCreator<T> _ObjectCreator;
+        private readonly ITypeLoader<T> _TypeLoader;
+        private readonly IInstanceLoader<T> _InstanceLoader;
         private readonly IPluginLoaderLogger _Logger;
 
-        public Plugin(IAppDomain appDomain, IObjectCreator<T> objectCreator, IPluginLoaderLogger logger)
+        public Plugin(IAppDomain appDomain, 
+                      ITypeLoader<T> typeLoader,
+                      IInstanceLoader<T> instanceLoader,
+                      IPluginLoaderLogger logger)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
-            _ObjectCreator = objectCreator ?? throw new ArgumentNullException(nameof(objectCreator));
-            _ObjectCreator.Plugin = this;
+            _TypeLoader = typeLoader ?? throw new ArgumentNullException(nameof(typeLoader));
+            _InstanceLoader = instanceLoader ?? throw new ArgumentNullException(nameof(instanceLoader));
+            _InstanceLoader.Plugin = this;
             _Logger = logger;
             AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
         }
@@ -56,32 +60,23 @@ namespace Rhyous.SimplePluginLoader
             get { return Path.Combine(Directory, FilePdb); }
         }
 
-        public Assembly Assembly
+        public IAssembly Assembly
         {
             get { return _Assembly ?? (_Assembly = AssemblyBuilder.Load(FullPath, FullPathPdb)); }
             set { _Assembly = value; }
-        } private Assembly _Assembly;
+        } private IAssembly _Assembly;
 
         public List<Type> PluginTypes
         {
-            get { return _PluginTypes ?? (_PluginTypes = Loader.GetPluginTypes(Assembly)); }
+            get { return _PluginTypes ?? (_PluginTypes = _TypeLoader.Load(Assembly)); }
             set { _PluginTypes = value; }
         } private List<Type> _PluginTypes;
 
         public List<T> PluginObjects
         {
-            get { return _PluginObjects ?? (_PluginObjects = Loader.LoadInstances(Assembly)); }
+            get { return _PluginObjects ?? (_PluginObjects = _InstanceLoader.Load(Assembly)); }
             set { _PluginObjects = value; }
         } private List<T> _PluginObjects;
-
-        /// <summary>
-        /// Internal so tests can mock this with InternalsVisibleTo, but it isn't exposed in the API.
-        /// </summary>
-        public ILoadInstancesOfType<T> Loader
-        {
-            get { return _Loader ?? (_Loader = new InstancesLoader<T>(_ObjectCreator, _Logger)); }
-            set { _Loader = value; }
-        } private ILoadInstancesOfType<T> _Loader;
 
         /// <summary>
         /// Internal so tests can mock this with InternalsVisibleTo, but it isn't exposed in the API.

@@ -14,7 +14,9 @@ namespace Rhyous.SimplePluginLoader.Tests
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
             var iOrgObjectCreator = new ObjectCreator<IOrg>();
             var logger = new PluginLoaderLogger();
-            var plugin = new Plugin<IOrg>(appDomain, iOrgObjectCreator, logger)
+            var typeLoader = new TypeLoader<IOrg>(PluginLoaderSettings.Default, logger);
+            var instanceLoader = new InstanceLoader<IOrg>(iOrgObjectCreator, typeLoader, PluginLoaderSettings.Default, logger);
+            var plugin = new Plugin<IOrg>(appDomain, typeLoader, instanceLoader, logger)
             {
                 Directory = @"c:\my\plugins",
                 File = "MyPlugin.dll"

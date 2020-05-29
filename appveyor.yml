@@ -1,7 +1,7 @@
-version: 1.2.{build}
+version: 1.3.{build}
 image: Visual Studio 2019
 dotnet_csproj:
-  patch: false
+  patch: true
   file: '**\*.csproj'
   version: '{version}'
   version_prefix: '{version}'
@@ -11,6 +11,8 @@ dotnet_csproj:
   informational_version: '{version}'
 before_build:
 - pwsh: nuget restore src/Rhyous.SimplePluginLoader.sln
+configuration:
+  Release
 build:
   project: src/Rhyous.SimplePluginLoader.sln
   verbosity: minimal
@@ -18,9 +20,13 @@ test:
   categories:
     except:
     - slow
+nuget:
+  disable_publish_on_pr: true
 artifacts:
   - path: 'src\Rhyous.SimplePluginLoader\**\*.nupkg;src\Rhyous.SimplePluginLoader.Autofac\**\*.nupkg;'
 deploy:
 - provider: NuGet
+  on:
+    branch: master
   api_key:
     secure: YuESu/nQz4WK2RIjra4BXLJ7dDNM/7mJcKJAJQZCiYlKgMBPozzyCSRIBgu/72mC

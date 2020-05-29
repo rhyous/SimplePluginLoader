@@ -14,7 +14,9 @@ namespace Rhyous.SimplePluginLoader.Tests
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
             var iTestPluginObjectCreator = new ObjectCreator<ITestPlugin>();
             var logger = new PluginLoaderLogger();
-            Plugin<ITestPlugin> plugin = new Plugin<ITestPlugin>(appDomain, iTestPluginObjectCreator, logger)
+            var typeLoader = new TypeLoader<ITestPlugin>(PluginLoaderSettings.Default, logger);
+            var instanceLoader = new InstanceLoader<ITestPlugin>(iTestPluginObjectCreator, typeLoader, PluginLoaderSettings.Default, logger);
+            var plugin = new Plugin<ITestPlugin>(appDomain, typeLoader, instanceLoader, logger)
             {
                 File = dll
             };
@@ -28,7 +30,9 @@ namespace Rhyous.SimplePluginLoader.Tests
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
             var iTestPluginObjectCreator = new ObjectCreator<ITestPlugin>();
             var logger = new PluginLoaderLogger();
-            Plugin<ITestPlugin> plugin = new Plugin<ITestPlugin>(appDomain, iTestPluginObjectCreator, logger)
+            var typeLoader = new TypeLoader<ITestPlugin>(PluginLoaderSettings.Default, logger);
+            var instanceLoader = new InstanceLoader<ITestPlugin>(iTestPluginObjectCreator, typeLoader, PluginLoaderSettings.Default, logger);
+            var plugin = new Plugin<ITestPlugin>(appDomain, typeLoader, instanceLoader, logger)
             {
                 File = dll
             };

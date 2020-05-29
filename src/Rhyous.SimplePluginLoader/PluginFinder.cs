@@ -12,14 +12,24 @@ namespace Rhyous.SimplePluginLoader
         private const string DllExtension = "*.dll";
         private readonly PluginPaths _PluginPaths;
         private readonly IAppDomain _AppDomain;
-        private readonly IObjectCreator<T> _ObjectCreator;
+        private readonly IPluginLoaderSettings _Settings;
+        private readonly ITypeLoader<T> _TypeLoader;
+        private readonly IInstanceLoaderFactory<T> _InstanceLoaderFactory;
         private readonly IPluginLoaderLogger _Logger;
 
-        public PluginFinder(PluginPaths pluginPaths, IAppDomain appDomain, IObjectCreator<T> objectCreator, IPluginLoaderLogger logger)
+        public PluginFinder(PluginPaths pluginPaths, 
+                            IAppDomain appDomain, 
+                            IObjectCreator<T> objectCreator,
+                            IPluginLoaderSettings settings,
+                            ITypeLoader<T> typeLoader,
+                            IInstanceLoaderFactory<T> instanceLoaderFactory,
+                            IPluginLoaderLogger logger)
         {
             _PluginPaths = pluginPaths;
             _AppDomain = appDomain;
-            _ObjectCreator = objectCreator ?? new ObjectCreator<T>();
+            _Settings = settings ?? PluginLoaderSettings.Default;
+            _TypeLoader = typeLoader ?? new TypeLoader<T>(_Settings, logger);
+            _InstanceLoaderFactory = instanceLoaderFactory ?? new InstanceLoaderFactory<T>(new ObjectCreatorFactory<T>(), _TypeLoader, _Settings, _Logger);
             _Logger = logger;
         }
 
@@ -65,7 +75,7 @@ namespace Rhyous.SimplePluginLoader
 
         public IPluginLoader<T> PluginLoader
         {
-            get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>(_PluginPaths, _AppDomain, _ObjectCreator, _Logger)); }
+            get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>(_PluginPaths, _AppDomain, _Settings,_TypeLoader, _InstanceLoaderFactory, _Logger)); }
             set { _PluginLoader = value; } // Allows for use of a custom plugin
         } private IPluginLoader<T> _PluginLoader;
         

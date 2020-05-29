@@ -15,13 +15,17 @@ namespace Tool
             };
             var logger = new PluginLoaderLogger();
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
-            var iToolObjectCreator = new ObjectCreator<ITool>();
-            var pluginLoader = new PluginLoader<ITool>(null, appDomain, iToolObjectCreator, logger);
+            var typeLoader = new TypeLoader<ITool>(PluginLoaderSettings.Default, logger);
+            var toolObjectCreatorFactory = new ObjectCreatorFactory<ITool>();
+            var instanceLoaderFactory = new InstanceLoaderFactory<ITool>(toolObjectCreatorFactory, typeLoader, PluginLoaderSettings.Default, logger);
+            var pluginLoader = new PluginLoader<ITool>(null, appDomain, PluginLoaderSettings.Default, typeLoader, instanceLoaderFactory, logger);
             var plugins = pluginLoader.LoadPlugins();
             tools.AddRange(plugins.AllObjects);
 
-            var iICaveManToolObjectCreator = new ObjectCreator<ICaveManTool<Hammer>>();
-            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(null, appDomain, iICaveManToolObjectCreator, logger);
+            var caveManTypeLoader = new TypeLoader<ICaveManTool<Hammer>>(PluginLoaderSettings.Default, logger);
+            var caveManToolObjectCreatorFactory = new ObjectCreatorFactory<ICaveManTool<Hammer>>();
+            var caveManInstanceLoaderFactory = new InstanceLoaderFactory<ICaveManTool<Hammer>>(caveManToolObjectCreatorFactory, caveManTypeLoader, PluginLoaderSettings.Default, logger);
+            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(null, appDomain, PluginLoaderSettings.Default, caveManTypeLoader, caveManInstanceLoaderFactory, logger);
             var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
             tools.AddRange(caveManPlugins.AllObjects);
             

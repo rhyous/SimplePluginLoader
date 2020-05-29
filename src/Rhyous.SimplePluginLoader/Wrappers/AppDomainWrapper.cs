@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration.Assemblies;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Security.Principal;
@@ -104,7 +105,7 @@ namespace Rhyous.SimplePluginLoader
 
         public int ExecuteAssemblyByName(AssemblyName assemblyName, params string[] args) => _AppDomain.ExecuteAssemblyByName(assemblyName, args);
 
-        public Assembly[] GetAssemblies() => _AppDomain.GetAssemblies();
+        public IAssembly[] GetAssemblies() => _AppDomain.GetAssemblies().Select(a=> new AssemblyWrapper(a)).ToArray();
 
         public object GetData(string name) => _AppDomain.GetData(name);
 
@@ -116,15 +117,17 @@ namespace Rhyous.SimplePluginLoader
 
         public bool IsFinalizingForUnload() => _AppDomain.IsFinalizingForUnload();
 
-        public Assembly Load(byte[] rawAssembly, byte[] rawSymbolStore) => _AppDomain.Load(rawAssembly, rawSymbolStore);
+        public IAssembly Load(byte[] rawAssembly, byte[] rawSymbolStore) 
+            => new AssemblyWrapper(_AppDomain.Load(rawAssembly, rawSymbolStore));
 
-        public Assembly Load(AssemblyName assemblyRef) => _AppDomain.Load(assemblyRef);
+        public IAssembly Load(AssemblyName assemblyRef) => new AssemblyWrapper(_AppDomain.Load(assemblyRef));
 
-        public Assembly Load(string assemblyString) => _AppDomain.Load(assemblyString);
+        public IAssembly Load(string assemblyString) => new AssemblyWrapper(_AppDomain.Load(assemblyString));
 
-        public Assembly Load(byte[] rawAssembly) => _AppDomain.Load(rawAssembly);
+        public IAssembly Load(byte[] rawAssembly) => new AssemblyWrapper(_AppDomain.Load(rawAssembly));
 
-        public Assembly[] ReflectionOnlyGetAssemblies() => _AppDomain.ReflectionOnlyGetAssemblies();
+        public IAssembly[] ReflectionOnlyGetAssemblies() 
+            => _AppDomain.ReflectionOnlyGetAssemblies().Select(a=> new AssemblyWrapper(a)).ToArray();
 
         public void SetData(string name, object data) => _AppDomain.SetData(name, data);
 

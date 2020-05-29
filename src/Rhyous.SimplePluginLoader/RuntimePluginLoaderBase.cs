@@ -31,13 +31,21 @@ namespace Rhyous.SimplePluginLoader
         public virtual bool ThrowExceptionIfNoPluginFound => true;
 
         private readonly IAppDomain _AppDomain;
-        private readonly IObjectCreator<T> _ObjectCreator;
+        private readonly IPluginLoaderSettings _Settings;
+        private readonly ITypeLoader<T> _TypeLoader;
+        private readonly IInstanceLoaderFactory<T> _InstanceLoaderFactory;
         private readonly IPluginLoaderLogger _Logger;
 
-        public RuntimePluginLoaderBase(IAppDomain appDomain, IObjectCreator<T> objectCreator, IPluginLoaderLogger logger)
+        public RuntimePluginLoaderBase(IAppDomain appDomain,
+                                       IPluginLoaderSettings settings = null,
+                                       ITypeLoader<T> typeLoader = null,
+                                       IInstanceLoaderFactory<T> instanceLoaderFactory = null,
+                                       IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain;
-            _ObjectCreator = objectCreator;
+            _Settings = settings ?? PluginLoaderSettings.Default;
+            _TypeLoader = typeLoader ?? new TypeLoader<T>(_Settings, logger);
+            _InstanceLoaderFactory = instanceLoaderFactory ?? new InstanceLoaderFactory<T>(new ObjectCreatorFactory<T>(), _TypeLoader, _Settings, _Logger);
             _Logger = logger;
         }
 
@@ -72,7 +80,7 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual IPluginLoader<T> PluginLoader
         {
-            get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, DefaultPluginDirectory, _Logger), _AppDomain, _ObjectCreator, _Logger); }
+            get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, DefaultPluginDirectory, _Logger), _AppDomain, _Settings, _TypeLoader, _InstanceLoaderFactory, _Logger); }
             set { _PluginLoader = value; }
         } private IPluginLoader<T> _PluginLoader;
 
