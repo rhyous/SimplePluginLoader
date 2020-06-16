@@ -23,11 +23,16 @@ namespace Tools.Ui
             base.OnStartup(e);
             Tools.Add(new Hammer());
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
-            var toolObjectCreatorFactory = new ObjectCreatorFactory<ITool>();
             var logger = new PluginLoaderLogger();
+            var appSettings = new AppSettings();
+            var settings = new PluginLoaderSettings(appSettings);
+            var toolObjectCreatorFactory = new ObjectCreatorFactory<ITool>();
             var typeLoader = new TypeLoader<ITool>(PluginLoaderSettings.Default, logger);
             var instanceLoaderFactory = new InstanceLoaderFactory<ITool>(toolObjectCreatorFactory, typeLoader, PluginLoaderSettings.Default, logger);
-            var pluginLoader = new PluginLoader<ITool>(null, appDomain, PluginLoaderSettings.Default, typeLoader, instanceLoaderFactory, logger);
+            var assemblyLoader = new AssemblyLoader(appDomain, settings, logger);
+            var dependencyResolver = new PluginDependencyResolver<ITool>(appDomain, settings, assemblyLoader);
+            var pluginLoader = new PluginLoader<ITool>(null, appDomain, PluginLoaderSettings.Default, typeLoader, instanceLoaderFactory,
+                                                       assemblyLoader, dependencyResolver, logger);
             var plugins = pluginLoader.LoadPlugins();
             Tools.AddRange(plugins.AllObjects);
         }

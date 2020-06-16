@@ -15,6 +15,8 @@ namespace Rhyous.SimplePluginLoader.Tests
         private Mock<IPluginLoaderSettings> _MockPluginLoaderSettings;
         private Mock<ITypeLoader<Org>> _MockTypeLoader;
         private Mock<IInstanceLoaderFactory<Org>> _MockInstanceLoaderFactory;
+        private Mock<IAssemblyLoader> _MockAssemblyLoader;
+        private Mock<IPluginDependencyResolver<Org>> _MockPluginDependencyResolver;
         private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
 
         [TestInitialize]
@@ -26,6 +28,8 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockPluginLoaderSettings = _MockRepository.Create<IPluginLoaderSettings>();
             _MockTypeLoader = _MockRepository.Create<ITypeLoader<Org>>();
             _MockInstanceLoaderFactory = _MockRepository.Create<IInstanceLoaderFactory<Org>>();
+            _MockAssemblyLoader = _MockRepository.Create<IAssemblyLoader>();
+            _MockPluginDependencyResolver = _MockRepository.Create<IPluginDependencyResolver<Org>>();
             _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
         }
 
@@ -36,6 +40,8 @@ namespace Rhyous.SimplePluginLoader.Tests
                 _MockPluginLoaderSettings.Object,
                 _MockTypeLoader.Object,
                 _MockInstanceLoaderFactory.Object,
+                _MockAssemblyLoader.Object,
+                _MockPluginDependencyResolver.Object,
                 _MockPluginLoaderLogger.Object);
         }
 
@@ -46,15 +52,18 @@ namespace Rhyous.SimplePluginLoader.Tests
                 _MockPluginLoaderSettings.Object,
                 _MockTypeLoader.Object,
                 _MockInstanceLoaderFactory.Object,
+                _MockAssemblyLoader.Object,
+                _MockPluginDependencyResolver.Object,
                 _MockPluginLoaderLogger.Object);
         }
 
         [TestMethod]
-        public void RuntimePluginLoaderBase_DeafaultPluginPath_Test()
+        public void RuntimePluginLoaderBase_DefaultPluginPath_Test()
         {
             // Arrange
             var expected = @"C:\ProgramData\Rhyous\App1\Plugins";
             var loader = CreateInstanceLoader();
+            _MockPluginLoaderSettings.Setup(m=>m.DefaultPluginDirectory).Returns((string)null);
 
             // Act
             var actual = loader.DefaultPluginDirectory;
@@ -70,8 +79,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Arrange
             var expected = @"c:\plugins";
             var loader = CreateInstanceLoader();
-            var nvc = new NameValueCollection { { RuntimePluginLoaderBase<Org>.PluginDirConfig, expected } };
-            loader.AppSettings = nvc;
+            _MockPluginLoaderSettings.Setup(m => m.DefaultPluginDirectory).Returns(@"c:\plugins");
 
             // Act
             var actual = loader.DefaultPluginDirectory;
@@ -82,11 +90,12 @@ namespace Rhyous.SimplePluginLoader.Tests
         }
 
         [TestMethod]
-        public void RuntimePluginLoaderBase_DeafaultPluginPathWithSubFolder_Test()
+        public void RuntimePluginLoaderBase_DefaultPluginPathWithSubFolder_Test()
         {
             // Arrange
             var expected = @"C:\ProgramData\Rhyous\App1\Plugins\Sub2";
             var loader = CreateInstance2Loader();
+            _MockPluginLoaderSettings.Setup(m => m.DefaultPluginDirectory).Returns((string)null);
 
             // Act
             var actual = loader.DefaultPluginDirectory;
@@ -94,7 +103,6 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Assert
             Assert.AreEqual(expected, actual);
             _MockRepository.VerifyAll();
-
         }
 
         [TestMethod]
@@ -102,9 +110,8 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             // Arrange
             var expected = @"c:\plugins\Sub2";
+            _MockPluginLoaderSettings.Setup(m => m.DefaultPluginDirectory).Returns(@"c:\plugins");
             var loader = CreateInstance2Loader();
-            var nvc = new NameValueCollection { { RuntimePluginLoaderBase<Org>.PluginDirConfig, @"c:\plugins" } };
-            loader.AppSettings = nvc;
 
             // Act
             var actual = loader.DefaultPluginDirectory;
@@ -112,7 +119,6 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Assert
             Assert.AreEqual(expected, actual);
             _MockRepository.VerifyAll();
-
         }
     }
 }

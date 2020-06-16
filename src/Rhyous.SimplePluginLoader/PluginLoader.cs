@@ -17,6 +17,8 @@ namespace Rhyous.SimplePluginLoader
         private readonly IPluginLoaderSettings _Settings;
         private readonly ITypeLoader<T> _TypeLoader;
         private readonly IInstanceLoaderFactory<T> _InstanceLoaderFactory;
+        private readonly IAssemblyLoader _AssemblyLoader;
+        private readonly IPluginDependencyResolver<T> _PluginDependencyResolver;
         private readonly IPluginLoaderLogger _Logger;
 
         #region Constructors
@@ -26,6 +28,8 @@ namespace Rhyous.SimplePluginLoader
                             IPluginLoaderSettings settings = null,
                             ITypeLoader<T> typeLoader = null,
                             IInstanceLoaderFactory<T> instanceLoaderFactory = null,
+                            IAssemblyLoader assemblyLoader = null,
+                            IPluginDependencyResolver<T> pluginDependencyResolver = null,
                             IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
@@ -33,6 +37,8 @@ namespace Rhyous.SimplePluginLoader
             _Settings = settings ?? PluginLoaderSettings.Default;
             _TypeLoader = typeLoader ?? new TypeLoader<T>(_Settings, logger);
             _InstanceLoaderFactory = instanceLoaderFactory ?? new InstanceLoaderFactory<T>(new ObjectCreatorFactory<T>(), _TypeLoader, _Settings, _Logger);
+            _AssemblyLoader = assemblyLoader ?? new AssemblyLoader(_AppDomain, _Settings, _Logger);
+            _PluginDependencyResolver = pluginDependencyResolver ?? new PluginDependencyResolver<T>(_AppDomain, _Settings, _AssemblyLoader);
             _Logger = logger;
         }
 
@@ -111,7 +117,7 @@ namespace Rhyous.SimplePluginLoader
         {
             if (!File.Exists(pluginFile))
                 return null;
-            var plugin = new Plugin<T>(_AppDomain,  _TypeLoader, _InstanceLoaderFactory.Create(), _Logger)
+            var plugin = new Plugin<T>(_AppDomain, _TypeLoader, _InstanceLoaderFactory.Create(), _PluginDependencyResolver, _AssemblyLoader, _Logger)
             {
                 Directory = Path.GetDirectoryName(pluginFile),
                 File = Path.GetFileName(pluginFile)

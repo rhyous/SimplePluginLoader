@@ -2,23 +2,21 @@
 
 using Rhyous.SimplePluginLoader.Extensions;
 using System;
-using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class AssemblyLoader<T> : IAssemblyBuilder
-        where T : class
+    public class AssemblyLoader : IAssemblyLoader
     {
         private IPluginLoaderLogger _Logger;
         private IAppDomain _AppDomain;
-        private bool LoadDependenciesProactively = ConfigurationManager.AppSettings["LoadDependenciesProactively"].ToBool(false);
+        private readonly IPluginLoaderSettings _Settings;
 
-        public AssemblyLoader(IAppDomain appDomain, IPluginLoaderLogger logger)
+        public AssemblyLoader(IAppDomain appDomain, IPluginLoaderSettings settings, IPluginLoaderLogger logger)
         {
             _AppDomain = appDomain;
+            _Settings = settings;
             _Logger = logger;
         }
 
@@ -73,7 +71,7 @@ namespace Rhyous.SimplePluginLoader
                     throw;
                 }
             }
-            if (LoadDependenciesProactively)
+            if (_Settings.LoadDependenciesProactively)
             {
                 var dir = Path.GetDirectoryName(dll);
                 if (!dir.EndsWith("bin"))

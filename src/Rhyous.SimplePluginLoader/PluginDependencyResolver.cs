@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,46 +9,53 @@ using System.Reflection;
 namespace Rhyous.SimplePluginLoader
 {
     [Serializable]
-    public class PluginDependencyResolver<T> : IPluginDependencyResolver
+    public class PluginDependencyResolver<T> : IPluginDependencyResolver<T>
         where T : class
     {
-        public PluginDependencyResolver(Plugin<T> plugin)
+        private readonly IAppDomain _AppDomain;
+        private readonly IPluginLoaderSettings _Settings;
+        private readonly IAssemblyLoader _AssemblyLoader;
+        
+        internal Dictionary<string, List<string>> _AttemptedPaths = new Dictionary<string, List<string>>();
+
+        public PluginDependencyResolver(IAppDomain appDomain, IPluginLoaderSettings settings, IAssemblyLoader assemblyLoader)
         {
-            Plugin = plugin;
+            _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
+            _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _AssemblyLoader = assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
         }
 
-        public Plugin<T> Plugin { get; set; }
+        public IPlugin Plugin { get; set; }
+
         public List<string> Paths
         {
-            get { return _Paths ?? (_Paths = GetPaths(SharedBinPathManager)); }
+            get { return _Paths ?? (_Paths = Plugin?.GetPaths(_Settings)); }
             set { _Paths = value; }
         } private List<string> _Paths;
 
-        Dictionary<string, List<string>> AttemptedPaths = new Dictionary<string, List<string>>();
-
         public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
         {
+            if (Plugin == null)
+                return null;
             var assemblyDetails = args.Name.Split(", ".ToArray(), StringSplitOptions.RemoveEmptyEntries);
             var file = assemblyDetails.First();
             var version = assemblyDetails.FirstOrDefault(ad => ad.StartsWith("Version="))?
                                          .Split("=".ToArray(), StringSplitOptions.RemoveEmptyEntries)
                                          .Skip(1)?.First();
-            var paths = Paths.ToList();
-            List<string> alreadyTriedPaths = null;
-            if (!AttemptedPaths.TryGetValue(args.Name, out alreadyTriedPaths))
+            var paths = Paths?.ToList();
+            if (paths == null || !paths.Any())
+                return null;
+            if (!_AttemptedPaths.TryGetValue(args.Name, out List<string> alreadyTriedPaths))
             {
                 alreadyTriedPaths = new List<string>();
-                AttemptedPaths.Add(args.Name, alreadyTriedPaths);
+                _AttemptedPaths.Add(args.Name, alreadyTriedPaths);
             }
             foreach (var path in alreadyTriedPaths)
             {
                 paths.Remove(path);
             }
             if (!paths.Any())
-            {
-                // Changed this from throwing an exception because it threw when it shouldn't.
-                return null; 
-            }
+                return null;
             foreach (var path in paths)
             {
                 alreadyTriedPaths.Add(path);
@@ -61,8 +67,8 @@ namespace Rhyous.SimplePluginLoader
                 var dll = Path.Combine(path, file + ".dll");
                 var pdb = Path.Combine(path, file + ".pdb");
                 var assembly = (string.IsNullOrWhiteSpace(version))
-                    ? Plugin.AssemblyBuilder.TryLoad(dll, pdb)
-                    : Plugin.AssemblyBuilder.TryLoad(dll, pdb, version);
+                    ? _AssemblyLoader.TryLoad(dll, pdb)
+                    : _AssemblyLoader.TryLoad(dll, pdb, version);
                 if (assembly != null)
                 {
                     return assembly.Instance;
@@ -71,36 +77,27 @@ namespace Rhyous.SimplePluginLoader
             return null;
         }
 
-        internal List<string> GetPaths(SharedBinPathManager pathManager)
+        #region IDisposable        
+        private bool _DisposedValue;
+
+        protected virtual void Dispose(bool disposing)
         {
-            var paths = new List<string>
+            if (!_DisposedValue)
+            {
+                if (disposing)
                 {
-                    "",                                             // Try current path
-                    Plugin.Directory,                               // Try plugin directory
-                    Path.Combine(Plugin.Directory, "bin"),          // Try plugin/bin directory
-                    Path.Combine(Plugin.Directory, Plugin.Name)     // Try plugin/<pluginName> directory
-                };
-            
-            // This allows for two plugins that a share a dll to have Copy Local set to false, and both look to the same folder
-            if (pathManager?.SharedPaths.Any() != null)
-                paths.AddRange(pathManager.SharedPaths);
-
-            return paths;
+                    _AppDomain.AssemblyResolve -= AssemblyResolveHandler;
+                }
+                _DisposedValue = true;
+            }
         }
 
-        public AssemblyName GetAssemblyName(string dll)
+        public void Dispose()
         {
-            if (!File.Exists(dll))
-                return null;
-            try { return AssemblyName.GetAssemblyName(dll); }
-            catch (Exception) { return null; }
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
-
-        internal SharedBinPathManager SharedBinPathManager
-        {
-            get { return _SharedBinPathManager ?? (_SharedBinPathManager = new SharedBinPathManager()); }
-            set { _SharedBinPathManager = value; }
-        } private SharedBinPathManager _SharedBinPathManager;
+        #endregion
     }
 }
 

@@ -34,18 +34,24 @@ namespace Rhyous.SimplePluginLoader
         private readonly IPluginLoaderSettings _Settings;
         private readonly ITypeLoader<T> _TypeLoader;
         private readonly IInstanceLoaderFactory<T> _InstanceLoaderFactory;
+        private readonly IAssemblyLoader _AssemblyLoader;
+        private readonly IPluginDependencyResolver<T> _PluginDependencyResolver;
         private readonly IPluginLoaderLogger _Logger;
 
         public RuntimePluginLoaderBase(IAppDomain appDomain,
                                        IPluginLoaderSettings settings = null,
                                        ITypeLoader<T> typeLoader = null,
                                        IInstanceLoaderFactory<T> instanceLoaderFactory = null,
+                                       IAssemblyLoader assemblyLoader = null,
+                                       IPluginDependencyResolver<T> pluginDependencyResolver = null,
                                        IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain;
             _Settings = settings ?? PluginLoaderSettings.Default;
             _TypeLoader = typeLoader ?? new TypeLoader<T>(_Settings, logger);
             _InstanceLoaderFactory = instanceLoaderFactory ?? new InstanceLoaderFactory<T>(new ObjectCreatorFactory<T>(), _TypeLoader, _Settings, _Logger);
+            _AssemblyLoader = assemblyLoader ?? new AssemblyLoader(_AppDomain, _Settings, _Logger);
+            _PluginDependencyResolver = pluginDependencyResolver ?? new PluginDependencyResolver<T>(_AppDomain, _Settings, _AssemblyLoader);
             _Logger = logger;
         }
 
@@ -54,7 +60,7 @@ namespace Rhyous.SimplePluginLoader
         {
             get
             {
-                var _DefaultPluginDirectory = AppSettings.Get(PluginDirConfig);
+                var _DefaultPluginDirectory = _Settings.DefaultPluginDirectory;
                 if (_DefaultPluginDirectory == null)
                     _DefaultPluginDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Company, AppName, PluginFolder);
                 if (!string.IsNullOrWhiteSpace(PluginSubFolder))
@@ -80,7 +86,9 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual IPluginLoader<T> PluginLoader
         {
-            get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, DefaultPluginDirectory, _Logger), _AppDomain, _Settings, _TypeLoader, _InstanceLoaderFactory, _Logger); }
+            get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, DefaultPluginDirectory, _Logger), _AppDomain, 
+                                                              _Settings, _TypeLoader, _InstanceLoaderFactory, _AssemblyLoader, _PluginDependencyResolver,
+                                                              _Logger); }
             set { _PluginLoader = value; }
         } private IPluginLoader<T> _PluginLoader;
 

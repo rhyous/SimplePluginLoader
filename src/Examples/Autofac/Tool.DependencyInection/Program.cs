@@ -15,23 +15,40 @@ namespace Tool.DependencyInjection
             builder.RegisterType<PluginLoaderLogger>()
                    .As<IPluginLoaderLogger>()
                    .SingleInstance();
-            builder.RegisterInstance(AppDomain.CurrentDomain).SingleInstance();
-            builder.RegisterType<AppDomainWrapper>().As<IAppDomain>().SingleInstance();
-            builder.RegisterInstance(PluginLoaderSettings.Default).As<IPluginLoaderSettings>();
-            builder.RegisterGeneric(typeof(TypeLoader<>)).As(typeof(ITypeLoader<>));
-            builder.RegisterGeneric(typeof(InstanceLoaderFactory<>)).As(typeof(IInstanceLoaderFactory<>));
+            builder.RegisterInstance(AppDomain.CurrentDomain)
+                   .SingleInstance();
+            builder.RegisterType<AppDomainWrapper>()
+                   .As<IAppDomain>().SingleInstance();
+            builder.RegisterInstance(PluginLoaderSettings.Default)
+                   .As<IPluginLoaderSettings>()
+                   .SingleInstance();
+            builder.RegisterGeneric(typeof(TypeLoader<>))
+                   .As(typeof(ITypeLoader<>))
+                   .SingleInstance();
             builder.RegisterType<PluginPaths>()
                    .WithParameter("appName", "sectionName")
                    .WithParameter("PluginSubFolder", null);
+            builder.RegisterType<AppSettings>()
+                   .As<IAppSettings>()
+                   .SingleInstance();
+            builder.RegisterType<AssemblyLoader>()
+                   .As<IAssemblyLoader>()
+                   .SingleInstance();
+            builder.RegisterGeneric(typeof(PluginDependencyResolver<>))
+                   .As(typeof(IPluginDependencyResolver<>))
+                   .SingleInstance();
 
             // Plugin Loader Registration for a plugin's own registration module
             builder.RegisterType<PluginLoader<IDependencyRegistrar<ContainerBuilder>>>()
-               .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>()
-               .SingleInstance();
+                   .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>()
+                   .SingleInstance();
             builder.RegisterType<ObjectCreator<IDependencyRegistrar<ContainerBuilder>>>()
                    .As<IObjectCreator<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
             builder.RegisterType<ObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>()
-                               .As<IObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
+                   .As<IObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
+            builder.RegisterGeneric(typeof(InstanceLoaderFactory<>))
+                   .As(typeof(IInstanceLoaderFactory<>))
+                   .SingleInstance();
 
             // ITool Plugin Loader registrations
             builder.RegisterType<AutofacObjectCreator<ITool>>()

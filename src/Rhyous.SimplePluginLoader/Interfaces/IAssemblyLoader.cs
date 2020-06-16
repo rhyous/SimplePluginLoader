@@ -2,7 +2,7 @@
 
 namespace Rhyous.SimplePluginLoader
 {
-    public interface IAssemblyBuilder : IDisposable
+    public interface IAssemblyLoader : IDisposable
     {
         IAssembly Load(string dll, string pdb);
         IAssembly TryLoad(string dll, string pdb);

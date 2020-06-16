@@ -9,8 +9,8 @@ namespace Tool.Plugin1
         protected override void Load(ContainerBuilder builder)
         {
             builder.Register(c => new Localizer())
-                .As<ILocalizer>()
-                .SingleInstance();
+                   .As<ILocalizer>()
+                   .SingleInstance();
             builder.RegisterType<Rock>();
         }
     }

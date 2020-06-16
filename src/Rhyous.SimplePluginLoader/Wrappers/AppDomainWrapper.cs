@@ -9,7 +9,7 @@ namespace Rhyous.SimplePluginLoader
 {
     public class AppDomainWrapper : IAppDomain
     {
-        private AppDomain _AppDomain;
+        private readonly AppDomain _AppDomain;
         public AppDomainWrapper(AppDomain appDomain) { _AppDomain = appDomain; }
 
         public string BaseDirectory => _AppDomain.BaseDirectory;

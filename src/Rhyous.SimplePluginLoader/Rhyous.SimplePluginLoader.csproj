@@ -6,9 +6,9 @@
     <RootNamespace>Rhyous.SimplePluginLoader</RootNamespace>
     <Authors>Jared Barneck (Rhyous)</Authors>
     <Company>Rhyous Publishing LLC</Company>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
-    <Version>1.4.0</Version>
+    <AssemblyVersion>1.5.2.0</AssemblyVersion>
+    <FileVersion>1.5.2.0</FileVersion>
+    <Version>1.5.2</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>A simple library for loading plugins.</Description>
     <Copyright>Copyright Jared Barneck (Rhyous) 2015</Copyright>
