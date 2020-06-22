@@ -15,8 +15,8 @@ namespace Rhyous.SimplePluginLoader
 
         public AssemblyLoader(IAppDomain appDomain, IPluginLoaderSettings settings, IPluginLoaderLogger logger)
         {
-            _AppDomain = appDomain;
-            _Settings = settings;
+            _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
+            _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logger = logger;
         }
 
@@ -83,18 +83,27 @@ namespace Rhyous.SimplePluginLoader
         internal IAssembly FindAlreadyLoadedAssembly(string dll, string version)
         {
             var key = GetKey(dll, version);
-            if (!AssemblyDictionary.Assemblies.TryGetValue(key, out IAssembly assembly))
-            {                var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
+            if (AssemblyDictionary.Assemblies.TryGetValue(key, out IAssembly assembly))
+            {
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Found already loaded plugin assembly: {key}");
+            }
+            else
+            {
+                var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
                 if (assemblyName == null)
                     return null;
                 key = GetKey(dll, assemblyName.Version.ToString());
                 assembly = AssemblyDictionary.Assemblies.TryGetValue(key, out assembly) ? assembly : null;
                 if (assembly != null && assembly.GetName().Version.ToString() == version)
+                {
+                    _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Found already loaded plugin assembly: {key}");
                     return assembly;
+                }
                 assembly = _AppDomain.GetAssemblies().FirstOrDefault(a => a.GetName().FullName == assemblyName.FullName && a.GetName().Version.ToString() == version);
                 if (assembly != null)
                 {
                     key = GetKey(dll, assembly.GetName().Version.ToString());
+                    _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Loading plugin assembly from dll: {key}");
                     AssemblyDictionary.Assemblies.Add(key, assembly);
                 }
             }
