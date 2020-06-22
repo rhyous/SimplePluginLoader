@@ -6,8 +6,10 @@
                                 IPluginLoaderSettings settings,
                                 ITypeLoader<Org> typeLoader,
                                 IInstanceLoaderFactory<Org> instanceLoaderFactory,
+                                IAssemblyLoader assemblyLoader,
+                                IPluginDependencyResolver<Org> pluginDependencyResolver,
                                 IPluginLoaderLogger logger) 
-            : base(appDomain,  settings, typeLoader, instanceLoaderFactory, logger)
+            : base(appDomain,  settings, typeLoader, instanceLoaderFactory, assemblyLoader, pluginDependencyResolver, logger)
         {
         }
 
@@ -20,8 +22,10 @@
                                  IPluginLoaderSettings settings,
                                  ITypeLoader<Org> typeLoader,
                                  IInstanceLoaderFactory<Org> instanceLoaderFactory,
+                                 IAssemblyLoader assemblyLoader,
+                                 IPluginDependencyResolver<Org> pluginDependencyResolver,
                                  IPluginLoaderLogger logger)
-            : base(appDomain, settings, typeLoader, instanceLoaderFactory, logger)
+            : base(appDomain, settings, typeLoader, instanceLoaderFactory, assemblyLoader, pluginDependencyResolver, logger)
         {
         }
 

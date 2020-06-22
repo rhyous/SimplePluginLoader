@@ -103,10 +103,7 @@ namespace Rhyous.SimplePluginLoader.Tests
                               .Returns(expectedTestPlugin);
             var types = new List<Type> { typeof(TestPlugin)};
             _MockTypeLoader.Setup(m => m.Load(_MockAssembly.Object))
-                           .Returns(types);
-            _MockPluginLoaderLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), 
-                                                           It.IsAny<string>()));
-                                   
+                           .Returns(types);                                   
 
             // Act
             var result = instanceLoader.Load(_MockAssembly.Object);

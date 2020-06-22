@@ -44,7 +44,6 @@ namespace Rhyous.SimplePluginLoader
                     if (obj == null)
                         continue;
                     listOfT.Add(obj);
-                    _Logger?.WriteLine(PluginLoaderLogLevel.Info, $"A plugin type was found and added: {obj}");
                 }
                 catch (Exception e)
                 {

@@ -12,19 +12,26 @@ namespace Rhyous.SimplePluginLoader
         private readonly IAppDomain _AppDomain;
         private readonly ITypeLoader<T> _TypeLoader;
         private readonly IInstanceLoader<T> _InstanceLoader;
+        private readonly IPluginDependencyResolver _DependencyResolver;
+        private readonly IAssemblyLoader _AssemblyLoader;
         private readonly IPluginLoaderLogger _Logger;
 
         public Plugin(IAppDomain appDomain, 
                       ITypeLoader<T> typeLoader,
                       IInstanceLoader<T> instanceLoader,
+                      IPluginDependencyResolver<T> dependencyResolver,
+                      IAssemblyLoader assemblyLoader,
                       IPluginLoaderLogger logger)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             _TypeLoader = typeLoader ?? throw new ArgumentNullException(nameof(typeLoader));
             _InstanceLoader = instanceLoader ?? throw new ArgumentNullException(nameof(instanceLoader));
             _InstanceLoader.Plugin = this;
+            _DependencyResolver = dependencyResolver ?? throw new ArgumentNullException(nameof(dependencyResolver));
+            _DependencyResolver.Plugin = this;
+            _AssemblyLoader = assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
             _Logger = logger;
-            AddDependencyResolver(DependencyResolver.AssemblyResolveHandler);
+            AddDependencyResolver(_DependencyResolver.AssemblyResolveHandler);
         }
         
         public string Name { get { return Path.GetFileNameWithoutExtension(File); } }
@@ -62,7 +69,7 @@ namespace Rhyous.SimplePluginLoader
 
         public IAssembly Assembly
         {
-            get { return _Assembly ?? (_Assembly = AssemblyBuilder.Load(FullPath, FullPathPdb)); }
+            get { return _Assembly ?? (_Assembly = _AssemblyLoader.Load(FullPath, FullPathPdb)); }
             set { _Assembly = value; }
         } private IAssembly _Assembly;
 
@@ -77,35 +84,20 @@ namespace Rhyous.SimplePluginLoader
             get { return _PluginObjects ?? (_PluginObjects = _InstanceLoader.Load(Assembly)); }
             set { _PluginObjects = value; }
         } private List<T> _PluginObjects;
-
-        /// <summary>
-        /// Internal so tests can mock this with InternalsVisibleTo, but it isn't exposed in the API.
-        /// </summary>
-        internal IAssemblyBuilder AssemblyBuilder
-        {
-            get { return _AssemblyBuilder ?? (_AssemblyBuilder = new AssemblyLoader<T>(_AppDomain, _Logger)); }
-            set { _AssemblyBuilder = value; }
-        } private IAssemblyBuilder _AssemblyBuilder;
-
-        /// <summary>
-        /// Dependency Resolver.
-        /// </summary>
-        internal IPluginDependencyResolver DependencyResolver
-        {
-            get { return _DependencyResolver ?? (_DependencyResolver = new PluginDependencyResolver<T>(this)); }
-            set { _DependencyResolver = value; }
-        } private IPluginDependencyResolver _DependencyResolver;
         
         public void AddDependencyResolver(ResolveEventHandler handler = null)
         {
+            handler = handler ?? _DependencyResolver.AssemblyResolveHandler;
             RemoveDependencyResolver(handler); // Remove it first in case it is already added.
             _AppDomain.AssemblyResolve += handler; // Add
+            _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Added AssemblyResolver for plugin: {Name}");
         }
 
         public void RemoveDependencyResolver(ResolveEventHandler handler = null)
         {
-            handler = handler ?? DependencyResolver.AssemblyResolveHandler;
+            handler = handler ?? _DependencyResolver.AssemblyResolveHandler;
             _AppDomain.AssemblyResolve -= handler;
+            _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Removed AssemblyResolver for plugin: {Name}.");
         }
 
         #region IDisposable
@@ -124,14 +116,20 @@ namespace Rhyous.SimplePluginLoader
 
             if (disposing)
             {
-                RemoveDependencyResolver();
-                foreach (var obj in PluginObjects)
+                if (_PluginObjects != null)
                 {
-                    var disposable = obj as IDisposable;
-                    if (disposable != null)
-                        disposable.Dispose();
+                    foreach (var obj in _PluginObjects)
+                    {
+                        var disposable = obj as IDisposable;
+                        if (disposable != null)
+                            disposable.Dispose();
+                    }
                 }
-                AssemblyBuilder.Dispose();
+                _AssemblyLoader.Dispose();
+                _DependencyResolver.Dispose();
+                // Remove should already be done but if a custom IDependencyResolver is used, let's verify.
+                // It doesn't cause any issue if it is removed twice.
+                RemoveDependencyResolver();
             }
             _disposed = true;
         }

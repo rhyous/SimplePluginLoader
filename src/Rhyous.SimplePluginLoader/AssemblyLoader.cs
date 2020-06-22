@@ -2,23 +2,21 @@
 
 using Rhyous.SimplePluginLoader.Extensions;
 using System;
-using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class AssemblyLoader<T> : IAssemblyBuilder
-        where T : class
+    public class AssemblyLoader : IAssemblyLoader
     {
         private IPluginLoaderLogger _Logger;
         private IAppDomain _AppDomain;
-        private bool LoadDependenciesProactively = ConfigurationManager.AppSettings["LoadDependenciesProactively"].ToBool(false);
+        private readonly IPluginLoaderSettings _Settings;
 
-        public AssemblyLoader(IAppDomain appDomain, IPluginLoaderLogger logger)
+        public AssemblyLoader(IAppDomain appDomain, IPluginLoaderSettings settings, IPluginLoaderLogger logger)
         {
-            _AppDomain = appDomain;
+            _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
+            _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _Logger = logger;
         }
 
@@ -73,7 +71,7 @@ namespace Rhyous.SimplePluginLoader
                     throw;
                 }
             }
-            if (LoadDependenciesProactively)
+            if (_Settings.LoadDependenciesProactively)
             {
                 var dir = Path.GetDirectoryName(dll);
                 if (!dir.EndsWith("bin"))
@@ -85,18 +83,27 @@ namespace Rhyous.SimplePluginLoader
         internal IAssembly FindAlreadyLoadedAssembly(string dll, string version)
         {
             var key = GetKey(dll, version);
-            if (!AssemblyDictionary.Assemblies.TryGetValue(key, out IAssembly assembly))
-            {                var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
+            if (AssemblyDictionary.Assemblies.TryGetValue(key, out IAssembly assembly))
+            {
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Found already loaded plugin assembly: {key}");
+            }
+            else
+            {
+                var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
                 if (assemblyName == null)
                     return null;
                 key = GetKey(dll, assemblyName.Version.ToString());
                 assembly = AssemblyDictionary.Assemblies.TryGetValue(key, out assembly) ? assembly : null;
                 if (assembly != null && assembly.GetName().Version.ToString() == version)
+                {
+                    _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Found already loaded plugin assembly: {key}");
                     return assembly;
+                }
                 assembly = _AppDomain.GetAssemblies().FirstOrDefault(a => a.GetName().FullName == assemblyName.FullName && a.GetName().Version.ToString() == version);
                 if (assembly != null)
                 {
                     key = GetKey(dll, assembly.GetName().Version.ToString());
+                    _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Loading plugin assembly from dll: {key}");
                     AssemblyDictionary.Assemblies.Add(key, assembly);
                 }
             }

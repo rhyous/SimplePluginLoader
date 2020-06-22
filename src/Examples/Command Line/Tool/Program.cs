@@ -14,18 +14,25 @@ namespace Tool
                 new Hammer()
             };
             var logger = new PluginLoaderLogger();
+            var appSettings = new AppSettings();
+            var settings = new PluginLoaderSettings(appSettings);
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
-            var typeLoader = new TypeLoader<ITool>(PluginLoaderSettings.Default, logger);
+            var typeLoader = new TypeLoader<ITool>(settings, logger);
             var toolObjectCreatorFactory = new ObjectCreatorFactory<ITool>();
             var instanceLoaderFactory = new InstanceLoaderFactory<ITool>(toolObjectCreatorFactory, typeLoader, PluginLoaderSettings.Default, logger);
-            var pluginLoader = new PluginLoader<ITool>(null, appDomain, PluginLoaderSettings.Default, typeLoader, instanceLoaderFactory, logger);
+            var assemblyLoader = new AssemblyLoader(appDomain, settings, logger);
+            var dependencyResolver = new PluginDependencyResolver<ITool>(appDomain, settings, assemblyLoader);
+            var pluginLoader = new PluginLoader<ITool>(null, appDomain, PluginLoaderSettings.Default, typeLoader, instanceLoaderFactory, 
+                                                       assemblyLoader, dependencyResolver, logger);
             var plugins = pluginLoader.LoadPlugins();
             tools.AddRange(plugins.AllObjects);
 
             var caveManTypeLoader = new TypeLoader<ICaveManTool<Hammer>>(PluginLoaderSettings.Default, logger);
             var caveManToolObjectCreatorFactory = new ObjectCreatorFactory<ICaveManTool<Hammer>>();
             var caveManInstanceLoaderFactory = new InstanceLoaderFactory<ICaveManTool<Hammer>>(caveManToolObjectCreatorFactory, caveManTypeLoader, PluginLoaderSettings.Default, logger);
-            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(null, appDomain, PluginLoaderSettings.Default, caveManTypeLoader, caveManInstanceLoaderFactory, logger);
+            var caveManDependencyResolver = new PluginDependencyResolver<ICaveManTool<Hammer>>(appDomain, settings, assemblyLoader);
+            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(null, appDomain, PluginLoaderSettings.Default, caveManTypeLoader,
+                                                                             caveManInstanceLoaderFactory, assemblyLoader, caveManDependencyResolver, logger);
             var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
             tools.AddRange(caveManPlugins.AllObjects);
             

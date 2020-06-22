@@ -1,7 +1,12 @@
-﻿namespace Rhyous.SimplePluginLoader
+﻿using System.Collections.Generic;
+
+namespace Rhyous.SimplePluginLoader
 {
     public interface IPluginLoaderSettings
     {
-        bool ThrowExceptionsOnLoad { get; set; }
+        string DefaultPluginDirectory { get; }
+        bool ThrowExceptionsOnLoad { get; }
+        bool LoadDependenciesProactively { get; }
+        IEnumerable<string> SharedPaths { get; }
     }
 }
