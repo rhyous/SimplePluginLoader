@@ -6,9 +6,9 @@
     <AssemblyName>Rhyous.SimplePluginLoader.Autofac</AssemblyName>
     <Authors>Jared Barneck (Rhyous)</Authors>
     <Company>Rhyous Publishing LLC</Company>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.3.0</FileVersion>
-    <Version>1.0.3</Version>
+    <AssemblyVersion>1.5.7.0</AssemblyVersion>
+    <FileVersion>1.5.7.0</FileVersion>
+    <Version>1.5.7</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>An Autofac extension to Rhyous.SimplePluginLoader.</Description>
     <Copyright>Copyright Jared Barneck (Rhyous) 2019</Copyright>

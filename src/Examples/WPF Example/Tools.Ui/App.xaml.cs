@@ -30,9 +30,8 @@ namespace Tools.Ui
             var typeLoader = new TypeLoader<ITool>(PluginLoaderSettings.Default, logger);
             var instanceLoaderFactory = new InstanceLoaderFactory<ITool>(toolObjectCreatorFactory, typeLoader, PluginLoaderSettings.Default, logger);
             var assemblyLoader = new AssemblyLoader(appDomain, settings, logger);
-            var dependencyResolver = new PluginDependencyResolver<ITool>(appDomain, settings, assemblyLoader);
             var pluginLoader = new PluginLoader<ITool>(null, appDomain, PluginLoaderSettings.Default, typeLoader, instanceLoaderFactory,
-                                                       assemblyLoader, dependencyResolver, logger);
+                                                       assemblyLoader, logger);
             var plugins = pluginLoader.LoadPlugins();
             Tools.AddRange(plugins.AllObjects);
         }

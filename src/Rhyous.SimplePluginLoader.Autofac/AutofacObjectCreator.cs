@@ -52,6 +52,8 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
                 registrarPlugin = dependencyRegistrarPluginLoader.LoadPlugin(Plugin.FullPath);
             if (registrarPlugin != null)
             {
+                if (registrarPlugin.PluginObjects == null || !registrarPlugin.PluginObjects.Any())
+                    return;
                 foreach (var dependencyRegistrar in registrarPlugin.PluginObjects)
                 {
                     if (type.Assembly.FullName == dependencyRegistrar.GetType().Assembly.FullName)
