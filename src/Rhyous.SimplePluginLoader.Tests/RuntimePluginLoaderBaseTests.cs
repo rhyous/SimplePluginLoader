@@ -16,7 +16,6 @@ namespace Rhyous.SimplePluginLoader.Tests
         private Mock<ITypeLoader<Org>> _MockTypeLoader;
         private Mock<IInstanceLoaderFactory<Org>> _MockInstanceLoaderFactory;
         private Mock<IAssemblyLoader> _MockAssemblyLoader;
-        private Mock<IPluginDependencyResolver<Org>> _MockPluginDependencyResolver;
         private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
 
         [TestInitialize]
@@ -29,7 +28,6 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockTypeLoader = _MockRepository.Create<ITypeLoader<Org>>();
             _MockInstanceLoaderFactory = _MockRepository.Create<IInstanceLoaderFactory<Org>>();
             _MockAssemblyLoader = _MockRepository.Create<IAssemblyLoader>();
-            _MockPluginDependencyResolver = _MockRepository.Create<IPluginDependencyResolver<Org>>();
             _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
         }
 
@@ -41,7 +39,6 @@ namespace Rhyous.SimplePluginLoader.Tests
                 _MockTypeLoader.Object,
                 _MockInstanceLoaderFactory.Object,
                 _MockAssemblyLoader.Object,
-                _MockPluginDependencyResolver.Object,
                 _MockPluginLoaderLogger.Object);
         }
 
@@ -53,7 +50,6 @@ namespace Rhyous.SimplePluginLoader.Tests
                 _MockTypeLoader.Object,
                 _MockInstanceLoaderFactory.Object,
                 _MockAssemblyLoader.Object,
-                _MockPluginDependencyResolver.Object,
                 _MockPluginLoaderLogger.Object);
         }
 

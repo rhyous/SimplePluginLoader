@@ -20,19 +20,17 @@ namespace Tool
             var typeLoader = new TypeLoader<ITool>(settings, logger);
             var toolObjectCreatorFactory = new ObjectCreatorFactory<ITool>();
             var instanceLoaderFactory = new InstanceLoaderFactory<ITool>(toolObjectCreatorFactory, typeLoader, PluginLoaderSettings.Default, logger);
-            var assemblyLoader = new AssemblyLoader(appDomain, settings, logger);
-            var dependencyResolver = new PluginDependencyResolver<ITool>(appDomain, settings, assemblyLoader);
+            var assemblyLoader = new AssemblyLoader(appDomain, settings, logger);            
             var pluginLoader = new PluginLoader<ITool>(null, appDomain, PluginLoaderSettings.Default, typeLoader, instanceLoaderFactory, 
-                                                       assemblyLoader, dependencyResolver, logger);
+                                                       assemblyLoader, logger);
             var plugins = pluginLoader.LoadPlugins();
             tools.AddRange(plugins.AllObjects);
 
             var caveManTypeLoader = new TypeLoader<ICaveManTool<Hammer>>(PluginLoaderSettings.Default, logger);
             var caveManToolObjectCreatorFactory = new ObjectCreatorFactory<ICaveManTool<Hammer>>();
             var caveManInstanceLoaderFactory = new InstanceLoaderFactory<ICaveManTool<Hammer>>(caveManToolObjectCreatorFactory, caveManTypeLoader, PluginLoaderSettings.Default, logger);
-            var caveManDependencyResolver = new PluginDependencyResolver<ICaveManTool<Hammer>>(appDomain, settings, assemblyLoader);
             var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(null, appDomain, PluginLoaderSettings.Default, caveManTypeLoader,
-                                                                             caveManInstanceLoaderFactory, assemblyLoader, caveManDependencyResolver, logger);
+                                                                             caveManInstanceLoaderFactory, assemblyLoader, logger);
             var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
             tools.AddRange(caveManPlugins.AllObjects);
             

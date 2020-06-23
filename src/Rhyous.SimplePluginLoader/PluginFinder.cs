@@ -10,33 +10,12 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         private const string DllExtension = "*.dll";
-        private readonly PluginPaths _PluginPaths;
-        private readonly IAppDomain _AppDomain;
-        private readonly IPluginLoaderSettings _Settings;
-        private readonly ITypeLoader<T> _TypeLoader;
-        private readonly IInstanceLoaderFactory<T> _InstanceLoaderFactory;
-        private readonly IAssemblyLoader _AssemblyLoader;
-        private readonly IPluginDependencyResolver<T> _PluginDependencyResolver;
+        private readonly IPluginLoader<T> _PluginLoader;
         private readonly IPluginLoaderLogger _Logger;
 
-        public PluginFinder(PluginPaths pluginPaths, 
-                            IAppDomain appDomain, 
-                            IObjectCreator<T> objectCreator,
-                            IPluginLoaderSettings settings,
-                            ITypeLoader<T> typeLoader,
-                            IInstanceLoaderFactory<T> instanceLoaderFactory,
-                            IAssemblyLoader assemblyLoader,
-                            IPluginDependencyResolver<T> pluginDependencyResolver,
-                            IPluginLoaderLogger logger)
+        public PluginFinder(IPluginLoader<T> pluginLoader)
         {
-            _PluginPaths = pluginPaths;
-            _AppDomain = appDomain;
-            _Settings = settings ?? PluginLoaderSettings.Default;
-            _TypeLoader = typeLoader ?? new TypeLoader<T>(_Settings, logger);
-            _InstanceLoaderFactory = instanceLoaderFactory ?? new InstanceLoaderFactory<T>(new ObjectCreatorFactory<T>(), _TypeLoader, _Settings, _Logger);
-            _AssemblyLoader = assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
-            _PluginDependencyResolver = pluginDependencyResolver ?? throw new ArgumentNullException(nameof(pluginDependencyResolver));
-            _Logger = logger;
+            _PluginLoader = pluginLoader;
         }
 
         /// <summary>
@@ -52,7 +31,7 @@ namespace Rhyous.SimplePluginLoader
             _Logger?.WriteLine(PluginLoaderLogLevel.Info, $"Attempting to find plugin: {pluginName}; from path: {dir}");
             FoundPlugin = null;
             FoundPluginObject = null;
-            var plugins = PluginLoader.LoadPlugins(Directory.GetFiles(dir, DllExtension));
+            var plugins = _PluginLoader.LoadPlugins(Directory.GetFiles(dir, DllExtension));
             if (plugins == null || !plugins.Any())
                 return null;
             foreach (var plugin in plugins)
@@ -78,13 +57,6 @@ namespace Rhyous.SimplePluginLoader
         public IPlugin<T> FoundPlugin { get; set; }
 
         public T FoundPluginObject { get; set; }
-
-        public IPluginLoader<T> PluginLoader
-        {
-            get { return _PluginLoader ?? (_PluginLoader = new PluginLoader<T>(_PluginPaths, _AppDomain, _Settings,_TypeLoader, _InstanceLoaderFactory,
-                                                                               _AssemblyLoader, _PluginDependencyResolver, _Logger)); }
-            set { _PluginLoader = value; } // Allows for use of a custom plugin
-        } private IPluginLoader<T> _PluginLoader;
         
         #region IDisposable
         bool _disposed;

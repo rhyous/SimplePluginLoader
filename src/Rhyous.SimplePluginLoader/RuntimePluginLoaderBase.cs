@@ -35,15 +35,13 @@ namespace Rhyous.SimplePluginLoader
         private readonly ITypeLoader<T> _TypeLoader;
         private readonly IInstanceLoaderFactory<T> _InstanceLoaderFactory;
         private readonly IAssemblyLoader _AssemblyLoader;
-        private readonly IPluginDependencyResolver<T> _PluginDependencyResolver;
-        private readonly IPluginLoaderLogger _Logger;
+        protected readonly IPluginLoaderLogger _Logger;
 
         public RuntimePluginLoaderBase(IAppDomain appDomain,
                                        IPluginLoaderSettings settings = null,
                                        ITypeLoader<T> typeLoader = null,
                                        IInstanceLoaderFactory<T> instanceLoaderFactory = null,
                                        IAssemblyLoader assemblyLoader = null,
-                                       IPluginDependencyResolver<T> pluginDependencyResolver = null,
                                        IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain;
@@ -51,7 +49,6 @@ namespace Rhyous.SimplePluginLoader
             _TypeLoader = typeLoader ?? new TypeLoader<T>(_Settings, logger);
             _InstanceLoaderFactory = instanceLoaderFactory ?? new InstanceLoaderFactory<T>(new ObjectCreatorFactory<T>(), _TypeLoader, _Settings, _Logger);
             _AssemblyLoader = assemblyLoader ?? new AssemblyLoader(_AppDomain, _Settings, _Logger);
-            _PluginDependencyResolver = pluginDependencyResolver ?? new PluginDependencyResolver<T>(_AppDomain, _Settings, _AssemblyLoader);
             _Logger = logger;
         }
 
@@ -87,8 +84,7 @@ namespace Rhyous.SimplePluginLoader
         public virtual IPluginLoader<T> PluginLoader
         {
             get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, DefaultPluginDirectory, _Logger), _AppDomain, 
-                                                              _Settings, _TypeLoader, _InstanceLoaderFactory, _AssemblyLoader, _PluginDependencyResolver,
-                                                              _Logger); }
+                                                              _Settings, _TypeLoader, _InstanceLoaderFactory, _AssemblyLoader, _Logger); }
             set { _PluginLoader = value; }
         } private IPluginLoader<T> _PluginLoader;
 
