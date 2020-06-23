@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Rhyous.SimplePluginLoader.Tests
@@ -181,19 +182,17 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockPlugin.Setup(m => m.Name).Returns(@"MyPlugin");
             _MockIPluginLoaderSettings.Setup(m => m.SharedPaths).Returns((IEnumerable<string>)null);
             var pluginDependencyResolver = CreatePluginDependencyResolver<Org>();
-            pluginDependencyResolver._AttemptedPaths = new Dictionary<string, List<string>> {
-                {
-                    "name", new List<string> {
+            pluginDependencyResolver._AttemptedPaths = new ConcurrentDictionary<string, List<string>>();
+            var pathList = new List<string> {
                                 "",
                                 "c:\\my\\plugins" ,
                                 "c:\\my\\plugins\\bin" ,
                                 "c:\\my\\plugins\\MyPlugin" ,
                                 @"c:\bin" ,
                                 @"c:\sharedbin\" ,
-                                @"c:\Libs" 
-                            }
-                }
-            };
+                                @"c:\Libs"
+                            };
+            pluginDependencyResolver._AttemptedPaths.TryAdd("name", pathList);
 
             // Act
             var result = pluginDependencyResolver.AssemblyResolveHandler(sender, args);

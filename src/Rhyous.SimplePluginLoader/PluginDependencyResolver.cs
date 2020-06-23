@@ -1,6 +1,7 @@
 ﻿// See License at the end of the file
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace Rhyous.SimplePluginLoader
         private readonly IPluginLoaderSettings _Settings;
         private readonly IAssemblyLoader _AssemblyLoader;
         
-        internal Dictionary<string, List<string>> _AttemptedPaths = new Dictionary<string, List<string>>();
+        internal ConcurrentDictionary<string, List<string>> _AttemptedPaths = new ConcurrentDictionary<string, List<string>>();
 
         public PluginDependencyResolver(IAppDomain appDomain, IPluginLoaderSettings settings, IAssemblyLoader assemblyLoader)
         {
@@ -48,7 +49,7 @@ namespace Rhyous.SimplePluginLoader
             if (!_AttemptedPaths.TryGetValue(args.Name, out List<string> alreadyTriedPaths))
             {
                 alreadyTriedPaths = new List<string>();
-                _AttemptedPaths.Add(args.Name, alreadyTriedPaths);
+                _AttemptedPaths.TryAdd(args.Name, alreadyTriedPaths);
             }
             foreach (var path in alreadyTriedPaths)
             {
