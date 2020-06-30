@@ -7,4 +7,9 @@ namespace Rhyous.SimplePluginLoader.Tests
         public string Name { get; set; }
     }
 
+    public class Org2 : Org
+    {
+        public Org2() { }
+    }
+
 }

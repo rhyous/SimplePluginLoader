@@ -6,6 +6,6 @@ namespace Rhyous.SimplePluginLoader
         where T : class
     {
         IPlugin<T> Plugin { get; set; }
-        T Create(Type type);
+        T Create(Type type = null);
     }
 }

@@ -8,9 +8,10 @@ namespace Rhyous.SimplePluginLoader
     {
         public IPlugin<T> Plugin { get; set; }
 
-        public T Create(Type type)
+        public T Create(Type type = null)
         {
-            if (type.IsGenericType)
+            type = type ?? typeof(T);
+            if (type.IsGenericType && type.IsGenericTypeDefinition)
             {
                 var genericArgs = typeof(T).GetGenericArguments();
                 if (genericArgs == null || !genericArgs.Any())
