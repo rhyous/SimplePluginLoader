@@ -47,6 +47,8 @@ namespace Rhyous.SimplePluginLoader.Tests
             {
                 logLines.Add(msg);
             });
+            _MockAssemblyNameReader.Setup(m => m.GetAssemblyName("file.dll"))
+                                   .Returns((string inDll) => { return new AssemblyNameReader().GetAssemblyName(inDll); });
             var assemblyDictionary = new AssemblyCache();
             var loader = CreateAssemblyLoader(assemblyDictionary);
             var dll = "file.dll";
