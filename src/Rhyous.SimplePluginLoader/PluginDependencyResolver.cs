@@ -3,27 +3,28 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
     [Serializable]
-    public class PluginDependencyResolver<T> : IPluginDependencyResolver<T>
-        where T : class
+    public class PluginDependencyResolver : IPluginDependencyResolver
     {
         private readonly IAppDomain _AppDomain;
         private readonly IPluginLoaderSettings _Settings;
         private readonly IAssemblyLoader _AssemblyLoader;
-        
-        internal ConcurrentDictionary<string, List<string>> _AttemptedPaths = new ConcurrentDictionary<string, List<string>>();
+        private readonly IPluginLoaderLogger _Logger;
 
-        public PluginDependencyResolver(IAppDomain appDomain, IPluginLoaderSettings settings, IAssemblyLoader assemblyLoader)
+        internal readonly Locked<bool> IsRegisteredWithAssemblyResolve = new Locked<bool>();
+        internal readonly ConcurrentDictionary<string, List<string>> _AttemptedPaths = new ConcurrentDictionary<string, List<string>>();
+
+        public PluginDependencyResolver(IAppDomain appDomain, IPluginLoaderSettings settings, IAssemblyLoader assemblyLoader, IPluginLoaderLogger logger)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _AssemblyLoader = assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
+            _Logger = logger;
         }
 
         public IPlugin Plugin { get; set; }
@@ -34,16 +35,36 @@ namespace Rhyous.SimplePluginLoader
             set { _Paths = value; }
         } private List<string> _Paths;
 
+        public void AddDependencyResolver()
+        {
+            if (!IsRegisteredWithAssemblyResolve.Value) // What if two threads hit this at the same time?
+            {
+                _AppDomain.AssemblyResolve += AssemblyResolveHandler; // Add
+                IsRegisteredWithAssemblyResolve.Value = true;
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Added AssemblyResolver for plugin: {Plugin.Name}");
+            }
+        }
+
+        public void RemoveDependencyResolver()
+        {
+            _AppDomain.AssemblyResolve -= AssemblyResolveHandler; // If it is already removed, there is no harm in removing it again.
+            IsRegisteredWithAssemblyResolve.Value = false;
+            _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Removed AssemblyResolver for plugin: {Plugin.Name}.");
+        }
+
         public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
         {
             if (Plugin == null)
+            {
+                RemoveDependencyResolver();
                 return null;
+            }
             var assemblyDetails = args.Name.Split(", ".ToArray(), StringSplitOptions.RemoveEmptyEntries);
             var file = assemblyDetails.First();
             var version = assemblyDetails.FirstOrDefault(ad => ad.StartsWith("Version="))?
                                          .Split("=".ToArray(), StringSplitOptions.RemoveEmptyEntries)
                                          .Skip(1)?.First();
-            var paths = Paths?.ToList();
+            var paths = Paths?.Where(Directory.Exists).ToList();
             if (paths == null || !paths.Any())
                 return null;
             if (!_AttemptedPaths.TryGetValue(args.Name, out List<string> alreadyTriedPaths))
@@ -65,8 +86,8 @@ namespace Rhyous.SimplePluginLoader
                     Paths.Remove(path);
                     continue;
                 }
-                var dll = Path.Combine(path, file + ".dll");
-                var pdb = Path.Combine(path, file + ".pdb");
+                var dll = System.IO.Path.Combine(path, file + ".dll");
+                var pdb = System.IO.Path.Combine(path, file + ".pdb");
                 var assembly = (string.IsNullOrWhiteSpace(version))
                     ? _AssemblyLoader.TryLoad(dll, pdb)
                     : _AssemblyLoader.TryLoad(dll, pdb, version);
@@ -77,6 +98,12 @@ namespace Rhyous.SimplePluginLoader
             }
             return null;
         }
+
+        internal IDirectory Directory
+        {
+            get { return _Directory ?? (_Directory = DirectoryWrapper.Instance); }
+            set { _Directory = value; }
+        } private IDirectory _Directory;
 
         #region IDisposable        
         private bool _DisposedValue;

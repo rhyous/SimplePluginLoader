@@ -32,23 +32,20 @@ namespace Rhyous.SimplePluginLoader
 
         private readonly IAppDomain _AppDomain;
         private readonly IPluginLoaderSettings _Settings;
-        private readonly ITypeLoader<T> _TypeLoader;
-        private readonly IInstanceLoaderFactory<T> _InstanceLoaderFactory;
-        private readonly IAssemblyLoader _AssemblyLoader;
+        private readonly IPluginCacheFactory<T> _PluginCacheFactory;
+        private readonly PluginPaths _PluginPaths;
         protected readonly IPluginLoaderLogger _Logger;
+
 
         public RuntimePluginLoaderBase(IAppDomain appDomain,
                                        IPluginLoaderSettings settings = null,
-                                       ITypeLoader<T> typeLoader = null,
-                                       IInstanceLoaderFactory<T> instanceLoaderFactory = null,
-                                       IAssemblyLoader assemblyLoader = null,
+                                       IPluginCacheFactory<T> pluginCacheFactory = null,
                                        IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain;
-            _Settings = settings ?? PluginLoaderSettings.Default;
-            _TypeLoader = typeLoader ?? new TypeLoader<T>(_Settings, logger);
-            _InstanceLoaderFactory = instanceLoaderFactory ?? new InstanceLoaderFactory<T>(new ObjectCreatorFactory<T>(), _TypeLoader, _Settings, _Logger);
-            _AssemblyLoader = assemblyLoader ?? new AssemblyLoader(_AppDomain, _Settings, _Logger);
+            _Settings = settings;
+            _PluginCacheFactory = pluginCacheFactory;
+            _PluginPaths = new PluginPaths(AppName, DefaultPluginDirectory, _AppDomain, _Logger);
             _Logger = logger;
         }
 
@@ -83,8 +80,7 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual IPluginLoader<T> PluginLoader
         {
-            get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, DefaultPluginDirectory, _Logger), _AppDomain, 
-                                                              _Settings, _TypeLoader, _InstanceLoaderFactory, _AssemblyLoader, _Logger); }
+            get { return _PluginLoader ?? new PluginLoader<T>(_PluginPaths, _PluginCacheFactory); }
             set { _PluginLoader = value; }
         } private IPluginLoader<T> _PluginLoader;
 
@@ -93,12 +89,6 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         public virtual List<Type> PluginTypes { get { return _PluginTypes ?? (_PluginTypes = PluginCollection?.SelectMany(p => p.PluginTypes).ToList()); } }
         private List<Type> _PluginTypes;
-
-        /// <summary>
-        /// Gets instantiated instances of the plugins. This is a flattened list of plugins.
-        /// </summary>
-        public virtual List<T> Plugins { get { return _Plugins ?? (_Plugins = PluginCollection?.Where(p=>p.PluginObjects != null && p.PluginObjects.Any()).SelectMany(p => p?.PluginObjects)?.ToList()); } }
-        private List<T> _Plugins;
 
         /// <summary>
         /// This populates PluginCollection.

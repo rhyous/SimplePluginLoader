@@ -1,4 +1,4 @@
-﻿namespace Example.DepencyOfDependency
+﻿namespace Example.DependencyOfDependency
 {
     public class Sentence
     {

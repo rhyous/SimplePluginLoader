@@ -21,12 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="PluginDlls\Example.DepencyOfDependency.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="PluginDlls\Example.DepencyOfDependency.pdb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="PluginDlls\Example.Dependency.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -36,7 +30,7 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="copy &quot;$(SolutionDir)\Examples\Dependencies\Example.Dependency\bin\$(ConfigurationName)\Example.Dependency.dll&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.Dependency\bin\$(ConfigurationName)\Example.Dependency.pdb&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.DependencyOfDependency\bin\$(ConfigurationName)\Example.DepencyOfDependency.dll&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.DependencyOfDependency\bin\$(ConfigurationName)\Example.DepencyOfDependency.pdb&quot; &quot;$(ProjectDir)\PluginDLLs&quot;" />
+    <Exec Command="copy &quot;$(SolutionDir)\Examples\Dependencies\Example.Dependency\bin\$(ConfigurationName)\Example.Dependency.dll&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.Dependency\bin\$(ConfigurationName)\Example.Dependency.pdb&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.DependencyOfDependency\bin\$(ConfigurationName)\Example.DependencyOfDependency.dll&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.DependencyOfDependency\bin\$(ConfigurationName)\Example.DependencyOfDependency.pdb&quot; &quot;$(ProjectDir)\PluginDLLs&quot;" />
   </Target>
 
 </Project>

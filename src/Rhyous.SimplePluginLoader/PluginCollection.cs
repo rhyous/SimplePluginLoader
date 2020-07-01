@@ -1,5 +1,6 @@
 ﻿// See License at the end of the file
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,18 +22,30 @@ namespace Rhyous.SimplePluginLoader
         {
         }
 
-        public List<T> AllObjects
+        public List<Type> AllTypes
         {
             get
             {
-                var list = new List<T>();
+                var list = new List<Type>();
                 foreach (var plugin in this)
                 {
-                    if (plugin.PluginObjects!= null && plugin.PluginObjects.Any())
-                    list.AddRange(plugin.PluginObjects);
+                    if (plugin.PluginTypes != null && plugin.PluginTypes.Any())
+                        list.AddRange(plugin.PluginTypes);
                 }
                 return list;
             }
+        }
+
+        public List<T> CreatePluginObjects()
+        {
+            var list = new List<T>();
+            foreach (var plugin in this)
+            {
+                var pluginObjects = plugin.CreatePluginObjects();
+                if (pluginObjects != null && pluginObjects.Any())
+                    list.AddRange(pluginObjects);
+            }
+            return list;
         }
     }
 }

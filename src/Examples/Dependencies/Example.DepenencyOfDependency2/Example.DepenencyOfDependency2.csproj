@@ -7,8 +7,8 @@
     <ProjectGuid>{329C45C5-3E59-46FA-94F4-A30B81224805}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Example.DepenencyOfDependency</RootNamespace>
-    <AssemblyName>Example.DepenencyOfDependency</AssemblyName>
+    <RootNamespace>Example.DependencyOfDependency</RootNamespace>
+    <AssemblyName>Example.DependencyOfDependency</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

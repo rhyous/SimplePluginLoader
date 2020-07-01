@@ -1,8 +1,10 @@
 ﻿// See License at the end of the file
 
+using Rhyous.SimplePluginLoader.Attributes;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -13,9 +15,11 @@ namespace Rhyous.SimplePluginLoader
         private readonly IPluginLoader<T> _PluginLoader;
         private readonly IPluginLoaderLogger _Logger;
 
-        public PluginFinder(IPluginLoader<T> pluginLoader)
+        public PluginFinder(IPluginLoader<T> pluginLoader,
+                            IPluginLoaderLogger logger)
         {
             _PluginLoader = pluginLoader;
+            _Logger = logger;
         }
 
         /// <summary>
@@ -29,34 +33,39 @@ namespace Rhyous.SimplePluginLoader
         public T FindPlugin(string pluginName, string dir)
         {
             _Logger?.WriteLine(PluginLoaderLogLevel.Info, $"Attempting to find plugin: {pluginName}; from path: {dir}");
-            FoundPlugin = null;
-            FoundPluginObject = null;
             var plugins = _PluginLoader.LoadPlugins(Directory.GetFiles(dir, DllExtension));
             if (plugins == null || !plugins.Any())
                 return null;
             foreach (var plugin in plugins)
             {
-                if (plugin.PluginObjects == null)
+                // Find by attribute (New preferred method)
+                foreach (var type in plugin.PluginTypes)
+                {
+                    var pluginAttribute = type.GetCustomAttribute<PluginAttribute>();
+                    if (pluginAttribute != null && pluginName.Equals(pluginAttribute.Name, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return plugin.CreatePluginObject(type);
+                    }
+                }
+
+                // Find by a Named property on instance of class (legacy way)
+                var pluginObjects = plugin.CreatePluginObjects();
+                if (pluginObjects == null)
                     continue;
-                foreach (var obj in plugin.PluginObjects)
+                foreach (var obj in pluginObjects)
                 {
                     dynamic namedObj = obj;
                     if (namedObj != null)
                     {
                         if (namedObj.Name.Equals(pluginName, StringComparison.InvariantCultureIgnoreCase))
                         {
-                            FoundPlugin = plugin;
-                            return (FoundPluginObject = obj); 
+                            return obj; 
                         }
                     }
                 }
             }
             return null;
         }
-
-        public IPlugin<T> FoundPlugin { get; set; }
-
-        public T FoundPluginObject { get; set; }
         
         #region IDisposable
         bool _disposed;
@@ -74,8 +83,6 @@ namespace Rhyous.SimplePluginLoader
 
             if (disposing)
             {
-                if (FoundPlugin != null)
-                    FoundPlugin.Dispose();
             }
             _disposed = true;
         }

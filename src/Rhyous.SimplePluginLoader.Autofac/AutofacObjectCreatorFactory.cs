@@ -2,8 +2,11 @@
 
 namespace Rhyous.SimplePluginLoader.DependencyInjection
 {
+    /// <summary>
+    /// A factory for creating AutofacObjectCreators
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class AutofacObjectCreatorFactory<T> : IObjectCreatorFactory<T> 
-        where T : class
     {
         private readonly IComponentContext _ComponentContext;
 
@@ -14,7 +17,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
 
         public IObjectCreator<T> Create()
         {
-            return _ComponentContext.Resolve<IObjectCreator<T>>();
+            return _ComponentContext.Resolve<IPluginObjectCreator<T>>();
         }
     }
 }

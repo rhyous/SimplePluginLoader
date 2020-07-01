@@ -1,10 +1,8 @@
-using Castle.Core.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Rhyous.SimplePluginLoader;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.Remoting.Channels;
 using T = Rhyous.SimplePluginLoader.Tests.Org;
 
 
@@ -15,10 +13,9 @@ namespace Rhyous.SimplePluginLoader.Tests
     {
         private MockRepository _MockRepository;
 
-        private Mock<IAppDomain> _MockAppDomain;
         private Mock<ITypeLoader<T>> _MockTypeLoader;
-        private Mock<IInstanceLoader<T>> _MockInstanceLoader;
-        private Mock<IPluginDependencyResolver<T>> _MockPluginDependencyResolver;
+        private Mock<IPluginObjectCreator<T>> _MockPluginObjectCreator;
+        private Mock<IPluginDependencyResolver> _MockPluginDependencyResolver;
         private Mock<IAssemblyLoader> _MockAssemblyLoader;
         private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
 
@@ -27,10 +24,9 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             _MockRepository = new MockRepository(MockBehavior.Strict);
 
-            _MockAppDomain = _MockRepository.Create<IAppDomain>();
             _MockTypeLoader = _MockRepository.Create<ITypeLoader<T>>();
-            _MockInstanceLoader = _MockRepository.Create<IInstanceLoader<T>>();
-            _MockPluginDependencyResolver = _MockRepository.Create<IPluginDependencyResolver<T>>();
+            _MockPluginObjectCreator = _MockRepository.Create<IPluginObjectCreator<T>>();
+            _MockPluginDependencyResolver = _MockRepository.Create<IPluginDependencyResolver>();
             _MockAssemblyLoader = _MockRepository.Create<IAssemblyLoader>();
             _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
 
@@ -40,35 +36,16 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             if (includeMocks)
             {
-                _MockInstanceLoader.SetupSet(m => m.Plugin = It.IsAny<IPlugin<T>>());
                 _MockPluginDependencyResolver.SetupSet(m => m.Plugin = It.IsAny<IPlugin<T>>());
-                _MockPluginLoaderLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>()));
             }
             return new Plugin<T>(
-                _MockAppDomain.Object,
                 _MockTypeLoader.Object,
-                _MockInstanceLoader.Object,
+                _MockPluginObjectCreator.Object,
                 _MockPluginDependencyResolver.Object,
-                _MockAssemblyLoader.Object,
-                _MockPluginLoaderLogger.Object);
+                _MockAssemblyLoader.Object);
         }
 
         #region Constructor
-
-        [TestMethod]
-        public void Plugin_Constructor_NullAppDomain_Test()
-        {
-            Assert.ThrowsException<ArgumentNullException>(() =>
-            {
-                new Plugin<T>(
-                    null,
-                    _MockTypeLoader.Object,
-                    _MockInstanceLoader.Object,
-                    _MockPluginDependencyResolver.Object,
-                    _MockAssemblyLoader.Object,
-                    _MockPluginLoaderLogger.Object);
-            });
-        }
 
         [TestMethod]
         public void Plugin_Constructor_NullTypeLoader_Test()
@@ -76,87 +53,62 @@ namespace Rhyous.SimplePluginLoader.Tests
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
                 new Plugin<T>(
-                    _MockAppDomain.Object,
                     null,
-                    _MockInstanceLoader.Object,
+                    _MockPluginObjectCreator.Object,
                     _MockPluginDependencyResolver.Object,
-                    _MockAssemblyLoader.Object,
-                    _MockPluginLoaderLogger.Object);
+                    _MockAssemblyLoader.Object);
             });
         }
 
         [TestMethod]
         public void Plugin_Constructor_NullInstanceLoader_Test()
         {
+            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
                 new Plugin<T>(
-                    _MockAppDomain.Object,
                     _MockTypeLoader.Object,
                     null,
                     _MockPluginDependencyResolver.Object,
-                    _MockAssemblyLoader.Object,
-                    _MockPluginLoaderLogger.Object);
+                    _MockAssemblyLoader.Object);
             });
         }
 
         [TestMethod]
         public void Plugin_Constructor_NullPluginDependencyResolver_Test()
         {
-            _MockInstanceLoader.SetupSet(m => m.Plugin = It.IsAny<IPlugin<T>>());
+            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
                 new Plugin<T>(
-                    _MockAppDomain.Object,
                     _MockTypeLoader.Object,
-                    _MockInstanceLoader.Object,
+                    _MockPluginObjectCreator.Object,
                     null,
-                    _MockAssemblyLoader.Object,
-                    _MockPluginLoaderLogger.Object);
+                    _MockAssemblyLoader.Object);
             });
         }
 
         [TestMethod]
         public void Plugin_Constructor_NullAssemblyLoader_Test()
         {
-            _MockInstanceLoader.SetupSet(m => m.Plugin = It.IsAny<IPlugin<T>>());
-            _MockPluginDependencyResolver.SetupSet(m => m.Plugin = It.IsAny<IPlugin<T>>());
+            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
+            _MockPluginDependencyResolver.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
                 new Plugin<T>(
-                    _MockAppDomain.Object,
                     _MockTypeLoader.Object,
-                    _MockInstanceLoader.Object,
+                    _MockPluginObjectCreator.Object,
                     _MockPluginDependencyResolver.Object,
-                    null,
-                    _MockPluginLoaderLogger.Object);
+                    null);
             });
-        }
-
-        [TestMethod]
-        public void Plugin_Constructor_NullLogger_Ignored_Test()
-        {
-            // Arrange
-            _MockInstanceLoader.SetupSet(m => m.Plugin = It.IsAny<IPlugin<T>>());
-            _MockPluginDependencyResolver.SetupSet(m => m.Plugin = It.IsAny<IPlugin<T>>());
-
-            // Act
-            new Plugin<T>(
-                _MockAppDomain.Object,
-                _MockTypeLoader.Object,
-                _MockInstanceLoader.Object,
-                _MockPluginDependencyResolver.Object,
-                _MockAssemblyLoader.Object,
-                null);
-
-            // Assert
-            _MockRepository.VerifyAll();
         }
 
         [TestMethod]
         public void Plugin_Constructor_Test()
         {
             // Arrange
+            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
+            
             // Act
             CreatePlugin(true);
 
@@ -172,6 +124,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Arrange
             var dll = @"C:\test\library.dll";
             var pdb = @"C:\test\library.pdb";
+            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
 
             // Act
             var plugin = CreatePlugin(true);
@@ -187,6 +140,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             // Arrange
             var dll = @"Invalid";
+            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
 
             // Act
             var plugin = CreatePlugin(true);
@@ -195,32 +149,14 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Assert
             Assert.AreEqual(null, plugin.FilePdb);
             _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void Plugin_RemoveDependencyResolver_Test()
-        {
-            // Arrange
-            var plugin = CreatePlugin(true);
-            bool wasCalled = false;
-            ResolveEventHandler handler = (object sender, ResolveEventArgs args) => 
-            {
-                wasCalled = true;
-                return Assembly.GetExecutingAssembly(); 
-            };
-
-            // Act
-            plugin.RemoveDependencyResolver();
-
-            // Assert
-            Assert.IsFalse(wasCalled, "The removed handle should not be called.");
-            _MockRepository.VerifyAll();
-        }
+        }        
 
         [TestMethod]
         public void Plugin_Dispose_Test()
         {
             // Arrange
+            _MockPluginDependencyResolver.Setup(m => m.RemoveDependencyResolver());
+            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             var plugin = CreatePlugin(true);
             bool wasCalled = false;
             ResolveEventHandler handler = (object sender, ResolveEventArgs args) =>
@@ -237,6 +173,25 @@ namespace Rhyous.SimplePluginLoader.Tests
 
             // Assert
             Assert.IsFalse(wasCalled, "The removed handle should not be called.");
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        public void Plugin_CreatePluginObjects_Test()
+        {
+            // Arrange
+            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
+            var plugin = CreatePlugin(true);
+            plugin.PluginTypes = new List<Type> { typeof(Org2), null, typeof(Org) };
+            _MockPluginObjectCreator.Setup(m => m.Create(typeof(Org2))).Returns(new Org2());
+            _MockPluginObjectCreator.Setup(m => m.Create(null)).Returns((Org)null);
+            _MockPluginObjectCreator.Setup(m => m.Create(typeof(Org))).Returns(new Org());
+
+            // Act
+            var actual = plugin.CreatePluginObjects();
+
+            // Assert
+            Assert.AreEqual(2, actual.Count);
             _MockRepository.VerifyAll();
         }
     }

@@ -23,6 +23,8 @@ namespace Rhyous.SimplePluginLoader
         event ResolveEventHandler TypeResolve;
         event AssemblyLoadEventHandler AssemblyLoad;
         event ResolveEventHandler AssemblyResolve;
+        int AssemblyResolveSubscriberCount { get; }
+
         event EventHandler DomainUnload;
         event EventHandler<FirstChanceExceptionEventArgs> FirstChanceException;
         event EventHandler ProcessExit;

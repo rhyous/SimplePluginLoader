@@ -14,7 +14,8 @@ namespace Rhyous.SimplePluginLoader.Tests
 
         private Mock<IAppDomain> _MockAppDomain;
         private Mock<IPluginLoaderSettings> _MockPluginLoaderSettings;
-        private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
+        private Mock<IAssemblyNameReader> _MockAssemblyNameReader;
+        private Mock<IPluginLoaderLogger> _MockLogger;
 
         [TestInitialize]
         public void TestInitialize()
@@ -23,29 +24,31 @@ namespace Rhyous.SimplePluginLoader.Tests
 
             _MockAppDomain = _MockRepository.Create<IAppDomain>();
             _MockPluginLoaderSettings = _MockRepository.Create<IPluginLoaderSettings>();
-            _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
+            _MockAssemblyNameReader = _MockRepository.Create<IAssemblyNameReader>();
+            _MockLogger = _MockRepository.Create<IPluginLoaderLogger>();
         }
 
-        private AssemblyLoader CreateAssemblyLoader()
+        private AssemblyLoader CreateAssemblyLoader(AssemblyCache assemblyCache)
         {
             return new AssemblyLoader(
                 _MockAppDomain.Object,
                 _MockPluginLoaderSettings.Object,
-                _MockPluginLoaderLogger.Object);
+                assemblyCache,
+                _MockAssemblyNameReader.Object,
+                _MockLogger.Object);
         }
 
         [TestMethod]
         public void FindAlreadyLoadedAssembly_NothingLoaded()
         {
             // Arrange
-            var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
             var logLines = new List<string>();
-            _MockPluginLoaderLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>())).Callback((PluginLoaderLogLevel level, string msg) =>
+            _MockLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>())).Callback((PluginLoaderLogLevel level, string msg) =>
             {
                 logLines.Add(msg);
             });
-            var loader = new AssemblyLoader(appDomain, _MockPluginLoaderSettings.Object, _MockPluginLoaderLogger.Object);
-            var assemblyDictionary = AssemblyDictionary.GetInstance(appDomain, _MockPluginLoaderLogger.Object);
+            var assemblyDictionary = new AssemblyCache();
+            var loader = CreateAssemblyLoader(assemblyDictionary);
             var dll = "file.dll";
             var version = "1.0.0.1";
             var assemblyName = new AssemblyName { Version = new Version("1.0.0.1") };
@@ -62,24 +65,22 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             // Arrange
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
-            var mockLogger = new Mock<IPluginLoaderLogger>();
             var logLines = new List<string>();
-            mockLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>())).Callback((PluginLoaderLogLevel level, string msg) =>
+            _MockLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>())).Callback((PluginLoaderLogLevel level, string msg) =>
             {
                 logLines.Add(msg);
             });
-            var loader = new AssemblyLoader(appDomain, _MockPluginLoaderSettings.Object, mockLogger.Object);
-            var assemblyDictionary = AssemblyDictionary.GetInstance(appDomain, mockLogger.Object);
+            _MockAppDomain.Setup(m => m.GetAssemblies()).Returns(appDomain.GetAssemblies());
+            var assemblyCache = new AssemblyCache();
+            var loader = CreateAssemblyLoader(assemblyCache); ;
             var dll = "file2.dll";
             var oldversion = "1.0.0.0";
             var version = "1.0.0.1";
-            var key = AssemblyLoader.GetKey(dll, oldversion);
+            var key = loader.GetKey(dll, oldversion);
             var testAssembly = appDomain.GetAssemblies().First();
-            assemblyDictionary.Assemblies.Add(key, testAssembly);
+            assemblyCache.Assemblies.Add(key, testAssembly);
             var assemblyName = new AssemblyName { Version = new Version("1.0.0.1") };
-            var mockAssemblyReader = new Mock<IAssemblyNameReader>();
-            mockAssemblyReader.Setup(m => m.GetAssemblyName(It.IsAny<string>())).Returns(assemblyName);
-            loader.AssemblyNameReader = mockAssemblyReader.Object;
+            _MockAssemblyNameReader.Setup(m => m.GetAssemblyName(It.IsAny<string>())).Returns(assemblyName);
 
             // Act
             var actual = loader.FindAlreadyLoadedAssembly(dll, version);
@@ -93,23 +94,21 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             // Arrange
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
-            var mockLogger = new Mock<IPluginLoaderLogger>();
             var logLines = new List<string>();
-            mockLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>())).Callback((PluginLoaderLogLevel level, string msg) =>
+            _MockLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>())).Callback((PluginLoaderLogLevel level, string msg) =>
             {
                 logLines.Add(msg);
             });
-            var loader = new AssemblyLoader(appDomain, _MockPluginLoaderSettings.Object, mockLogger.Object);
-            var assemblyDictionary = AssemblyDictionary.GetInstance(appDomain, mockLogger.Object);
+
+            var assemblyCache = new AssemblyCache();
+            var loader = CreateAssemblyLoader(assemblyCache);
             var dll = "file3.dll";
             var version = "1.0.0.1";
-            var key = AssemblyLoader.GetKey(dll, version);
+            var key = loader.GetKey(dll, version);
             var testAssembly = appDomain.GetAssemblies().First();
-            assemblyDictionary.Assemblies.Add(key, testAssembly);
+            assemblyCache.Assemblies.Add(key, testAssembly);
             var assemblyName = new AssemblyName { Version = new Version("1.0.0.1") };
-            var mockAssemblyReader = new Mock<IAssemblyNameReader>();
-            mockAssemblyReader.Setup(m => m.GetAssemblyName(It.IsAny<string>())).Returns(assemblyName);
-            loader.AssemblyNameReader = mockAssemblyReader.Object;
+            _MockAssemblyNameReader.Setup(m => m.GetAssemblyName(It.IsAny<string>())).Returns(assemblyName);
 
             // Act
             var actual = loader.FindAlreadyLoadedAssembly(dll, version);

@@ -1,6 +1,6 @@
 ﻿namespace Rhyous.SimplePluginLoader
 {
-    public interface IObjectCreatorFactory<T> where T : class
+    public interface IObjectCreatorFactory<T>
     {
         IObjectCreator<T> Create();
     }

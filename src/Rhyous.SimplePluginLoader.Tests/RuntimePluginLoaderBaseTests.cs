@@ -13,9 +13,7 @@ namespace Rhyous.SimplePluginLoader.Tests
 
         private Mock<IAppDomain> _MockAppDomain;
         private Mock<IPluginLoaderSettings> _MockPluginLoaderSettings;
-        private Mock<ITypeLoader<Org>> _MockTypeLoader;
-        private Mock<IInstanceLoaderFactory<Org>> _MockInstanceLoaderFactory;
-        private Mock<IAssemblyLoader> _MockAssemblyLoader;
+        private Mock<IPluginCacheFactory<Org>> _MockPluginCacheFactory;
         private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
 
         [TestInitialize]
@@ -25,9 +23,7 @@ namespace Rhyous.SimplePluginLoader.Tests
 
             _MockAppDomain = _MockRepository.Create<IAppDomain>();
             _MockPluginLoaderSettings = _MockRepository.Create<IPluginLoaderSettings>();
-            _MockTypeLoader = _MockRepository.Create<ITypeLoader<Org>>();
-            _MockInstanceLoaderFactory = _MockRepository.Create<IInstanceLoaderFactory<Org>>();
-            _MockAssemblyLoader = _MockRepository.Create<IAssemblyLoader>();
+            _MockPluginCacheFactory = _MockRepository.Create<IPluginCacheFactory<Org>>();
             _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
         }
 
@@ -36,9 +32,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             return new TestPluginLoader(
                 _MockAppDomain.Object,
                 _MockPluginLoaderSettings.Object,
-                _MockTypeLoader.Object,
-                _MockInstanceLoaderFactory.Object,
-                _MockAssemblyLoader.Object,
+                _MockPluginCacheFactory.Object,
                 _MockPluginLoaderLogger.Object);
         }
 
@@ -47,9 +41,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             return new TestPluginLoader2(
                 _MockAppDomain.Object,
                 _MockPluginLoaderSettings.Object,
-                _MockTypeLoader.Object,
-                _MockInstanceLoaderFactory.Object,
-                _MockAssemblyLoader.Object,
+                _MockPluginCacheFactory.Object,
                 _MockPluginLoaderLogger.Object);
         }
 
@@ -58,8 +50,8 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             // Arrange
             var expected = @"C:\ProgramData\Rhyous\App1\Plugins";
-            var loader = CreateInstanceLoader();
             _MockPluginLoaderSettings.Setup(m=>m.DefaultPluginDirectory).Returns((string)null);
+            var loader = CreateInstanceLoader();
 
             // Act
             var actual = loader.DefaultPluginDirectory;
@@ -74,8 +66,8 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             // Arrange
             var expected = @"c:\plugins";
-            var loader = CreateInstanceLoader();
             _MockPluginLoaderSettings.Setup(m => m.DefaultPluginDirectory).Returns(@"c:\plugins");
+            var loader = CreateInstanceLoader();
 
             // Act
             var actual = loader.DefaultPluginDirectory;
@@ -89,9 +81,9 @@ namespace Rhyous.SimplePluginLoader.Tests
         public void RuntimePluginLoaderBase_DefaultPluginPathWithSubFolder_Test()
         {
             // Arrange
-            var expected = @"C:\ProgramData\Rhyous\App1\Plugins\Sub2";
-            var loader = CreateInstance2Loader();
+            var expected = @"C:\ProgramData\Rhyous\App1\Plugins\Sub2"; 
             _MockPluginLoaderSettings.Setup(m => m.DefaultPluginDirectory).Returns((string)null);
+            var loader = CreateInstance2Loader();
 
             // Act
             var actual = loader.DefaultPluginDirectory;

@@ -3,6 +3,7 @@ using Moq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Rhyous.SimplePluginLoader.Tests
 {
@@ -15,6 +16,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         private Mock<IPluginLoaderSettings> _MockIPluginLoaderSettings;
         private Mock<IAssemblyLoader> _MockAssemblyLoader;
         private Mock<IPlugin> _MockPlugin;
+        private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
 
         [TestInitialize]
         public void TestInitialize()
@@ -25,12 +27,13 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockIPluginLoaderSettings = _MockRepository.Create<IPluginLoaderSettings>();
             _MockAssemblyLoader = _MockRepository.Create<IAssemblyLoader>();
             _MockPlugin = _MockRepository.Create<IPlugin>();
+            _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
         }
 
-        private PluginDependencyResolver<T> CreatePluginDependencyResolver<T>()
-            where T : class
+        private PluginDependencyResolver CreatePluginDependencyResolver()
         {
-            return new PluginDependencyResolver<T>(_MockAppDomain.Object, _MockIPluginLoaderSettings.Object, _MockAssemblyLoader.Object)
+            return new PluginDependencyResolver(_MockAppDomain.Object, _MockIPluginLoaderSettings.Object,
+                                                _MockAssemblyLoader.Object, _MockPluginLoaderLogger.Object)
             {
                 Plugin = _MockPlugin.Object
             };
@@ -43,10 +46,11 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
-                new PluginDependencyResolver<Org>(
+                new PluginDependencyResolver(
                     null,
                     _MockIPluginLoaderSettings.Object,
-                    _MockAssemblyLoader.Object);                
+                    _MockAssemblyLoader.Object,
+                    _MockPluginLoaderLogger.Object);
             });
         }
 
@@ -55,10 +59,11 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
-                new PluginDependencyResolver<Org>(
+                new PluginDependencyResolver(
                     _MockAppDomain.Object,
                     null,
-                    _MockAssemblyLoader.Object);
+                    _MockAssemblyLoader.Object,
+                    _MockPluginLoaderLogger.Object);
             });
         }
 
@@ -67,10 +72,11 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
-                new PluginDependencyResolver<Org>(
+                new PluginDependencyResolver(
                     _MockAppDomain.Object,
                     _MockIPluginLoaderSettings.Object,
-                    null);
+                    null,
+                    _MockPluginLoaderLogger.Object);
             });
         }
         #endregion
@@ -93,7 +99,7 @@ namespace Rhyous.SimplePluginLoader.Tests
                 @"c:\sharedbin\",
                 @"c:\Libs" };
 
-            var resolver = CreatePluginDependencyResolver<IOrg>();
+            var resolver = CreatePluginDependencyResolver();
 
             // Act
             var actualpaths = resolver.Paths;
@@ -104,10 +110,10 @@ namespace Rhyous.SimplePluginLoader.Tests
         }
 
         [TestMethod]
-        public void PluginDependencyResolver_Dispose_StateUnderTest_ExpectedBehavior()
+        public void PluginDependencyResolver_Dispose_Test()
         {
             // Arrange
-            var pluginDependencyResolver = CreatePluginDependencyResolver<Org>();
+            var pluginDependencyResolver = CreatePluginDependencyResolver();
 
             // Act
             pluginDependencyResolver.Dispose();
@@ -123,7 +129,10 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Arrange
             object sender = new { };
             ResolveEventArgs args = new ResolveEventArgs("name");
-            var pluginDependencyResolver = new PluginDependencyResolver<Org>(_MockAppDomain.Object, _MockIPluginLoaderSettings.Object, _MockAssemblyLoader.Object);
+            var pluginDependencyResolver = new PluginDependencyResolver(_MockAppDomain.Object,
+                                                                        _MockIPluginLoaderSettings.Object,
+                                                                        _MockAssemblyLoader.Object,
+                                                                        _MockPluginLoaderLogger.Object);
 
             // Act
             var result = pluginDependencyResolver.AssemblyResolveHandler(sender, args);
@@ -142,9 +151,9 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockPlugin.Setup(m => m.FullPath).Returns(@"c:\my\plugins\MyPlugin.dll");
             _MockPlugin.Setup(m => m.Directory).Returns(@"c:\my\plugins");
             _MockPlugin.Setup(m => m.Name).Returns(@"MyPlugin");
-            _MockIPluginLoaderSettings.Setup(m=>m.SharedPaths).Returns((IEnumerable<string>)null);
+            _MockIPluginLoaderSettings.Setup(m => m.SharedPaths).Returns((IEnumerable<string>)null);
 
-            var pluginDependencyResolver = CreatePluginDependencyResolver<Org>();
+            var pluginDependencyResolver = CreatePluginDependencyResolver();
 
             // Act
             var result = pluginDependencyResolver.AssemblyResolveHandler(sender, args);
@@ -160,7 +169,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Arrange
             object sender = new { };
             ResolveEventArgs args = new ResolveEventArgs("name");
-            var pluginDependencyResolver = CreatePluginDependencyResolver<Org>();
+            var pluginDependencyResolver = CreatePluginDependencyResolver();
             pluginDependencyResolver.Paths = new List<string>();
 
             // Act
@@ -181,8 +190,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockPlugin.Setup(m => m.Directory).Returns(@"c:\my\plugins");
             _MockPlugin.Setup(m => m.Name).Returns(@"MyPlugin");
             _MockIPluginLoaderSettings.Setup(m => m.SharedPaths).Returns((IEnumerable<string>)null);
-            var pluginDependencyResolver = CreatePluginDependencyResolver<Org>();
-            pluginDependencyResolver._AttemptedPaths = new ConcurrentDictionary<string, List<string>>();
+            var pluginDependencyResolver = CreatePluginDependencyResolver();
             var pathList = new List<string> {
                                 "",
                                 "c:\\my\\plugins" ,
@@ -208,7 +216,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Arrange
             object sender = new { };
             ResolveEventArgs args = new ResolveEventArgs("name");
-            var pluginDependencyResolver = CreatePluginDependencyResolver<Org>();
+            var pluginDependencyResolver = CreatePluginDependencyResolver();
             pluginDependencyResolver.Paths = new List<string>();
 
 
@@ -219,6 +227,93 @@ namespace Rhyous.SimplePluginLoader.Tests
             Assert.IsNull(result);
             _MockRepository.VerifyAll();
         }
+        #endregion
+
+        #region EventTests - This is usefull for now how events behave.
+        public class Event1Args
+        {
+            public Event1Args(string text) { Text = text; }
+            public string Text { get; }
+        }
+
+        public delegate void Event1Handler(object sender, Event1Args e);
+        public interface IEventHolder
+        {
+            event PluginDependencyResolverTests.Event1Handler Event1;
+
+            void TriggerEvent1();
+        }
+
+        public class EventHolder : IEventHolder
+        {
+            public event Event1Handler Event1;
+            public void TriggerEvent1()
+            {
+                if (Event1 != null)
+                {
+                    Event1.Invoke(this, new Event1Args($"Total subscribers: ${Event1.GetInvocationList().Length}"));
+                }
+            }
+        }
+
+        public class Event1Subscriber
+        {
+            private readonly IEventHolder _EventHolder;
+
+            public Event1Subscriber(IEventHolder eventHolder)
+            {
+                _EventHolder = eventHolder;
+            }
+
+            public void Subscribe()
+            {
+                _EventHolder.Event1 += Handler;
+            }
+            public void Unsubscribe()
+            {
+                _EventHolder.Event1 -= Handler;
+            }
+            public int ExecutionCount { get; set; }
+
+            private void Handler(object sender, Event1Args e)
+            {
+                ExecutionCount++;
+            }
+        }
+
+        [TestMethod]
+        public void EventFiresTwiceIfRegisteredTwice()
+        {
+            // Arrange
+            var eventHolder = new EventHolder();
+            var subscriber = new Event1Subscriber(eventHolder);
+            subscriber.Subscribe();
+            subscriber.Subscribe();
+
+            // Act
+            eventHolder.TriggerEvent1();
+
+            // Assert
+            Assert.AreEqual(2, subscriber.ExecutionCount);
+        }
+
+        [TestMethod]
+        public void EventFiresIfRegisteredTwiceButOnlyRemovedOnce()
+        {
+            // Arrange
+            var eventHolder = new EventHolder();
+            var subscriber = new Event1Subscriber(eventHolder);
+            subscriber.Subscribe();
+            subscriber.Subscribe();
+            subscriber.Unsubscribe();
+
+            // Act
+            eventHolder.TriggerEvent1();
+
+            // Assert
+            Assert.AreEqual(1, subscriber.ExecutionCount);
+        }
+
         #endregion
     }
 }

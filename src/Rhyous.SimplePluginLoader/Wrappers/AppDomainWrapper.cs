@@ -7,10 +7,32 @@ using System.Security.Principal;
 
 namespace Rhyous.SimplePluginLoader
 {
+    /// <summary>
+    /// This method wraps an AppDomain, allowing for interface-based design in consumers of an AppDomain.
+    /// </summary>
+    /// <remarks>This wraps the events by subscribing and then hosting its own copy of each event. This code does
+    /// not provide a way to trigger such events, as doing so would trigger only subscribers to the 
+    /// wrapper and not subscribers directly the events in the concrete AppDomain being wrapped.</remarks>
     public class AppDomainWrapper : IAppDomain
     {
         private readonly AppDomain _AppDomain;
-        public AppDomainWrapper(AppDomain appDomain) { _AppDomain = appDomain; }
+        private readonly IPluginLoaderLogger _Logger;
+
+        public AppDomainWrapper(AppDomain appDomain, IPluginLoaderLogger logger = null)
+        {
+            _AppDomain = appDomain;
+            _Logger = logger;
+            _AppDomain.AssemblyLoad += OnAssemblyLoad;
+            _AppDomain.AssemblyResolve += OnAssemblyResolve;
+            _AppDomain.DomainUnload += OnDomainUnload;
+            _AppDomain.FirstChanceException += OnFirstChanceException;
+            _AppDomain.ProcessExit += OnProcessExit;
+            _AppDomain.ReflectionOnlyAssemblyResolve += OnReflectionOnlyAssemblyResolve;
+            _AppDomain.ResourceResolve += OnResourceResolve;
+            _AppDomain.TypeResolve += OnTypeResolve;
+            _AppDomain.UnhandledException += OnUnhandledException;
+            _AppDomain.UnhandledException += OnUnhandledException;
+        }
 
         public string BaseDirectory => _AppDomain.BaseDirectory;
 
@@ -35,57 +57,85 @@ namespace Rhyous.SimplePluginLoader
         public long MonitoringTotalAllocatedMemorySize => _AppDomain.MonitoringTotalAllocatedMemorySize;
 
         #region Events
-        public event UnhandledExceptionEventHandler UnhandledException
-        {
-            add { _AppDomain.UnhandledException += value; }
-            remove { _AppDomain.UnhandledException -= value; }
-        }
-        public event ResolveEventHandler TypeResolve
-        {
-            add { _AppDomain.TypeResolve += value; }
-            remove { _AppDomain.TypeResolve -= value; }
-        }
-        public event AssemblyLoadEventHandler AssemblyLoad
-        {
-            add { _AppDomain.AssemblyLoad += value; }
-            remove { _AppDomain.AssemblyLoad -= value; }
-        }
+        public event AssemblyLoadEventHandler AssemblyLoad;
+        internal void OnAssemblyLoad(object sender, AssemblyLoadEventArgs args) => AssemblyLoad?.Invoke(sender, args);
 
         public event ResolveEventHandler AssemblyResolve
         {
-            add { _AppDomain.AssemblyResolve += value; }
-            remove { _AppDomain.AssemblyResolve -= value; }
+            add 
+            {
+                _AssemblyResolve += value;
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.DeclaringType.Name}.{value.Method.Name} subscribed to AppDomain.AssemblyResolve.");
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Total subscriptions: {AssemblyResolveSubscriberCount}");
+            }
+            remove 
+            {
+                _AssemblyResolve -= value;
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.DeclaringType.Name}.{value.Method.Name} unsubscribed to AppDomain.AssemblyResolve.");
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Total subscriptions: {AssemblyResolveSubscriberCount}");
+            } 
+        } private event ResolveEventHandler _AssemblyResolve;
+
+        internal Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            foreach (ResolveEventHandler handler in _AssemblyResolve.GetInvocationList())
+            {
+                var assembly = handler?.Invoke(sender, args);
+                if (assembly != null)
+                    return assembly;
+            }
+            return null;
+        }
+        public int AssemblyResolveSubscriberCount => _AssemblyResolve.GetInvocationList().Length;
+
+        public event EventHandler DomainUnload;
+        internal void OnDomainUnload(object sender, EventArgs args) => DomainUnload?.Invoke(sender, args);
+
+        public event EventHandler<FirstChanceExceptionEventArgs> FirstChanceException;
+        internal void OnFirstChanceException(object sender, FirstChanceExceptionEventArgs args) => FirstChanceException?.Invoke(sender, args);
+
+        public event EventHandler ProcessExit;
+        internal void OnProcessExit(object sender, EventArgs args) => ProcessExit?.Invoke(sender, args);
+
+        public event ResolveEventHandler ReflectionOnlyAssemblyResolve;
+        internal Assembly OnReflectionOnlyAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            foreach (ResolveEventHandler handler in ReflectionOnlyAssemblyResolve.GetInvocationList())
+            {
+                var assembly = handler?.Invoke(sender, args);
+                if (assembly != null)
+                    return assembly;
+            }
+            return null;
+        }        
+
+        public event ResolveEventHandler ResourceResolve;
+        internal Assembly OnResourceResolve(object sender, ResolveEventArgs args)
+        {
+            foreach (ResolveEventHandler handler in ResourceResolve.GetInvocationList())
+            {
+                var assembly = handler?.Invoke(sender, args);
+                if (assembly != null)
+                    return assembly;
+            }
+            return null;
         }
 
-        public event EventHandler DomainUnload
+        public event ResolveEventHandler TypeResolve;
+        internal Assembly OnTypeResolve(object sender, ResolveEventArgs args)
         {
-            add { _AppDomain.DomainUnload += value; }
-            remove { _AppDomain.DomainUnload -= value; }
+            foreach (ResolveEventHandler handler in TypeResolve.GetInvocationList())
+            {
+                var assembly = handler?.Invoke(sender, args);
+                if (assembly != null)
+                    return assembly;
+            }
+            return null;
         }
 
-        public event EventHandler<FirstChanceExceptionEventArgs> FirstChanceException
-        {
-            add { _AppDomain.FirstChanceException += value; }
-            remove { _AppDomain.FirstChanceException -= value; }
-        }
+        public event UnhandledExceptionEventHandler UnhandledException;
+        internal void OnUnhandledException(object sender, UnhandledExceptionEventArgs args) => UnhandledException?.Invoke(sender, args);
 
-        public event EventHandler ProcessExit
-        {
-            add { _AppDomain.ProcessExit += value; }
-            remove { _AppDomain.ProcessExit -= value; }
-        }
-
-        public event ResolveEventHandler ReflectionOnlyAssemblyResolve
-        {
-            add { _AppDomain.ReflectionOnlyAssemblyResolve += value; }
-            remove { _AppDomain.ReflectionOnlyAssemblyResolve -= value; }
-        }
-
-        public event ResolveEventHandler ResourceResolve
-        {
-            add { _AppDomain.ResourceResolve += value; }
-            remove { _AppDomain.ResourceResolve -= value; }
-        }
         #endregion
 
         public string ApplyPolicy(string assemblyName) => _AppDomain.ApplyPolicy(assemblyName);

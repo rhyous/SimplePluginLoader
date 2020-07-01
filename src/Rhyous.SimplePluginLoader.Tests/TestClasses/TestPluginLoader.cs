@@ -4,11 +4,9 @@
     {
         public TestPluginLoader(IAppDomain appDomain,
                                 IPluginLoaderSettings settings,
-                                ITypeLoader<Org> typeLoader,
-                                IInstanceLoaderFactory<Org> instanceLoaderFactory,
-                                IAssemblyLoader assemblyLoader,
+                                IPluginCacheFactory<Org> pluginCacheFactory,
                                 IPluginLoaderLogger logger) 
-            : base(appDomain,  settings, typeLoader, instanceLoaderFactory, assemblyLoader, logger)
+            : base(appDomain,  settings, pluginCacheFactory, logger)
         {
         }
 
@@ -19,11 +17,9 @@
     {
         public TestPluginLoader2(IAppDomain appDomain, 
                                  IPluginLoaderSettings settings,
-                                 ITypeLoader<Org> typeLoader,
-                                 IInstanceLoaderFactory<Org> instanceLoaderFactory,
-                                 IAssemblyLoader assemblyLoader,
+                                 IPluginCacheFactory<Org> pluginCacheFactory,
                                  IPluginLoaderLogger logger)
-            : base(appDomain, settings, typeLoader, instanceLoaderFactory, assemblyLoader, logger)
+            : base(appDomain, settings, pluginCacheFactory, logger)
         {
         }
 

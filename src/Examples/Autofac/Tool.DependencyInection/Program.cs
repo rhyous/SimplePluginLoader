@@ -14,17 +14,18 @@ namespace Tool.DependencyInjection
             var builder = new ContainerBuilder();
             builder.RegisterModule<SimplePluginLoaderModule>();
 
+            builder.RegisterInstance(new StaticPluginPaths(new[] { "Plugins" }))
+                   .As<IPluginPaths>();
+
             // ITool Plugin Loader registrations
             builder.RegisterType<PluginLoader<ITool>>()
                    .As<IPluginLoader<ITool>>()
-                   .WithParameter("paths", null)
                    .SingleInstance();
 
             // ICaveManTool<Hammer>> Plugin Loader registrations
             builder.RegisterType<Hammer>();
             builder.RegisterType<PluginLoader<ICaveManTool<Hammer>>>()
                    .As<IPluginLoader<ICaveManTool<Hammer>>>()
-                   .WithParameter("paths", null)
                    .SingleInstance();
 
             var container = builder.Build();
@@ -34,11 +35,11 @@ namespace Tool.DependencyInjection
                 var tools = new List<ITool> { new Hammer() };
 
                 var plugins = pluginLoader.LoadPlugins();
-                tools.AddRange(plugins.AllObjects);
+                tools.AddRange(plugins.CreatePluginObjects());
 
                 var pluginLoaderCaveMan = globalScope.Resolve<IPluginLoader<ICaveManTool<Hammer>>>();
                 var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
-                tools.AddRange(caveManPlugins.AllObjects);
+                tools.AddRange(caveManPlugins.CreatePluginObjects());
 
                 ShowPrompt(tools);
                 int input = ReadLine(tools);

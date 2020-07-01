@@ -1,6 +1,7 @@
 ﻿using Rhyous.SimplePluginLoader;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Tool.Tools;
 
 namespace Tool
@@ -13,28 +14,38 @@ namespace Tool
             {
                 new Hammer()
             };
+            
+            // Common objects
             var logger = new PluginLoaderLogger();
+            var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain, logger);
             var appSettings = new AppSettings();
             var settings = new PluginLoaderSettings(appSettings);
-            var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
-            var typeLoader = new TypeLoader<ITool>(settings, logger);
-            var toolObjectCreatorFactory = new ObjectCreatorFactory<ITool>();
-            var instanceLoaderFactory = new InstanceLoaderFactory<ITool>(toolObjectCreatorFactory, typeLoader, PluginLoaderSettings.Default, logger);
-            var assemblyLoader = new AssemblyLoader(appDomain, settings, logger);            
-            var pluginLoader = new PluginLoader<ITool>(null, appDomain, PluginLoaderSettings.Default, typeLoader, instanceLoaderFactory, 
-                                                       assemblyLoader, logger);
-            var plugins = pluginLoader.LoadPlugins();
-            tools.AddRange(plugins.AllObjects);
+            var assemblyNameReader = new AssemblyNameReader();
+            var assemblyLoader = new AssemblyLoader(appDomain, settings, AssemblyCache.Instance, assemblyNameReader, logger);
+            string appName = "Tool.CommandLine";
+            string appSubFolder = null;
+            var pluginPaths = new PluginPaths(appName, appSubFolder, appDomain, logger);
+            var pluginDependencyResolverObjectCreator = new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, logger);
+            var pluginDependencyResolverFactory = new PluginDependencyResolverCacheFactory(pluginDependencyResolverObjectCreator, logger);
 
+            // ITool plugin loader objects
+            var typeLoader = new TypeLoader<ITool>(settings, logger);
+            var toolPluginObjectCreatorFactory = new PluginObjectCreatorFactory<ITool>(settings, logger);
+            var pluginCacheFactory = new PluginCacheFactory<ITool>(typeLoader, toolPluginObjectCreatorFactory, pluginDependencyResolverFactory, assemblyLoader, logger);
+            var pluginLoader = new PluginLoader<ITool>(pluginPaths, pluginCacheFactory);
+            var plugins = pluginLoader.LoadPlugins();
+            tools.AddRange(plugins.CreatePluginObjects());
+
+            // ICaveManTool<Hammer> plugin loader objects
             var caveManTypeLoader = new TypeLoader<ICaveManTool<Hammer>>(PluginLoaderSettings.Default, logger);
-            var caveManToolObjectCreatorFactory = new ObjectCreatorFactory<ICaveManTool<Hammer>>();
-            var caveManInstanceLoaderFactory = new InstanceLoaderFactory<ICaveManTool<Hammer>>(caveManToolObjectCreatorFactory, caveManTypeLoader, PluginLoaderSettings.Default, logger);
-            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(null, appDomain, PluginLoaderSettings.Default, caveManTypeLoader,
-                                                                             caveManInstanceLoaderFactory, assemblyLoader, logger);
+            var caveManToolObjectCreatorFactory = new PluginObjectCreatorFactory<ICaveManTool<Hammer>>(settings, logger);
+            var caveManPluginCacheFactory = new PluginCacheFactory<ICaveManTool<Hammer>>(caveManTypeLoader, caveManToolObjectCreatorFactory, pluginDependencyResolverFactory, assemblyLoader, logger);
+            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(pluginPaths, caveManPluginCacheFactory);
             var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
-            tools.AddRange(caveManPlugins.AllObjects);
+            tools.AddRange(caveManPlugins.CreatePluginObjects());
             
             ShowPrompt(tools);
+            // Only 4 plugins will show as this doesn't support plugins with Constructor parameters
             int input = ReadLine(tools);
             while (input != 0)
             {

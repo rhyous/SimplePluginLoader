@@ -1,4 +1,4 @@
-﻿using Example.DepencyOfDependency;
+﻿using Example.DependencyOfDependency;
 using Interfaces.Localization;
 using System.Collections.Generic;
 

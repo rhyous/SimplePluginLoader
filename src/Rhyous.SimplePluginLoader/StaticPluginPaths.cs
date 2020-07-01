@@ -1,70 +1,18 @@
-﻿// See License at the end of the file
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Collections.Generic;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class InstanceLoader<T> : IInstanceLoader<T>
-        where T : class
+    public class StaticPluginPaths : IPluginPaths
     {
-        private readonly IObjectCreator<T> _ObjectCreator;
-        private readonly ITypeLoader<T> _TypeLoader;
-        private readonly IPluginLoaderSettings _Settings;
-        private readonly IPluginLoaderLogger _Logger;
-
-        public InstanceLoader(IObjectCreator<T> objectCreator, 
-                               ITypeLoader<T> typeLoader,
-                               IPluginLoaderSettings settings,
-                               IPluginLoaderLogger logger)
+        public StaticPluginPaths(IEnumerable<string> paths)
         {
-            _ObjectCreator = objectCreator ?? throw new ArgumentNullException(nameof(objectCreator));
-            _TypeLoader = typeLoader ?? throw new ArgumentNullException(nameof(typeLoader));
-            _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _Logger = logger;
+            Paths = paths;
         }
 
-        public IPlugin<T> Plugin { get => _ObjectCreator.Plugin; set => _ObjectCreator.Plugin = value; }
-
-        public List<T> Load(IAssembly assembly)
-        {
-            if (assembly == null)
-                return null;
-            var typesToLoad = _TypeLoader.Load(assembly);
-            if (typesToLoad == null || !typesToLoad.Any())
-                return null;
-            var listOfT = new List<T>();
-            foreach (var typeToLoad in typesToLoad.Where(t => t.IsInstantiable()))
-            {
-                try
-                {
-                    var obj = _ObjectCreator.Create(typeToLoad);
-                    if (obj == null)
-                        continue;
-                    listOfT.Add(obj);
-                }
-                catch (Exception e)
-                {
-                    LogException(typeToLoad, e);
-                }
-            }
-            return listOfT;
-        }
-
-        private void LogException(Type typeToLoad, Exception e)
-        {
-            var e2 = new PluginTypeLoadException($"Failed to load plugin type: {typeToLoad.Name}. See inner exception.", e);
-            _Logger?.Log(e2);
-            e.LogReflectionTypeLoadExceptions(_Logger);
-            if (_Settings.ThrowExceptionsOnLoad)
-            {
-                throw e2;
-            }
-        }
+        public IEnumerable<string> Paths { get; }
     }
 }
+
 
 #region License
 /*

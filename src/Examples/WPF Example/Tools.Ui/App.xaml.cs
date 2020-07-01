@@ -26,14 +26,17 @@ namespace Tools.Ui
             var logger = new PluginLoaderLogger();
             var appSettings = new AppSettings();
             var settings = new PluginLoaderSettings(appSettings);
-            var toolObjectCreatorFactory = new ObjectCreatorFactory<ITool>();
+            var toolPluginObjectCreatorFactory = new PluginObjectCreatorFactory<ITool>(settings, logger);
             var typeLoader = new TypeLoader<ITool>(PluginLoaderSettings.Default, logger);
-            var instanceLoaderFactory = new InstanceLoaderFactory<ITool>(toolObjectCreatorFactory, typeLoader, PluginLoaderSettings.Default, logger);
-            var assemblyLoader = new AssemblyLoader(appDomain, settings, logger);
-            var pluginLoader = new PluginLoader<ITool>(null, appDomain, PluginLoaderSettings.Default, typeLoader, instanceLoaderFactory,
-                                                       assemblyLoader, logger);
+            var assemblyNameReader = new AssemblyNameReader();
+            var assemblyLoader = new AssemblyLoader(appDomain, settings, AssemblyCache.Instance, assemblyNameReader, logger);
+            var pluginDependencyObjectCreator = new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, logger);
+            var pluginDependencyResolverFactory = new PluginDependencyResolverCacheFactory(pluginDependencyObjectCreator, logger);
+            var pluginCacheFactory = new PluginCacheFactory<ITool>(typeLoader, toolPluginObjectCreatorFactory, pluginDependencyResolverFactory, assemblyLoader, logger);
+            var pluginPaths = new StaticPluginPaths(new[] { "Plugins" });
+            var pluginLoader = new PluginLoader<ITool>(pluginPaths, pluginCacheFactory);
             var plugins = pluginLoader.LoadPlugins();
-            Tools.AddRange(plugins.AllObjects);
+            Tools.AddRange(plugins.CreatePluginObjects());
         }
     }
 }

@@ -9,14 +9,22 @@ namespace Rhyous.SimplePluginLoader
 {
     public class AssemblyLoader : IAssemblyLoader
     {
-        private IPluginLoaderLogger _Logger;
-        private IAppDomain _AppDomain;
+        private readonly IPluginLoaderLogger _Logger;
+        private readonly IAppDomain _AppDomain;
         private readonly IPluginLoaderSettings _Settings;
+        private readonly IAssemblyCache _AssemblyCache;
+        private readonly IAssemblyNameReader _AssemblyNameReader;
 
-        public AssemblyLoader(IAppDomain appDomain, IPluginLoaderSettings settings, IPluginLoaderLogger logger)
+        public AssemblyLoader(IAppDomain appDomain,
+                              IPluginLoaderSettings settings, 
+                              IAssemblyCache assemblyCache,
+                              IAssemblyNameReader assemblyNameReader,
+                              IPluginLoaderLogger logger)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _AssemblyCache = assemblyCache ?? throw new ArgumentNullException(nameof(assemblyCache));
+            _AssemblyNameReader = assemblyNameReader;
             _Logger = logger;
         }
 
@@ -26,7 +34,7 @@ namespace Rhyous.SimplePluginLoader
             {
                 return TryLoad(dll, pdb);
             }
-            var defaultDirs = new PluginPaths(_AppDomain.BaseDirectory, _AppDomain, null, _Logger).GetDefaultPluginDirectories();
+            var defaultDirs = new PluginPaths(_AppDomain.BaseDirectory, null, _AppDomain, _Logger).GetDefaultPluginDirectories();
             foreach (var path in defaultDirs)
             {
                 var dllPath = Path.Combine(path, dll);
@@ -41,7 +49,7 @@ namespace Rhyous.SimplePluginLoader
 
         public IAssembly TryLoad(string dll, string pdb)
         {
-            var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
+            var assemblyName = _AssemblyNameReader.GetAssemblyName(dll);
             if (assemblyName == null)
                 return null;
             return TryLoad(dll, pdb, assemblyName.Version.ToString());
@@ -49,27 +57,23 @@ namespace Rhyous.SimplePluginLoader
 
         public IAssembly TryLoad(string dll, string pdb, string version)
         {
-            IAssembly assembly = null;
-            lock (AssemblyDictionary.IsLocked)
+            IAssembly assembly = FindAlreadyLoadedAssembly(dll, version);
+            if (assembly != null)
+                return assembly;
+            assembly = _AppDomain.TryLoad(dll, pdb, _Logger);
+            if (assembly == null)
+                return null;
+            var assemblyVersion = assembly.GetName().Version.ToString();
+            if (assemblyVersion != version)
+                return null;
+            try
             {
-                assembly = FindAlreadyLoadedAssembly(dll, version);
-                if (assembly != null)
-                    return assembly;
-                assembly = _AppDomain.TryLoad(dll, pdb, _Logger);
-                if (assembly == null)
-                    return null;
-                var assemblyVersion = assembly.GetName().Version.ToString();
-                if (assemblyVersion != version)
-                    return null;
-                try
-                {
-                    AssemblyDictionary.Assemblies.Add(GetKey(dll, assemblyVersion), assembly);
-                }
-                catch (Exception e)
-                { 
-                    _Logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
-                    throw;
-                }
+                _AssemblyCache.Assemblies.Add(GetKey(dll, assemblyVersion), assembly);
+            }
+            catch (Exception e)
+            {
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
+                throw;
             }
             if (_Settings.LoadDependenciesProactively)
             {
@@ -83,17 +87,17 @@ namespace Rhyous.SimplePluginLoader
         internal IAssembly FindAlreadyLoadedAssembly(string dll, string version)
         {
             var key = GetKey(dll, version);
-            if (AssemblyDictionary.Assemblies.TryGetValue(key, out IAssembly assembly))
+            if (_AssemblyCache.Assemblies.TryGetValue(key, out IAssembly assembly))
             {
                 _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Found already loaded plugin assembly: {key}");
             }
             else
             {
-                var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
+                var assemblyName = _AssemblyNameReader.GetAssemblyName(dll);
                 if (assemblyName == null)
                     return null;
                 key = GetKey(dll, assemblyName.Version.ToString());
-                assembly = AssemblyDictionary.Assemblies.TryGetValue(key, out assembly) ? assembly : null;
+                assembly = _AssemblyCache.Assemblies.TryGetValue(key, out assembly) ? assembly : null;
                 if (assembly != null && assembly.GetName().Version.ToString() == version)
                 {
                     _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Found already loaded plugin assembly: {key}");
@@ -104,27 +108,21 @@ namespace Rhyous.SimplePluginLoader
                 {
                     key = GetKey(dll, assembly.GetName().Version.ToString());
                     _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Loading plugin assembly from dll: {key}");
-                    AssemblyDictionary.Assemblies.Add(key, assembly);
+                    _AssemblyCache.Assemblies.Add(key, assembly);
                 }
             }
             return assembly;
         }
 
-        internal static string GetKey(string dll)
+        internal string GetKey(string dll)
         {
-            return string.Format("{0}_{1}", Path.GetFileNameWithoutExtension(dll), File.GetLastWriteTime(dll).ToFileTimeUtc());
+            return string.Format("{0}_{1}", Path.GetFileNameWithoutExtension(dll), Directory.GetLastWriteTime(dll).ToFileTimeUtc());
         }
 
-        internal static string GetKey(string dll, string version)
+        internal string GetKey(string dll, string version)
         {
-            return string.Format("{0}_{1}_{2}", Path.GetFileNameWithoutExtension(dll), version, File.GetLastWriteTime(dll).ToFileTimeUtc());
+            return string.Format("{0}_{1}_{2}", Path.GetFileNameWithoutExtension(dll), version, Directory.GetLastWriteTime(dll).ToFileTimeUtc());
         }
-
-        internal AssemblyDictionary AssemblyDictionary
-        {
-            get { return _AssemblyDictionary ?? (_AssemblyDictionary = AssemblyDictionary.GetInstance(_AppDomain, _Logger)); }
-            set { _AssemblyDictionary = value; }
-        } private AssemblyDictionary _AssemblyDictionary;
 
         internal void ProactivelyLoadDependencies(string binPath)
         {
@@ -133,23 +131,23 @@ namespace Rhyous.SimplePluginLoader
             foreach (var file in Directory.GetFiles(binPath, "*.dll"))
             {
                 var dll = file;
-                var assemblyName = AssemblyNameReader.GetAssemblyName(dll);
+                var assemblyName = _AssemblyNameReader.GetAssemblyName(dll);
                 if (assemblyName == null)
                     continue;
                 var pdb = file.Substring(0, file.Length - 3) + ".pdb";
                 var version = assemblyName.Version.ToString();
-                var assembly = (string.IsNullOrWhiteSpace(version))
-                    ? TryLoad(dll, pdb)
-                    : TryLoad(dll, pdb, version);
+                if (string.IsNullOrWhiteSpace(version))
+                    TryLoad(dll, pdb);
+                else
+                    TryLoad(dll, pdb, version);
             }
         }
 
-        public IAssemblyNameReader AssemblyNameReader
+        internal IDirectory Directory
         {
-            get { return _AssemblyNameReader ?? (_AssemblyNameReader = new AssemblyNameReader()); }
-            set { _AssemblyNameReader = value; }
-        } private IAssemblyNameReader _AssemblyNameReader;
-
+            get { return _Directory ?? (_Directory = DirectoryWrapper.Instance); }
+            set { _Directory = value; }
+        } private IDirectory _Directory;
 
         #region IDisposable
         bool _disposed;

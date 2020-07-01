@@ -17,6 +17,7 @@ namespace Rhyous.SimplePluginLoader
 
     public interface IPlugin<T> : IPlugin
     {
-        List<T> PluginObjects { get; set; }
+        List<T> CreatePluginObjects();
+        T CreatePluginObject(Type t);
     }
 }

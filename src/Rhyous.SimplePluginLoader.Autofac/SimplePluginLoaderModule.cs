@@ -25,25 +25,42 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             builder.RegisterType<AppSettings>()
                    .As<IAppSettings>()
                    .SingleInstance();
+            builder.RegisterInstance(AssemblyCache.Instance)
+                   .As<IAssemblyCache>()
+                   .SingleInstance();
+            builder.RegisterType<AssemblyNameReader>()
+                   .As<IAssemblyNameReader>()
+                   .SingleInstance();
             builder.RegisterType<AssemblyLoader>()
                    .As<IAssemblyLoader>()
                    .SingleInstance();
-            builder.RegisterGeneric(typeof(PluginDependencyResolver<>))
-                   .As(typeof(IPluginDependencyResolver<>));
+            builder.RegisterGeneric(typeof(CacheFactory<,>))
+                   .As(typeof(ICacheFactory<,>))
+                   .SingleInstance();
+            builder.RegisterType<PluginDependencyResolverObjectCreator>()
+                   .As<IPluginDependencyResolverObjectCreator>()
+                   .SingleInstance();
+            builder.RegisterType<PluginDependencyResolverCacheFactory>()
+                   .As<IPluginDependencyResolverCacheFactory>()
+                   .SingleInstance();
+            builder.RegisterGeneric(typeof(PluginCacheFactory<>))
+                   .As(typeof(IPluginCacheFactory<>));
+            builder.RegisterType<PluginDependencyResolver>()
+                   .As<IPluginDependencyResolver>();
             builder.RegisterGeneric(typeof(AutofacObjectCreatorFactory<>))
                    .As(typeof(IObjectCreatorFactory<>));
-            builder.RegisterGeneric(typeof(AutofacObjectCreator<>))
-                   .As(typeof(IObjectCreator<>));
-            builder.RegisterGeneric(typeof(InstanceLoaderFactory<>))
-                   .As(typeof(IInstanceLoaderFactory<>));
+            builder.RegisterGeneric(typeof(AutofacPluginObjectCreatorFactory<>))
+                   .As(typeof(IPluginObjectCreatorFactory<>));
+            builder.RegisterGeneric(typeof(AutofacPluginObjectCreator<>))
+                   .As(typeof(IPluginObjectCreator<>));
 
             // Plugin Loader Registration for a plugin's own registration module
             builder.RegisterType<PluginLoader<IDependencyRegistrar<ContainerBuilder>>>()
                    .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            builder.RegisterType<ObjectCreator<IDependencyRegistrar<ContainerBuilder>>>()
-                   .As<IObjectCreator<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
-            builder.RegisterType<ObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>()
-                   .As<IObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
+            builder.RegisterType<PluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>()
+                   .As<IPluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
+            builder.RegisterType<PluginObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>()
+                   .As<IPluginObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
         }
     }
 }

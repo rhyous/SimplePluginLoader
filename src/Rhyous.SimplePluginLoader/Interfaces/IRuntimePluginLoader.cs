@@ -31,12 +31,8 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         IPluginLoader<T> PluginLoader { get; }
         /// <summary>
-        /// The plugin loader.
+        /// A list of loaded plugin types.
         /// </summary>
         List<Type> PluginTypes { get; }
-        /// <summary>
-        /// A list of loaded plugins.
-        /// </summary>
-        List<T> Plugins { get; }
     }
 }

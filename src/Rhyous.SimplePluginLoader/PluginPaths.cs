@@ -5,24 +5,29 @@ using System.Linq;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class PluginPaths
+    public class PluginPaths : IPluginPaths
     {
         public const string DefaultPluginDirectory = "Plugins";
         public const string DefaultDllSearchString = "*.dll";
 
-        private IPluginLoaderLogger _Logger;
-        private IAppDomain _AppDomain;
+        private readonly IAppDomain _AppDomain;
         private readonly string _PluginSubFolder;
+        private readonly IPluginLoaderLogger _Logger;
 
-        public PluginPaths(string appName, IAppDomain appDomain, string PluginSubFolder, IPluginLoaderLogger logger)
+        public PluginPaths(string appName,
+                           string pluginSubFolder,
+                           IAppDomain appDomain,
+                           IPluginLoaderLogger logger)
         {
-            AppName = appName;
-            _Logger = logger;
-            _AppDomain = appDomain;
-            _PluginSubFolder = PluginSubFolder;
+            AppName = !string.IsNullOrWhiteSpace(appName) ? appName : throw new ArgumentException("message", nameof(appName));
+            _PluginSubFolder = pluginSubFolder; // Optional
+            _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
+            _Logger = logger; // Optional
         }
 
         public string AppName { get; set; }
+
+        public IEnumerable<string> Paths => GetDefaultPluginDirectories();
 
         /// <summary>
         /// The name of the subdirectory where plugins are stored. The default is:
