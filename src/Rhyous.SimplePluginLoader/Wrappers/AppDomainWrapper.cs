@@ -78,6 +78,8 @@ namespace Rhyous.SimplePluginLoader
 
         internal Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
         {
+            if (_AssemblyResolve == null)
+                return null;
             foreach (ResolveEventHandler handler in _AssemblyResolve.GetInvocationList())
             {
                 var assembly = handler?.Invoke(sender, args);
@@ -100,6 +102,8 @@ namespace Rhyous.SimplePluginLoader
         public event ResolveEventHandler ReflectionOnlyAssemblyResolve;
         internal Assembly OnReflectionOnlyAssemblyResolve(object sender, ResolveEventArgs args)
         {
+            if (ReflectionOnlyAssemblyResolve == null)
+                return null;
             foreach (ResolveEventHandler handler in ReflectionOnlyAssemblyResolve.GetInvocationList())
             {
                 var assembly = handler?.Invoke(sender, args);
@@ -112,6 +116,8 @@ namespace Rhyous.SimplePluginLoader
         public event ResolveEventHandler ResourceResolve;
         internal Assembly OnResourceResolve(object sender, ResolveEventArgs args)
         {
+            if (ResourceResolve == null)
+                return null;
             foreach (ResolveEventHandler handler in ResourceResolve.GetInvocationList())
             {
                 var assembly = handler?.Invoke(sender, args);
@@ -124,6 +130,8 @@ namespace Rhyous.SimplePluginLoader
         public event ResolveEventHandler TypeResolve;
         internal Assembly OnTypeResolve(object sender, ResolveEventArgs args)
         {
+            if (TypeResolve == null)
+                return null;
             foreach (ResolveEventHandler handler in TypeResolve.GetInvocationList())
             {
                 var assembly = handler?.Invoke(sender, args);
