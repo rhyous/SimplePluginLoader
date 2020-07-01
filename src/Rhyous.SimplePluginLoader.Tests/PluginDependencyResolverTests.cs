@@ -92,9 +92,10 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockIPluginLoaderSettings.Setup(m => m.SharedPaths).Returns(new[] { @"c:\bin", @"c:\sharedbin\", @"c:\Libs" });
             var expectedPaths = new List<string> {
                 "",
-                "c:\\my\\plugins",
-                "c:\\my\\plugins\\bin",
-                "c:\\my\\plugins\\MyPlugin",
+                @"c:\my\plugins",
+                @"c:\my\plugins\bin",
+                @"c:\my\plugins\MyPlugin",
+                @"c:\my\plugins\MyPlugin\bin",
                 @"c:\bin",
                 @"c:\sharedbin\",
                 @"c:\Libs" };
@@ -131,8 +132,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             ResolveEventArgs args = new ResolveEventArgs("name");
             var pluginDependencyResolver = new PluginDependencyResolver(_MockAppDomain.Object,
                                                                         _MockIPluginLoaderSettings.Object,
-                                                                        _MockAssemblyLoader.Object,
-                                                                        _MockPluginLoaderLogger.Object);
+            _MockPluginLoaderLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), "Removed AssemblyResolver for plugin: unknown."));
 
             // Act
             var result = pluginDependencyResolver.AssemblyResolveHandler(sender, args);

@@ -49,7 +49,7 @@ namespace Rhyous.SimplePluginLoader
         {
             _AppDomain.AssemblyResolve -= AssemblyResolveHandler; // If it is already removed, there is no harm in removing it again.
             IsRegisteredWithAssemblyResolve.Value = false;
-            _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Removed AssemblyResolver for plugin: {Plugin.Name}.");
+            _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Removed AssemblyResolver for plugin: {Plugin?.Name ?? "unknown"}.");
         }
 
         public Assembly AssemblyResolveHandler(object sender, ResolveEventArgs args)
