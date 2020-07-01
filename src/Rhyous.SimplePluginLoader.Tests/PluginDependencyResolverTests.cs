@@ -132,6 +132,8 @@ namespace Rhyous.SimplePluginLoader.Tests
             ResolveEventArgs args = new ResolveEventArgs("name");
             var pluginDependencyResolver = new PluginDependencyResolver(_MockAppDomain.Object,
                                                                         _MockIPluginLoaderSettings.Object,
+                                                                        _MockAssemblyLoader.Object,
+                                                                        _MockPluginLoaderLogger.Object);
             _MockPluginLoaderLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), "Removed AssemblyResolver for plugin: unknown."));
 
             // Act
