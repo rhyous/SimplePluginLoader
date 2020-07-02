@@ -28,5 +28,43 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
             // Assert
             Assert.IsNotNull(result);
         }
+
+        [TestMethod]
+        public void AutofacObjectCreator_Create_Null_TypeToLoad()
+        {
+            // Arrange
+            Type type = typeof(Organization);
+
+            var builder = new ContainerBuilder();
+            var container = builder.Build();
+
+            var autofacObjectCreator = new AutofacObjectCreator<IOrganization>(container);
+            autofacObjectCreator.RegisterTypeMethod = (ContainerBuilder b, Type t1, Type t2) => { return null; };
+
+            // Act
+            var result = autofacObjectCreator.Create(type);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void AutofacObjectCreator_Create_EmptyGeneric_TypeToLoad()
+        {
+            // Arrange
+            Type type = typeof(Organization);
+
+            var builder = new ContainerBuilder();
+            var container = builder.Build();
+
+            var autofacObjectCreator = new AutofacObjectCreator<IOrganization>(container);
+            autofacObjectCreator.RegisterTypeMethod = (ContainerBuilder b, Type t1, Type t2) => { return typeof(Service<,,>); };
+
+            // Act
+            var result = autofacObjectCreator.Create(type);
+
+            // Assert
+            Assert.IsNull(result);
+        }
     }
 }

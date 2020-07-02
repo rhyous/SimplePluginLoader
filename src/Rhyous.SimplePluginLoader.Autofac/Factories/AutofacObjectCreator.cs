@@ -13,7 +13,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
 
         public AutofacObjectCreator(IComponentContext componentContext)
         {
-            _ComponentContext = componentContext ?? throw new ArgumentNullException(nameof(componentContext));
+            _ComponentContext = componentContext;
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             Type typeToLoad = null;
             using (var pluginScope = scope.BeginLifetimeScope((builder) =>
             {
-                typeToLoad = builder.RegisterType(type, typeof(T));
+                typeToLoad = RegisterTypeMethod(builder, type, typeof(T));
             }))
             {
                 if (typeToLoad == null || typeToLoad.IsGenericTypeDefinition)
@@ -37,5 +37,8 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
                 return (T)pluginScope.Resolve(typeToLoad);
             }
         }
+
+        /// <summary>This wrapper aroudn the extension method is used to add ease of Unit Testing</summary>
+        internal Func<ContainerBuilder, Type, Type, Type> RegisterTypeMethod = ContainerBuilderExtensions.RegisterType;
     }
 }

@@ -17,7 +17,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
 
         public IObjectCreator<T> Create()
         {
-            return _ComponentContext.Resolve<IPluginObjectCreator<T>>();
+            return _ComponentContext.Resolve<IObjectCreator<T>>();
         }
     }
 }

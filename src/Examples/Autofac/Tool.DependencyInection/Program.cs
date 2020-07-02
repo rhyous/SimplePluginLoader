@@ -31,9 +31,9 @@ namespace Tool.DependencyInjection
             var container = builder.Build();
             using (var globalScope = container.BeginLifetimeScope())
             {
-                var pluginLoader = globalScope.Resolve<IPluginLoader<ITool>>();
                 var tools = new List<ITool> { new Hammer() };
 
+                var pluginLoader = globalScope.Resolve<IPluginLoader<ITool>>();
                 var plugins = pluginLoader.LoadPlugins();
                 tools.AddRange(plugins.CreatePluginObjects());
 
@@ -57,11 +57,15 @@ namespace Tool.DependencyInjection
         {
             Console.WriteLine("Which tool do you want to use:");
             Console.WriteLine("0. Exit");
-            for (int i = 0; i < tools.Count;)
+            var expectedToolCount = 8;
+            int i = 0;
+            for (; i < tools.Count;)
             {
                 var tool = tools[i];
                 Console.WriteLine("{0}. {1}", ++i, tool.Name);
             }
+            if (i != expectedToolCount)
+                Console.WriteLine($"Something went wrong. You should see {expectedToolCount} tools here.");
             Console.Write("Choose an option> ");
         }
 

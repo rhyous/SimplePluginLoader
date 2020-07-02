@@ -55,6 +55,9 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
                    .As(typeof(IPluginObjectCreator<>));
 
             // Plugin Loader Registration for a plugin's own registration module
+            builder.RegisterType<PluginDependencyRegistrar>()
+                   .As<IPluginDependencyRegistrar>()
+                   .SingleInstance();
             builder.RegisterType<PluginLoader<IDependencyRegistrar<ContainerBuilder>>>()
                    .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
             builder.RegisterType<PluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>()

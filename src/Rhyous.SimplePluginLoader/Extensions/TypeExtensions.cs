@@ -18,10 +18,19 @@ namespace Rhyous.SimplePluginLoader
             return type.IsSameOrSubclassAs(typeof(T)) || typeof(T).IsAssignableFrom(type) || typeof(T).IsGenericInterfaceOf(type);
         }
 
+        public static bool IsTypeOf(this Type type, Type type2)
+        {
+            return type.IsSameOrSubclassAs(type2) || type2.IsAssignableFrom(type) || type2.IsGenericInterfaceOf(type) || type2.IsGenericTypeDefinitionOf(type);
+        }
+
         public static bool IsGenericInterfaceOf(this Type left, Type right)
         {
             if (!left.IsGenericType || !left.IsInterface || !right.IsGenericType)
+            {
+                if (right.BaseType != null)
+                    return left.IsGenericInterfaceOf(right.BaseType);
                 return false;
+            }
             var rightInterfaces = right.GetInterfaces();
             if (rightInterfaces.Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == left))
                 return true;
@@ -31,6 +40,16 @@ namespace Rhyous.SimplePluginLoader
             {
                 if (!left.ContainsGenericParameters && right.ContainsGenericParameters)
                     return true;
+            }
+            return false;
+        }
+
+        public static bool IsGenericTypeDefinitionOf(this Type left, Type right)
+        {
+            if (left.IsGenericType && left.IsGenericTypeDefinition && right.IsGenericType)
+            {
+                return (right.GetGenericTypeDefinition() == left)
+                    || (right.BaseType.IsGenericType && right.IsGenericTypeDefinition && right.GetGenericTypeDefinition() == left);
             }
             return false;
         }

@@ -5,7 +5,7 @@ namespace Tool.Plugin2
     public class GraniteRock : ITool
     {
         private Localizer _localizer = new Localizer();
-        public string Name => _localizer.Localize("Granite Rock");
+        public string Name => _localizer.Localize("Rock");
 
         public uint _ThingsHammered;
 

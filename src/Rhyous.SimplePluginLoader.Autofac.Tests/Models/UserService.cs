@@ -1,6 +1,7 @@
 ﻿namespace Rhyous.SimplePluginLoader.Autofac.Tests
 {
-    public class UserService : Service<User, IUser, int>
+    public interface IUserService : IService<User, IUser, int> { }
+    public class UserService : Service<User, IUser, int>, IUserService
     {
         public override IUser Get(int id)
         {

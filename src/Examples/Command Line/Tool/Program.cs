@@ -60,11 +60,15 @@ namespace Tool
         {
             Console.WriteLine("Which tool do you want to use:");
             Console.WriteLine("0. Exit");
-            for (int i = 0; i < tools.Count; )
+            var expectedToolCount = 5;
+            int i = 0;
+            for (; i < tools.Count;)
             {
                 var tool = tools[i];
                 Console.WriteLine("{0}. {1}", ++i, tool.Name);
             }
+            if (i != expectedToolCount)
+                Console.WriteLine($"Something went wrong. You should see {expectedToolCount} tools here.");
             Console.Write("Choose an option> ");
         }
 

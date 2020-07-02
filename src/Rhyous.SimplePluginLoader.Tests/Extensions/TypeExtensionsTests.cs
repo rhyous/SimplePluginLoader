@@ -94,7 +94,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
             var actual = type1.IsGenericInterfaceOf(type2);
 
             // Assert
-            Assert.IsFalse(actual);
+            Assert.IsTrue(actual);
         }
 
         [TestMethod]
@@ -104,7 +104,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
             var type = typeof(With3);
 
             // Act
-            var actual = type.IsPluginType<IWith3<int, int, int>>();
+            var actual = type.IsTypeOf(typeof(IWith3<int, int, int>));
 
             // Assert
             Assert.IsTrue(actual);
