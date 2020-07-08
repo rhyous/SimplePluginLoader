@@ -1,9 +1,8 @@
 ﻿// See License at the end of the file
 
-using Rhyous.SimplePluginLoader.Extensions;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -16,7 +15,7 @@ namespace Rhyous.SimplePluginLoader
         private readonly IAssemblyNameReader _AssemblyNameReader;
 
         public AssemblyLoader(IAppDomain appDomain,
-                              IPluginLoaderSettings settings, 
+                              IPluginLoaderSettings settings,
                               IAssemblyCache assemblyCache,
                               IAssemblyNameReader assemblyNameReader,
                               IPluginLoaderLogger logger)
@@ -24,105 +23,53 @@ namespace Rhyous.SimplePluginLoader
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _AssemblyCache = assemblyCache ?? throw new ArgumentNullException(nameof(assemblyCache));
-            _AssemblyNameReader = assemblyNameReader;
+            _AssemblyNameReader = assemblyNameReader ?? throw new ArgumentNullException(nameof(assemblyNameReader));
             _Logger = logger;
         }
 
-        public virtual IAssembly Load(string dll, string pdb)
+        public IAssembly TryLoad(string dll, string pdb, string version = null)
         {
-            if (Path.IsPathRooted(dll))
-            {
-                return TryLoad(dll, pdb);
-            }
-            var defaultDirs = new PluginPaths(_AppDomain.BaseDirectory, null, _AppDomain, _Logger).GetDefaultPluginDirectories();
-            foreach (var path in defaultDirs)
-            {
-                var dllPath = Path.Combine(path, dll);
-                var assembly = TryLoad(dllPath, pdb);
-                if (assembly != null)
-                {
-                    return assembly;
-                }
-            }
-            return null;
-        }
+            if (string.IsNullOrWhiteSpace(dll)) { throw new ArgumentException(nameof(dll)); }
+            if (string.IsNullOrWhiteSpace(pdb)) { throw new ArgumentException(nameof(pdb)); }
 
-        public IAssembly TryLoad(string dll, string pdb)
-        {
-            var assemblyName = _AssemblyNameReader.GetAssemblyName(dll);
-            if (assemblyName == null)
-                return null;
-            return TryLoad(dll, pdb, assemblyName.Version.ToString());
-        }
+            // Find version if it wasn't provided
+            if (string.IsNullOrWhiteSpace(version))
+            {
+                var assemblyName = _AssemblyNameReader.GetAssemblyName(dll);
+                if (assemblyName != null)
+                    version = assemblyName.Version.ToString();
+            }
 
-        public IAssembly TryLoad(string dll, string pdb, string version)
-        {
-            IAssembly assembly = FindAlreadyLoadedAssembly(dll, version);
+            // Used cached assembly if it is already loaded and cached
+            IAssembly assembly = _AssemblyCache.FindAlreadyLoadedAssembly(dll, version);
             if (assembly != null)
                 return assembly;
-            assembly = _AppDomain.TryLoad(dll, pdb, _Logger);
+
+            // Load the assembly
+            assembly = _AppDomain.TryLoad(dll, pdb);
             if (assembly == null)
                 return null;
-            var assemblyVersion = assembly.GetName().Version.ToString();
+
+            var assemblyVersion = assembly.GetName()?.Version?.ToString();
+
+            // Cache the loaded assembly (even if it is the wrong version)
+            // Also, for threadsafety, get the cached assembly back, in case two threads loaded at the same time
+            assembly = _AssemblyCache.Add(dll, assemblyVersion, assembly);
+
+            // Make sure the version matches the requested version
             if (assemblyVersion != version)
                 return null;
-            try
-            {
-                _AssemblyCache.Assemblies.Add(GetKey(dll, assemblyVersion), assembly);
-            }
-            catch (Exception e)
-            {
-                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
-                throw;
-            }
+
+            // If configured to do so, load all dependent assemblies immediately, 
             if (_Settings.LoadDependenciesProactively)
             {
                 var dir = Path.GetDirectoryName(dll);
                 if (!dir.EndsWith("bin"))
                     ProactivelyLoadDependencies(Path.Combine(dir, "bin"));
             }
+
             return assembly;
-        }
-
-        internal IAssembly FindAlreadyLoadedAssembly(string dll, string version)
-        {
-            var key = GetKey(dll, version);
-            if (_AssemblyCache.Assemblies.TryGetValue(key, out IAssembly assembly))
-            {
-                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Found already loaded plugin assembly: {key}");
-            }
-            else
-            {
-                var assemblyName = _AssemblyNameReader.GetAssemblyName(dll);
-                if (assemblyName == null)
-                    return null;
-                key = GetKey(dll, assemblyName.Version.ToString());
-                assembly = _AssemblyCache.Assemblies.TryGetValue(key, out assembly) ? assembly : null;
-                if (assembly != null && assembly.GetName().Version.ToString() == version)
-                {
-                    _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Found already loaded plugin assembly: {key}");
-                    return assembly;
-                }
-                assembly = _AppDomain.GetAssemblies().FirstOrDefault(a => a.GetName().FullName == assemblyName.FullName && a.GetName().Version.ToString() == version);
-                if (assembly != null)
-                {
-                    key = GetKey(dll, assembly.GetName().Version.ToString());
-                    _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Loading plugin assembly from dll: {key}");
-                    _AssemblyCache.Assemblies.Add(key, assembly);
-                }
-            }
-            return assembly;
-        }
-
-        internal string GetKey(string dll)
-        {
-            return string.Format("{0}_{1}", Path.GetFileNameWithoutExtension(dll), Directory.GetLastWriteTime(dll).ToFileTimeUtc());
-        }
-
-        internal string GetKey(string dll, string version)
-        {
-            return string.Format("{0}_{1}_{2}", Path.GetFileNameWithoutExtension(dll), version, Directory.GetLastWriteTime(dll).ToFileTimeUtc());
-        }
+        }        
 
         internal void ProactivelyLoadDependencies(string binPath)
         {
@@ -143,33 +90,12 @@ namespace Rhyous.SimplePluginLoader
             }
         }
 
+        [ExcludeFromCodeCoverage]
         internal IDirectory Directory
         {
             get { return _Directory ?? (_Directory = DirectoryWrapper.Instance); }
             set { _Directory = value; }
         } private IDirectory _Directory;
-
-        #region IDisposable
-        bool _disposed;
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-                return;
-
-            if (disposing)
-            {
-                //AppDomain.Unload(Domain); // When we get it working in a separate AppDomain
-            }
-            _disposed = true;
-        }
-        #endregion
     }
 }
 

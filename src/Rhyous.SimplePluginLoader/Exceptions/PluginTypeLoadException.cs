@@ -1,11 +1,13 @@
 ﻿// See License at the end of the file
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace Rhyous.SimplePluginLoader
 {
     [Serializable]
+    [ExcludeFromCodeCoverage]
     internal class PluginTypeLoadException : Exception
     {
         public PluginTypeLoadException()

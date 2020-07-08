@@ -29,7 +29,8 @@ namespace Tools.Ui
             var toolPluginObjectCreatorFactory = new PluginObjectCreatorFactory<ITool>(settings, logger);
             var typeLoader = new TypeLoader<ITool>(PluginLoaderSettings.Default, logger);
             var assemblyNameReader = new AssemblyNameReader();
-            var assemblyLoader = new AssemblyLoader(appDomain, settings, AssemblyCache.Instance, assemblyNameReader, logger);
+            var assemblyCache = new AssemblyCache(appDomain, assemblyNameReader, logger);
+            var assemblyLoader = new AssemblyLoader(appDomain, settings, assemblyCache, assemblyNameReader, logger);
             var pluginDependencyObjectCreator = new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, logger);
             var pluginDependencyResolverFactory = new PluginDependencyResolverCacheFactory(pluginDependencyObjectCreator, logger);
             var pluginCacheFactory = new PluginCacheFactory<ITool>(typeLoader, toolPluginObjectCreatorFactory, pluginDependencyResolverFactory, assemblyLoader, logger);

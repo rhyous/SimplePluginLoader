@@ -23,7 +23,7 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         string PluginGroup { get; }
         /// <summary>
-        /// Instantiated instances of the plugins. If multiple dlls have plugins, there could be multiple collections. To get a flattened list, use the Plugins property.
+        /// Instantiated instances of the plugins. If multiple dlls have plugins, there could be multiple collections.
         /// </summary>
         PluginCollection<T> PluginCollection { get; }
         /// <summary>

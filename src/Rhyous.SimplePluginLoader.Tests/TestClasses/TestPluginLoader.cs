@@ -5,8 +5,9 @@
         public TestPluginLoader(IAppDomain appDomain,
                                 IPluginLoaderSettings settings,
                                 IPluginCacheFactory<Org> pluginCacheFactory,
+                                IPluginPaths pluginPaths,
                                 IPluginLoaderLogger logger) 
-            : base(appDomain,  settings, pluginCacheFactory, logger)
+            : base(appDomain,  settings, pluginCacheFactory, pluginPaths, logger)
         {
         }
 
@@ -18,8 +19,9 @@
         public TestPluginLoader2(IAppDomain appDomain, 
                                  IPluginLoaderSettings settings,
                                  IPluginCacheFactory<Org> pluginCacheFactory,
+                                 IPluginPaths pluginPaths,
                                  IPluginLoaderLogger logger)
-            : base(appDomain, settings, pluginCacheFactory, logger)
+            : base(appDomain, settings, pluginCacheFactory, pluginPaths, logger)
         {
         }
 

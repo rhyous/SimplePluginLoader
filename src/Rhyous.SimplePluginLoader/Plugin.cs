@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -23,12 +24,22 @@ namespace Rhyous.SimplePluginLoader
             _PluginObjectCreator = pluginObjectCreator ?? throw new ArgumentNullException(nameof(pluginObjectCreator));
             _PluginObjectCreator.Plugin = this;
             _DependencyResolver = dependencyResolver ?? throw new ArgumentNullException(nameof(dependencyResolver));
-            _DependencyResolver.Plugin = this;
+            if (_DependencyResolver.Plugin == null)
+                _DependencyResolver.Plugin = this;
             _AssemblyLoader = assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
         }
 
-        public string Name { get { return Path.GetFileNameWithoutExtension(File); } }
+        public string Name
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(File))
+                    throw new PluginPathUndefinedException("Please define Plugin.File and Plugin.Directory properties.");
+                return Path.GetFileNameWithoutExtension(File);
+            }
+        }
 
+        [ExcludeFromCodeCoverage]
         public string Directory { get; set; }
 
         public string File
@@ -52,31 +63,41 @@ namespace Rhyous.SimplePluginLoader
 
         public string FullPath
         {
-            get { return Path.Combine(Directory, File); }
+            get 
+            {
+                if (string.IsNullOrWhiteSpace(Directory) || string.IsNullOrWhiteSpace(File))
+                    throw new PluginPathUndefinedException("Please define Plugin.File and Plugin.Directory properties.");
+                return Path.Combine(Directory, File); 
+            }
         }
 
         public string FullPathPdb
         {
-            get { return Path.Combine(Directory, FilePdb); }
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Directory) || string.IsNullOrWhiteSpace(File))
+                    throw new PluginPathUndefinedException("Please define Plugin.File and Plugin.Directory properties.");
+                return Path.Combine(Directory, FilePdb);
+            }
         }
 
         public IAssembly Assembly
         {
-            get { return _Assembly ?? (_Assembly = _AssemblyLoader.Load(FullPath, FullPathPdb)); }
-            set { _Assembly = value; }
+            get { return _Assembly ?? (_Assembly = _AssemblyLoader.TryLoad(FullPath, FullPathPdb)); }
+            internal set { _Assembly = value; }
         } private IAssembly _Assembly;
 
         public List<Type> PluginTypes
         {
             get { return _PluginTypes ?? (_PluginTypes = GetPluginTypes()); }
-            set { _PluginTypes = value; }
+            internal set { _PluginTypes = value; }
         } private List<Type> _PluginTypes;
 
-        private List<Type> GetPluginTypes()
+        internal List<Type> GetPluginTypes()
         {
             _DependencyResolver.AddDependencyResolver();
             var types = _TypeLoader.Load(Assembly);
-            if (types == null)
+            if ((types == null || !types.Any()) && _DependencyResolver.Plugin == this)
                 _DependencyResolver.RemoveDependencyResolver();
             return types;
         }
@@ -101,11 +122,11 @@ namespace Rhyous.SimplePluginLoader
 
             if (disposing)
             {
-                _AssemblyLoader.Dispose();
-                _DependencyResolver.Dispose();
-                // Remove should already be done but if a custom IDependencyResolver is used, let's verify.
-                // It doesn't cause any issue if it is removed twice.
+                // Remove should already be done by _DependencyResolver.Dispose(), but if a custom IDependencyResolver is 
+                // used, we can't guarantee that, so let's both unregister and dispose of it. It doesn't cause any issue 
+                // if a registration with an event is removed twice.
                 _DependencyResolver.RemoveDependencyResolver();
+                _DependencyResolver.Dispose();
             }
             _disposed = true;
         }

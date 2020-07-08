@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -15,16 +16,17 @@ namespace Rhyous.SimplePluginLoader
             _Logger = logger;
         }
 
+        [ExcludeFromCodeCoverage]
         public IPlugin Plugin { get; set; }
 
         public override T Create(Type type = null)
         {
             if (type == null)
-                return null;
+                type = typeof(T);
             T obj = null;
             try
             {
-                obj = base.Create(type);
+                obj = BaseCreateMethod(type);
                 if (obj == null)
                 {
                     throw new PluginTypeLoadException($"ObjectCreator attempted to load plugin {type.Name} but returned null.");
@@ -38,9 +40,16 @@ namespace Rhyous.SimplePluginLoader
             return obj;
         }
 
+        [ExcludeFromCodeCoverage]
+        internal Func<Type, T> BaseCreateMethod
+        {
+            get { return _BaseCreateMethod ?? (_BaseCreateMethod = base.Create); }
+            set { _BaseCreateMethod = value; }
+        } private Func<Type, T> _BaseCreateMethod;
+
         private void LogException(Type typeToLoad, Exception e)
         {
-            var e2 = (e as PluginTypeLoadException) ?? new PluginTypeLoadException($"Failed to load plugin type: {typeToLoad.Name}. See inner exception.", e);
+            var e2 = (e as PluginTypeLoadException) ?? new PluginTypeLoadException($"{Plugin.Name} plugin failed to load plugin type: {typeToLoad.Name}. See inner exception.", e);
             _Logger?.Log(e2);
             e.LogReflectionTypeLoadExceptions(_Logger);
             if (_Settings.ThrowExceptionsOnLoad)

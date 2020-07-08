@@ -16,9 +16,7 @@ namespace Rhyous.SimplePluginLoader
 
         private static T CreateGenericType(Type genericType)
         {
-            var genericArgs = typeof(T).GetGenericArguments();
-            if (genericArgs == null || !genericArgs.Any())
-                return default(T);
+            var genericArgs = typeof(T).GetGenericArguments(); // T can never be a Generic Type definition
             Type constructedType = genericType.MakeGenericType(genericArgs);
             var methodInfo = typeof(Activator).GetGenericMethod("CreateInstance");
             var genMethod = methodInfo.MakeGenericMethod(constructedType);

@@ -19,21 +19,27 @@ namespace Rhyous.SimplePluginLoader
 
         public PluginLoaderSettings(IAppSettings appSettings)
         {
-            _AppSettings = appSettings;
+            _AppSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));
+            DefaultPluginDirectory = _AppSettings.Settings.Get(PluginDirectoryKey);
+            ThrowExceptionsOnLoad = _AppSettings.Settings.Get(ThrowExceptionsOnLoadKey).ToBool(false);
+            LoadDependenciesProactively = _AppSettings.Settings.Get(LoadDependenciesProactivelyKey).ToBool(false);
+            SharedPaths = GetSharedBinPaths();
         }
 
         #region Public Settings
-        public bool ThrowExceptionsOnLoad { get { return _ThrowExceptionsOnLoad ?? (_ThrowExceptionsOnLoad = _AppSettings.Settings.Get(ThrowExceptionsOnLoadKey).ToBool(false)).Value; } }
-        private bool? _ThrowExceptionsOnLoad;
+        public virtual string Company => "Rhyous";
+        public virtual string AppName => "App1";
+        public virtual string PluginFolder => "Plugins";
 
-        public string DefaultPluginDirectory { get { return _DefaultPluginDirectory ?? (_DefaultPluginDirectory = _AppSettings.Settings.Get(PluginDirectoryKey)); } }
-        private string _DefaultPluginDirectory;
+        public virtual bool ThrowExceptionsOnLoad { get; }
 
-        public IEnumerable<string> SharedPaths { get { return _SharedPaths ?? (_SharedPaths = GetSharedBinPaths()); } }
-        private IEnumerable<string> _SharedPaths;
+        public virtual bool ThrowExceptionIfNoPluginFound { get; }
 
-        public bool LoadDependenciesProactively { get { return _LoadDependenciesProactively ?? (_LoadDependenciesProactively = _AppSettings.Settings.Get(LoadDependenciesProactivelyKey).ToBool(false)).Value; } }
-        private bool? _LoadDependenciesProactively;
+        public virtual string DefaultPluginDirectory { get; }
+
+        public virtual IEnumerable<string> SharedPaths { get; }
+
+        public virtual bool LoadDependenciesProactively { get; }
 
         #endregion
 

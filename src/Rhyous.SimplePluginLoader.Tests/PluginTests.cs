@@ -1,7 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Rhyous.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using T = Rhyous.SimplePluginLoader.Tests.Org;
 
@@ -36,7 +38,9 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             if (includeMocks)
             {
-                _MockPluginDependencyResolver.SetupSet(m => m.Plugin = It.IsAny<IPlugin<T>>());
+                _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
+                _MockPluginDependencyResolver.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
+                _MockPluginDependencyResolver.Setup(m => m.Plugin).Returns((IPlugin)null);
             }
             return new Plugin<T>(
                 _MockTypeLoader.Object,
@@ -63,7 +67,6 @@ namespace Rhyous.SimplePluginLoader.Tests
         [TestMethod]
         public void Plugin_Constructor_NullInstanceLoader_Test()
         {
-            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
                 new Plugin<T>(
@@ -93,6 +96,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             _MockPluginDependencyResolver.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
+            _MockPluginDependencyResolver.Setup(m => m.Plugin).Returns((IPlugin)null);
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
                 new Plugin<T>(
@@ -106,9 +110,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         [TestMethod]
         public void Plugin_Constructor_Test()
         {
-            // Arrange
-            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
-            
+            // Arrange            
             // Act
             CreatePlugin(true);
 
@@ -118,13 +120,13 @@ namespace Rhyous.SimplePluginLoader.Tests
 
         #endregion
 
+        #region FilePdb
         [TestMethod]
-        public void Plugin_PdbTest()
+        public void Plugin_FilePdb_Test()
         {
             // Arrange
             var dll = @"C:\test\library.dll";
             var pdb = @"C:\test\library.pdb";
-            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
 
             // Act
             var plugin = CreatePlugin(true);
@@ -136,11 +138,10 @@ namespace Rhyous.SimplePluginLoader.Tests
         }
 
         [TestMethod]
-        public void Plugin_PdbTestInvalidPath()
+        public void Plugin_FilePdb_InvalidPath_Test()
         {
             // Arrange
             var dll = @"Invalid";
-            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
 
             // Act
             var plugin = CreatePlugin(true);
@@ -149,14 +150,15 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Assert
             Assert.AreEqual(null, plugin.FilePdb);
             _MockRepository.VerifyAll();
-        }        
+        }
+        #endregion
 
+        #region Dispose
         [TestMethod]
         public void Plugin_Dispose_Test()
         {
             // Arrange
             _MockPluginDependencyResolver.Setup(m => m.RemoveDependencyResolver());
-            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             var plugin = CreatePlugin(true);
             bool wasCalled = false;
             ResolveEventHandler handler = (object sender, ResolveEventArgs args) =>
@@ -165,7 +167,6 @@ namespace Rhyous.SimplePluginLoader.Tests
                 return Assembly.GetExecutingAssembly();
             };
 
-            _MockAssemblyLoader.Setup(m => m.Dispose());
             _MockPluginDependencyResolver.Setup(m => m.Dispose());
 
             // Act
@@ -177,10 +178,29 @@ namespace Rhyous.SimplePluginLoader.Tests
         }
 
         [TestMethod]
+        public void Plugin_Dispose_Called_Twice()
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            _MockPluginDependencyResolver.Setup(m => m.RemoveDependencyResolver());
+            _MockPluginDependencyResolver.Setup(m => m.Dispose());
+
+            // Act
+            plugin.Dispose();
+            plugin.Dispose();
+
+            // Assert
+            _MockPluginDependencyResolver.Verify(m => m.RemoveDependencyResolver(), Times.Once);
+            _MockPluginDependencyResolver.Verify(m => m.Dispose(), Times.Once);
+            _MockRepository.VerifyAll();
+        }
+        #endregion
+
+        #region CreatePluginObjects
+        [TestMethod]
         public void Plugin_CreatePluginObjects_Test()
         {
             // Arrange
-            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             var plugin = CreatePlugin(true);
             plugin.PluginTypes = new List<Type> { typeof(Org2), null, typeof(Org) };
             _MockPluginObjectCreator.Setup(m => m.Create(typeof(Org2))).Returns(new Org2());
@@ -194,5 +214,298 @@ namespace Rhyous.SimplePluginLoader.Tests
             Assert.AreEqual(2, actual.Count);
             _MockRepository.VerifyAll();
         }
+
+        [TestMethod]
+        public void Plugin_CreatePluginObjects_PluginTypes_Null_Test()
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            var mockAssembly = _MockRepository.Create<IAssembly>();
+            plugin.Assembly = mockAssembly.Object;
+            _MockTypeLoader.Setup(m=>m.Load(mockAssembly.Object)).Returns((List<Type>)null);
+            _MockPluginDependencyResolver.Setup(m => m.AddDependencyResolver());
+            _MockPluginDependencyResolver.Setup(m => m.RemoveDependencyResolver());
+            _MockPluginDependencyResolver.Setup(m => m.Plugin).Returns(plugin);
+
+
+            // Act
+            var actual = plugin.CreatePluginObjects();
+
+            // Assert
+            Assert.IsNull(actual);
+            _MockRepository.VerifyAll();
+        }
+        #endregion
+
+        #region Assembly
+
+        [TestMethod]
+        public void Plugin_Assembly_AlreadySet_Test()
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            var mockAssembly = _MockRepository.Create<IAssembly>();
+            plugin.Assembly = mockAssembly.Object;
+
+            // Act
+            var assembly = plugin.Assembly;
+
+            // Assert
+            Assert.AreEqual(mockAssembly.Object, assembly);
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        public void Plugin_Assembly_Null()
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            var path = @"C:\Path\to";
+            plugin.Directory = path;
+            var file = @"MyAssembly.dll";
+            var pdb = @"MyAssembly.pdb";
+            plugin.File = file;
+            var mockAssembly = _MockRepository.Create<IAssembly>();
+            _MockAssemblyLoader.Setup(m=>m.TryLoad($@"{path}\{file}", $@"{path}\{pdb}", null))
+                               .Returns(mockAssembly.Object);
+
+            // Act
+            var assembly = plugin.Assembly;
+
+            // Assert
+            Assert.AreEqual(mockAssembly.Object, assembly);
+            _MockRepository.VerifyAll();
+        }
+        #endregion
+
+        #region PluginTypes
+
+        [TestMethod]
+        public void Plugin_PluginTypes_AlreadySet_Test()
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            plugin.PluginTypes = new List<Type>();
+
+            // Act
+            var types = plugin.PluginTypes;
+
+            // Assert
+            IEnumerableAssert.IsNullOrEmpty(types, "Empty");
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        [ListTNullOrEmpty(typeof(Type))]
+        public void Plugin_PluginTypes_NullOrEmptyTypesReturned_Test(List<Type> list, string testTitle)
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            _MockPluginDependencyResolver.Setup(m => m.AddDependencyResolver());
+            var mockAssembly = _MockRepository.Create<IAssembly>();
+            plugin.Assembly = mockAssembly.Object;
+            _MockTypeLoader.Setup(m => m.Load(mockAssembly.Object)).Returns(list);
+            _MockPluginDependencyResolver.Setup(m => m.RemoveDependencyResolver());
+            _MockPluginDependencyResolver.Setup(m => m.Plugin).Returns(plugin);
+
+            // Act
+            var types = plugin.PluginTypes;
+
+            // Assert
+            IEnumerableAssert.IsNullOrEmpty(types, testTitle);
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        [ListTNullOrEmpty(typeof(Type))]
+        public void Plugin_PluginTypes_NullOrEmptyTypesReturned_SubPlugin_Test(List<Type> list, string testTitle)
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            _MockPluginDependencyResolver.Setup(m => m.AddDependencyResolver());
+            var mockAssembly = _MockRepository.Create<IAssembly>();
+            plugin.Assembly = mockAssembly.Object;
+            _MockTypeLoader.Setup(m => m.Load(mockAssembly.Object)).Returns(list);
+            var mockPlugin = _MockRepository.Create<IPlugin>();
+            _MockPluginDependencyResolver.Setup(m => m.Plugin).Returns(mockPlugin.Object);
+
+            // Act
+            var types = plugin.PluginTypes;
+
+            // Assert
+            IEnumerableAssert.IsNullOrEmpty(types, testTitle);
+            _MockRepository.VerifyAll();
+        }
+        #endregion
+
+        #region FullPath
+        [TestMethod]
+        [StringIsNullEmptyOrWhitespace]
+        public void Plugin_FullPath_DirectoryNull_Test(string dir)
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            plugin.Directory = dir;
+            plugin.File = "MyAssembly.dll";
+
+            // Act
+            // Assert
+            Assert.ThrowsException<PluginPathUndefinedException>(() => 
+            {
+                var actual = plugin.FullPath;
+            });
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        [StringIsNullEmptyOrWhitespace]
+        public void Plugin_FullPath_FileNull_Test(string file)
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            plugin.Directory = @"C:\Path\to";
+            plugin.File = file;
+
+            // Act
+            // Assert
+            Assert.ThrowsException<PluginPathUndefinedException>(() =>
+            {
+                var actual = plugin.FullPath;
+            });
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        public void Plugin_FullPath_DirectoryAndFileSet_Test()
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            plugin.Directory = @"C:\Path\to";
+            plugin.File = "MyAssembly.dll";
+
+            // Act
+            var actual = plugin.FullPath;
+
+            // Assert
+            Assert.AreEqual(@"C:\Path\to\MyAssembly.dll", actual);
+            _MockRepository.VerifyAll();
+        }
+        #endregion
+
+
+        #region FullPathPdb
+
+        [TestMethod]
+        [StringIsNullEmptyOrWhitespace]
+        public void Plugin_FullPathPdb_DirectoryNull_Test(string directory)
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            plugin.Directory = directory;
+            plugin.File = "MyAssembly.dll";
+
+            // Act
+            // Assert
+            Assert.ThrowsException<PluginPathUndefinedException>(() =>
+            {
+                var actual = plugin.FullPathPdb;
+            });
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        [StringIsNullEmptyOrWhitespace]
+        public void Plugin_FullPathPdb_FileNull_Test(string file)
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            plugin.Directory = @"C:\Path\to";
+            plugin.File = file;
+
+            // Act
+            // Assert
+            Assert.ThrowsException<PluginPathUndefinedException>(() =>
+            {
+                var actual = plugin.FullPathPdb;
+            });
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        public void Plugin_FullPathPdb_DirectoryAndFileSet_Test()
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            plugin.Directory = @"C:\Path\to";
+            plugin.File = "MyAssembly.dll";
+
+            // Act
+            var actual = plugin.FullPathPdb;
+
+            // Assert
+            Assert.AreEqual(@"C:\Path\to\MyAssembly.pdb", actual);
+            _MockRepository.VerifyAll();
+        }
+        #endregion
+
+
+        #region Name
+
+        [TestMethod]
+        [StringIsNullEmptyOrWhitespace]
+        public void Plugin_Name_FileNullEmptyOrWhitespace_Test(string file)
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            plugin.File = file;
+
+            // Act
+            // Assert
+            Assert.ThrowsException<PluginPathUndefinedException>(() =>
+            {
+                var actual = plugin.Name;
+            });
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        public void Plugin_Name_FileSet_Test()
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            plugin.File = "MyAssembly.dll";
+
+            // Act
+            var actual = plugin.Name;
+
+            // Assert
+            Assert.AreEqual("MyAssembly", actual);
+            _MockRepository.VerifyAll();
+        }
+        #endregion
+
+
+        #region GetPluginTypes
+        [TestMethod]
+        [ListTNullOrEmpty(typeof(Type))]
+        public void Plugin_GetPluginTypes_NullOrEmptyTypesReturned_Test(List<Type> list, string testTitle)
+        {
+            // Arrange
+            var plugin = CreatePlugin(true);
+            _MockPluginDependencyResolver.Setup(m => m.AddDependencyResolver());
+            var mockAssembly = _MockRepository.Create<IAssembly>();
+            plugin.Assembly = mockAssembly.Object;
+            _MockTypeLoader.Setup(m => m.Load(mockAssembly.Object)).Returns(list);
+            _MockPluginDependencyResolver.Setup(m => m.RemoveDependencyResolver());
+            _MockPluginDependencyResolver.Setup(m => m.Plugin).Returns(plugin);
+
+            // Act
+            var types = plugin.GetPluginTypes();
+
+            // Assert
+            IEnumerableAssert.IsNullOrEmpty(types, testTitle);
+            _MockRepository.VerifyAll();
+        }
+        #endregion
     }
 }

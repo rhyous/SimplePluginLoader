@@ -67,6 +67,39 @@ namespace Rhyous.SimplePluginLoader
                 throw new ArgumentNullException("methodName");
             return type.GetMethods().FirstOrDefault(m => m.Name == methodName && m.IsGenericMethod == true);
         }
+
+        /// <summary>
+        /// Type.DeclaringType could be a compile-time generated type if the DeclaryingType is a dynamically generated object or method.
+        /// If what you are after is the class you defined the dynamically generated object or method, then you can use this method.
+        /// </summary>
+        /// <param name="t">The type.</param>
+        /// <returns>The first DeclaringType that is not a System.RuntimeType</returns>
+        public static Type GetFixedDeclaringType(this Type t)
+        {
+            if (t.DeclaringType == null)
+                return t;
+            while (t.GetType() == _RunTimeType) 
+                return GetFixedDeclaringType(t.DeclaringType);
+            return t;
+        }
+
+        /// <summary>
+        /// Type.DeclaringType could be a compile-time generated type if the DeclaryingType is a dynamically generated object or method.
+        /// If what you are after is the class you defined the dynamically generated object or method, then you can use this method.
+        /// </summary>
+        /// <param name="t">The type.</param>
+        /// <returns>The first DeclaringType that is not a System.RuntimeType</returns>
+        public static Type GetFixedDeclaringType(this MethodInfo mi)
+        {
+            if (mi.DeclaringType == null)
+                return mi.DeclaringType;
+            if (mi.DeclaringType.GetType() == _RunTimeType)
+                return GetFixedDeclaringType(mi.DeclaringType);
+            return mi.DeclaringType;
+        }
+
+        /// <summary> System.RuntimeType is internal so we can't use it directly</summary>
+        private static Type _RunTimeType = Type.GetType("System.RuntimeType");
     }
 
 }

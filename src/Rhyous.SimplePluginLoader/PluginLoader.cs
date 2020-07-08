@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -33,8 +34,8 @@ namespace Rhyous.SimplePluginLoader
             settings = settings ?? PluginLoaderSettings.Default;
             typeLoader = typeLoader ?? new TypeLoader<T>(settings, logger);
             pluginObjectCreatorFactory = pluginObjectCreatorFactory ?? new PluginObjectCreatorFactory<T>(settings, logger);
-            assemblyDictionary = assemblyDictionary ?? AssemblyCache.Instance;
             assemblyNameReader = assemblyNameReader ?? new AssemblyNameReader();
+            assemblyDictionary = assemblyDictionary ?? new AssemblyCache(appDomain, assemblyNameReader, logger);
             assemblyLoader = assemblyLoader ?? new AssemblyLoader(appDomain, settings, assemblyDictionary, assemblyNameReader, logger);
             pluginDependencyResolverObjectCreator = pluginDependencyResolverObjectCreator ?? new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, logger);
             pluginDependencyResolverCacheFactory = pluginDependencyResolverCacheFactory ?? new PluginDependencyResolverCacheFactory(pluginDependencyResolverObjectCreator, logger);
@@ -121,23 +122,28 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         public IPlugin<T> LoadPlugin(string pluginFile)
         {
-            if (!Directory.FileExists(pluginFile))
+            if (!File.Exists(pluginFile))
                 return null;
             var plugin = _PluginCacheFactory.Create(pluginFile, typeof(Plugin<T>));
             Plugins.Add(plugin);
             return plugin;
         }
+        #endregion
 
-        /// <summary>
-        /// While this could come from the constructor, it is only used in Unit Tests today
-        /// and so we hide it and internal.
-        /// </summary>
+        #region Wrappers -  While this could come from the constructor, these are only used in Unit Tests, so we hide them internally
+        [ExcludeFromCodeCoverage]
         internal IDirectory Directory
         {
             get { return _Directory ?? (_Directory = DirectoryWrapper.Instance); }
             set { _Directory = value; }
         } private IDirectory _Directory;
 
+        [ExcludeFromCodeCoverage]
+        internal IFile File
+        {
+            get { return _File ?? (_File = FileWrapper.Instance); }
+            set { _File = value; }
+        } private IFile _File;
         #endregion
     }
 }

@@ -15,8 +15,8 @@ namespace Rhyous.SimplePluginLoader.Tests
         private Mock<IAssemblyLoader> _MockAssemblyLoader;
         private Mock<IPluginCacheFactory<IOrg>> _MockCacheFactory;
         private Mock<IPluginLoaderLogger> _MockLogger;
-
         private Mock<IDirectory> _MockDirectory;
+        private Mock<IFile> _MockFile;
 
         [TestInitialize]
         public void TestInitialize()
@@ -29,6 +29,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockCacheFactory = _MockRepository.Create<IPluginCacheFactory<IOrg>>();
             _MockLogger = _MockRepository.Create<IPluginLoaderLogger>();
             _MockDirectory = _MockRepository.Create<IDirectory>();
+            _MockFile = _MockRepository.Create<IFile>();
         }
 
         private PluginLoader<IOrg> CreatePluginLoader(string appName, string subFolder)
@@ -37,7 +38,8 @@ namespace Rhyous.SimplePluginLoader.Tests
                 new PluginPaths(appName, subFolder, _MockAppDomain.Object, _MockLogger.Object),                
                 _MockCacheFactory.Object)
             {
-                Directory = _MockDirectory.Object
+                Directory = _MockDirectory.Object,
+                File = _MockFile.Object
             };
         }
 
@@ -103,8 +105,8 @@ namespace Rhyous.SimplePluginLoader.Tests
             var currentPathPluginDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
             _MockDirectory.Setup(m => m.GetFiles(currentPathPluginDir, "*.dll", SearchOption.AllDirectories))
                           .Returns(new[] { "plugin1.dll", "plugin2.dll" });
-            _MockDirectory.Setup(m => m.FileExists("plugin1.dll")).Returns(true);
-            _MockDirectory.Setup(m => m.FileExists("plugin2.dll")).Returns(true);
+            _MockFile.Setup(m => m.Exists("plugin1.dll")).Returns(true);
+            _MockFile.Setup(m => m.Exists("plugin2.dll")).Returns(true);
 
             var userPluginDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "MyApp", path);
             _MockDirectory.Setup(m => m.Exists(userPluginDir)).Returns(true);

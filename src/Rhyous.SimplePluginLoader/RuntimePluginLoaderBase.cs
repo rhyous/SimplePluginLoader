@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 
@@ -10,42 +8,28 @@ namespace Rhyous.SimplePluginLoader
     /// <summary>
     /// A base class for loading plugins from a default Plugins directory.
     /// This just makes it easy for a consuming application to mark the plugin directory and get plugins.
+    /// It allows for finding plugins that are global or per user.
     /// </summary>
     /// <typeparam name="T">The type of the plugin to load.</typeparam>
     public abstract class RuntimePluginLoaderBase<T> : IRuntimePluginLoader<T>
         where T : class
     {
-        /// <summary>
-        /// If you set this appSettings in the app.config or the web.config, the DefaultPluginDirectory will
-        /// be the configured path.
-        /// </summary>
-        public const string PluginDirConfig = "PluginDirectory";
-
-        public static string AppRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        // After creating a concrete (non-generic) version of this class, you need to update these values.
-        // RuntimePluginLoaderBase<MyPlugins>.Company = "ABC, Inc."
-        public static string Company = "Rhyous";
-        public static string AppName = "App1";
-        public static string PluginFolder = "Plugins";
-
-        public virtual bool ThrowExceptionIfNoPluginFound => true;
-
         private readonly IAppDomain _AppDomain;
         private readonly IPluginLoaderSettings _Settings;
         private readonly IPluginCacheFactory<T> _PluginCacheFactory;
-        private readonly PluginPaths _PluginPaths;
+        private readonly IPluginPaths _PluginPaths;
         protected readonly IPluginLoaderLogger _Logger;
 
-
         public RuntimePluginLoaderBase(IAppDomain appDomain,
-                                       IPluginLoaderSettings settings = null,
-                                       IPluginCacheFactory<T> pluginCacheFactory = null,
+                                       IPluginLoaderSettings settings,
+                                       IPluginCacheFactory<T> pluginCacheFactory,
+                                       IPluginPaths pluginPaths = null,
                                        IPluginLoaderLogger logger = null)
         {
-            _AppDomain = appDomain;
-            _Settings = settings;
-            _PluginCacheFactory = pluginCacheFactory;
-            _PluginPaths = new PluginPaths(AppName, DefaultPluginDirectory, _AppDomain, _Logger);
+            _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
+            _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _PluginCacheFactory = pluginCacheFactory ?? throw new ArgumentNullException(nameof(pluginCacheFactory));
+            _PluginPaths = pluginPaths ?? new PluginPaths(_Settings.AppName, DefaultPluginDirectory, _AppDomain, _Logger);
             _Logger = logger;
         }
 
@@ -56,21 +40,23 @@ namespace Rhyous.SimplePluginLoader
             {
                 var _DefaultPluginDirectory = _Settings.DefaultPluginDirectory;
                 if (_DefaultPluginDirectory == null)
-                    _DefaultPluginDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Company, AppName, PluginFolder);
+                    _DefaultPluginDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), 
+                                                           _Settings.Company, _Settings.AppName, _Settings.PluginFolder);
                 if (!string.IsNullOrWhiteSpace(PluginSubFolder))
                     _DefaultPluginDirectory = Path.Combine(_DefaultPluginDirectory, PluginSubFolder);
                 return _DefaultPluginDirectory;
             }
         } internal string _DefaultPluginDirectory;
 
-        /// <inheritdoc />
+        /// <inheritdoc />       
         public abstract string PluginSubFolder { get; }
 
         /// <inheritdoc />
         public virtual string PluginGroup => PluginSubFolder;
 
         /// <summary>
-        /// Instantiated instances of the plugins. If multiple dlls have plugins, there could be multiple collections. To get a flattened list, use the Plugins property.
+        /// Instantiated instances of the plugins. If multiple dlls have plugins, there could be
+        /// multiple collections.
         /// </summary>
         public virtual PluginCollection<T> PluginCollection
         {
@@ -81,7 +67,7 @@ namespace Rhyous.SimplePluginLoader
         public virtual IPluginLoader<T> PluginLoader
         {
             get { return _PluginLoader ?? new PluginLoader<T>(_PluginPaths, _PluginCacheFactory); }
-            set { _PluginLoader = value; }
+            internal set { _PluginLoader = value; }
         } private IPluginLoader<T> _PluginLoader;
 
         /// <summary>
@@ -99,20 +85,15 @@ namespace Rhyous.SimplePluginLoader
             var plugins = PluginLoader.LoadPlugins();
             if (plugins == null || !plugins.Any())
             {
-                if (ThrowExceptionIfNoPluginFound)
-                    throw new Exception($"No {PluginSubFolder} plugin found.");
+                var msg = $"No {PluginGroup} plugins were found in these directories:{Environment.NewLine}{string.Join(Environment.NewLine, _PluginPaths.Paths)}";
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, msg);
+                if (_Settings.ThrowExceptionIfNoPluginFound)
+                {
+                    throw new RuntimePluginLoaderException(msg);
+                }
                 return null;
             }
             return plugins;
         }
-
-        /// <summary>
-        /// Allows for replacing this during unit tests
-        /// </summary>
-        internal NameValueCollection AppSettings
-        {
-            get { return _AppSettings ?? (_AppSettings = ConfigurationManager.AppSettings); }
-            set { _AppSettings = value; }
-        } private NameValueCollection _AppSettings;
     }
 }

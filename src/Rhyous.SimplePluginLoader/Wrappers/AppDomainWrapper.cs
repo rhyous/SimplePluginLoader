@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Configuration.Assemblies;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
-using System.Security.Principal;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -17,64 +17,43 @@ namespace Rhyous.SimplePluginLoader
     {
         private readonly AppDomain _AppDomain;
         private readonly IPluginLoaderLogger _Logger;
+        private readonly ConcurrentDictionary<ResolveEventHandler, byte> Handlers = new ConcurrentDictionary<ResolveEventHandler, byte>();
 
         public AppDomainWrapper(AppDomain appDomain, IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain;
             _Logger = logger;
-            _AppDomain.AssemblyLoad += OnAssemblyLoad;
             _AppDomain.AssemblyResolve += OnAssemblyResolve;
-            _AppDomain.DomainUnload += OnDomainUnload;
-            _AppDomain.FirstChanceException += OnFirstChanceException;
-            _AppDomain.ProcessExit += OnProcessExit;
-            _AppDomain.ReflectionOnlyAssemblyResolve += OnReflectionOnlyAssemblyResolve;
-            _AppDomain.ResourceResolve += OnResourceResolve;
-            _AppDomain.TypeResolve += OnTypeResolve;
-            _AppDomain.UnhandledException += OnUnhandledException;
-            _AppDomain.UnhandledException += OnUnhandledException;
         }
 
+        [ExcludeFromCodeCoverage]
         public string BaseDirectory => _AppDomain.BaseDirectory;
 
-        public string DynamicDirectory => _AppDomain.DynamicDirectory;
-
-        public string FriendlyName => _AppDomain.FriendlyName;
-
-        public int Id => _AppDomain.Id;
-
-        public bool IsFullyTrusted => _AppDomain.IsFullyTrusted;
-
-        public bool IsHomogenous => _AppDomain.IsHomogenous;
-
-        public bool ShadowCopyFiles => _AppDomain.ShadowCopyFiles;
-
-        public string RelativeSearchPath => _AppDomain.RelativeSearchPath;
-
-        public TimeSpan MonitoringTotalProcessorTime => _AppDomain.MonitoringTotalProcessorTime;
-
-        public long MonitoringSurvivedMemorySize => _AppDomain.MonitoringSurvivedMemorySize;
-
-        public long MonitoringTotalAllocatedMemorySize => _AppDomain.MonitoringTotalAllocatedMemorySize;
-
         #region Events
-        public event AssemblyLoadEventHandler AssemblyLoad;
-        internal void OnAssemblyLoad(object sender, AssemblyLoadEventArgs args) => AssemblyLoad?.Invoke(sender, args);
 
         public event ResolveEventHandler AssemblyResolve
         {
-            add 
+            add
             {
+                if (Handlers.TryGetValue(value, out _))
+                {
+                    _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.GetFixedDeclaringType().Name} tried to subscribed to AppDomain.AssemblyResolve, but was already subscribed.");
+                    return;
+                }
                 _AssemblyResolve += value;
-                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.DeclaringType.Name}.{value.Method.Name} subscribed to AppDomain.AssemblyResolve.");
+                Handlers.TryAdd(value, 1);
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.GetFixedDeclaringType().Name} subscribed to AppDomain.AssemblyResolve.");
                 _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Total subscriptions: {AssemblyResolveSubscriberCount}");
             }
-            remove 
+            remove
             {
                 _AssemblyResolve -= value;
-                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.DeclaringType.Name}.{value.Method.Name} unsubscribed to AppDomain.AssemblyResolve.");
+                Handlers.TryRemove(value, out _);
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.GetFixedDeclaringType().Name} unsubscribed to AppDomain.AssemblyResolve.");
                 _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Total subscriptions: {AssemblyResolveSubscriberCount}");
-            } 
-        } private event ResolveEventHandler _AssemblyResolve;
+            }
+        }
+        private event ResolveEventHandler _AssemblyResolve;
 
         internal Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
         {
@@ -82,115 +61,73 @@ namespace Rhyous.SimplePluginLoader
                 return null;
             foreach (ResolveEventHandler handler in _AssemblyResolve.GetInvocationList())
             {
-                var assembly = handler?.Invoke(sender, args);
-                if (assembly != null)
-                    return assembly;
-            }
-            return null;
-        }
-        public int AssemblyResolveSubscriberCount => _AssemblyResolve.GetInvocationList().Length;
-
-        public event EventHandler DomainUnload;
-        internal void OnDomainUnload(object sender, EventArgs args) => DomainUnload?.Invoke(sender, args);
-
-        public event EventHandler<FirstChanceExceptionEventArgs> FirstChanceException;
-        internal void OnFirstChanceException(object sender, FirstChanceExceptionEventArgs args) => FirstChanceException?.Invoke(sender, args);
-
-        public event EventHandler ProcessExit;
-        internal void OnProcessExit(object sender, EventArgs args) => ProcessExit?.Invoke(sender, args);
-
-        public event ResolveEventHandler ReflectionOnlyAssemblyResolve;
-        internal Assembly OnReflectionOnlyAssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            if (ReflectionOnlyAssemblyResolve == null)
-                return null;
-            foreach (ResolveEventHandler handler in ReflectionOnlyAssemblyResolve.GetInvocationList())
-            {
-                var assembly = handler?.Invoke(sender, args);
-                if (assembly != null)
-                    return assembly;
-            }
-            return null;
-        }        
-
-        public event ResolveEventHandler ResourceResolve;
-        internal Assembly OnResourceResolve(object sender, ResolveEventArgs args)
-        {
-            if (ResourceResolve == null)
-                return null;
-            foreach (ResolveEventHandler handler in ResourceResolve.GetInvocationList())
-            {
-                var assembly = handler?.Invoke(sender, args);
+                var assembly = handler.Invoke(sender, args);
                 if (assembly != null)
                     return assembly;
             }
             return null;
         }
 
-        public event ResolveEventHandler TypeResolve;
-        internal Assembly OnTypeResolve(object sender, ResolveEventArgs args)
-        {
-            if (TypeResolve == null)
-                return null;
-            foreach (ResolveEventHandler handler in TypeResolve.GetInvocationList())
-            {
-                var assembly = handler?.Invoke(sender, args);
-                if (assembly != null)
-                    return assembly;
-            }
-            return null;
-        }
-
-        public event UnhandledExceptionEventHandler UnhandledException;
-        internal void OnUnhandledException(object sender, UnhandledExceptionEventArgs args) => UnhandledException?.Invoke(sender, args);
-
+        public int AssemblyResolveSubscriberCount => _AssemblyResolve?.GetInvocationList().Length ?? 0;
         #endregion
 
-        public string ApplyPolicy(string assemblyName) => _AppDomain.ApplyPolicy(assemblyName);
-        
-        public int ExecuteAssembly(string assemblyFile, string[] args, byte[] hashValue, AssemblyHashAlgorithm hashAlgorithm)
-        {
-            return _AppDomain.ExecuteAssembly(assemblyFile, args, hashValue, hashAlgorithm);
-        }
+        public IAssembly[] GetAssemblies() => _AppDomain.GetAssemblies().Select(a => new AssemblyWrapper(a)).ToArray();
 
-        public int ExecuteAssembly(string assemblyFile) => _AppDomain.ExecuteAssembly(assemblyFile);
-
-        public int ExecuteAssembly(string assemblyFile, string[] args) => _AppDomain.ExecuteAssembly(assemblyFile, args);
-
-        public int ExecuteAssemblyByName(string assemblyName) => _AppDomain.ExecuteAssemblyByName(assemblyName);
-
-        public int ExecuteAssemblyByName(string assemblyName, params string[] args) => _AppDomain.ExecuteAssemblyByName(assemblyName, args);
-
-        public int ExecuteAssemblyByName(AssemblyName assemblyName, params string[] args) => _AppDomain.ExecuteAssemblyByName(assemblyName, args);
-
-        public IAssembly[] GetAssemblies() => _AppDomain.GetAssemblies().Select(a=> new AssemblyWrapper(a)).ToArray();
-
-        public object GetData(string name) => _AppDomain.GetData(name);
-
-        public object InitializeLifetimeService() => _AppDomain.InitializeLifetimeService();
-
-        public bool? IsCompatibilitySwitchSet(string value) => _AppDomain.IsCompatibilitySwitchSet(value);
-
-        public bool IsDefaultAppDomain() => _AppDomain.IsDefaultAppDomain();
-
-        public bool IsFinalizingForUnload() => _AppDomain.IsFinalizingForUnload();
-
-        public IAssembly Load(byte[] rawAssembly, byte[] rawSymbolStore) 
+        [ExcludeFromCodeCoverage]
+        public IAssembly Load(byte[] rawAssembly, byte[] rawSymbolStore)
             => new AssemblyWrapper(_AppDomain.Load(rawAssembly, rawSymbolStore));
 
-        public IAssembly Load(AssemblyName assemblyRef) => new AssemblyWrapper(_AppDomain.Load(assemblyRef));
-
-        public IAssembly Load(string assemblyString) => new AssemblyWrapper(_AppDomain.Load(assemblyString));
-
+        [ExcludeFromCodeCoverage]
         public IAssembly Load(byte[] rawAssembly) => new AssemblyWrapper(_AppDomain.Load(rawAssembly));
 
-        public IAssembly[] ReflectionOnlyGetAssemblies() 
-            => _AppDomain.ReflectionOnlyGetAssemblies().Select(a=> new AssemblyWrapper(a)).ToArray();
+        #region Custom Methods
+        public IAssembly TryLoad(byte[] rawAssembly)
+        {
+            try { return Load(rawAssembly); }
+            catch (Exception e)
+            {
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
+                return null;
+            }
+        }
 
-        public void SetData(string name, object data) => _AppDomain.SetData(name, data);
+        public IAssembly TryLoad(byte[] rawAssembly, byte[] rawSymbolStore)
+        {
+            try { return Load(rawAssembly, rawSymbolStore); }
+            catch (Exception e)
+            {
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
+                return null;
+            }
+        }
 
-        public void SetPrincipalPolicy(PrincipalPolicy policy) => _AppDomain.SetPrincipalPolicy(policy);
-        
-        public void SetThreadPrincipal(IPrincipal principal) => _AppDomain.SetThreadPrincipal(principal);
+        public IAssembly TryLoad(string dll, string pdb)
+        {
+            if (File.Exists(dll))
+            {
+                var assembly = File.Exists(pdb)
+                    ? TryLoad(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debugging
+                    : TryLoad(File.ReadAllBytes(dll));
+                return assembly;
+            }
+            return null;
+        }
+        #endregion
+
+        #region Wrappers -  While this could come from the constructor, these are only used in Unit Tests, so we hide them internally
+        [ExcludeFromCodeCoverage]
+        internal IDirectory Directory
+        {
+            get { return _Directory ?? (_Directory = DirectoryWrapper.Instance); }
+            set { _Directory = value; }
+        } private IDirectory _Directory;
+
+        [ExcludeFromCodeCoverage]
+        internal IFile File
+        {
+            get { return _File ?? (_File = FileWrapper.Instance); }
+            set { _File = value; }
+        } private IFile _File;
+        #endregion
     }
 }

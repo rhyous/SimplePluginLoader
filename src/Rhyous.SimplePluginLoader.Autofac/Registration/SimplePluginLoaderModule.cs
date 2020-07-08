@@ -25,7 +25,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             builder.RegisterType<AppSettings>()
                    .As<IAppSettings>()
                    .SingleInstance();
-            builder.RegisterInstance(AssemblyCache.Instance)
+            builder.RegisterType<AssemblyCache>()
                    .As<IAssemblyCache>()
                    .SingleInstance();
             builder.RegisterType<AssemblyNameReader>()

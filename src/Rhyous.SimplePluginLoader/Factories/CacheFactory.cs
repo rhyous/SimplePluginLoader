@@ -18,7 +18,7 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual TValue Create(TKey key, Type t)
         {
-            if (key == null || !t.IsInstantiable())
+            if (key == null || t == null || !t.IsInstantiable())
                 return default(TValue);
             if (!_Cache.TryGetValue(key, out TValue value))
             {

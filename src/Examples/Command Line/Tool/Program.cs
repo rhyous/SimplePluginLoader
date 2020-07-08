@@ -21,7 +21,8 @@ namespace Tool
             var appSettings = new AppSettings();
             var settings = new PluginLoaderSettings(appSettings);
             var assemblyNameReader = new AssemblyNameReader();
-            var assemblyLoader = new AssemblyLoader(appDomain, settings, AssemblyCache.Instance, assemblyNameReader, logger);
+            var assemblyCache = new AssemblyCache(appDomain, assemblyNameReader, logger);
+            var assemblyLoader = new AssemblyLoader(appDomain, settings, assemblyCache, assemblyNameReader, logger);
             string appName = "Tool.CommandLine";
             string appSubFolder = null;
             var pluginPaths = new PluginPaths(appName, appSubFolder, appDomain, logger);
