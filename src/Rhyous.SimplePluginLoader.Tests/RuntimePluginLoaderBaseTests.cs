@@ -1,10 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System.Collections.Specialized;
-using Rhyous.Collections;
-using System.Collections.Generic;
-using Rhyous.UnitTesting;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhyous.SimplePluginLoader.Tests
 {
@@ -16,9 +14,10 @@ namespace Rhyous.SimplePluginLoader.Tests
 
         private Mock<IAppDomain> _MockAppDomain;
         private Mock<IPluginLoaderSettings> _MockPluginLoaderSettings;
-        private Mock<IPluginCacheFactory<Org>> _MockPluginCacheFactory;
+        private Mock<IPluginLoaderFactory<Org>> _MockPluginLoaderFactory;
         private Mock<IPluginPaths> _MockPluginPaths;
         private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
+        private List<string> _Paths;
 
         [TestInitialize]
         public void TestInitialize()
@@ -27,9 +26,14 @@ namespace Rhyous.SimplePluginLoader.Tests
 
             _MockAppDomain = _MockRepository.Create<IAppDomain>();
             _MockPluginLoaderSettings = _MockRepository.Create<IPluginLoaderSettings>();
-            _MockPluginCacheFactory = _MockRepository.Create<IPluginCacheFactory<Org>>();
+            _MockPluginLoaderFactory = _MockRepository.Create<IPluginLoaderFactory<Org>>();
             _MockPluginPaths = _MockRepository.Create<IPluginPaths>();
             _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
+            _Paths = new List<string>
+            {
+                @"c:\my\path",
+                @"c:\some\other\path"
+            };
         }
 
         private TestPluginLoader CreateInstanceLoader()
@@ -37,7 +41,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             return new TestPluginLoader(
                 _MockAppDomain.Object,
                 _MockPluginLoaderSettings.Object,
-                _MockPluginCacheFactory.Object,
+                _MockPluginLoaderFactory.Object,
                 _MockPluginPaths.Object,
                 _MockPluginLoaderLogger.Object);
         }
@@ -47,7 +51,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             return new TestPluginLoader2(
                 _MockAppDomain.Object,
                 _MockPluginLoaderSettings.Object,
-                _MockPluginCacheFactory.Object,
+                _MockPluginLoaderFactory.Object,
                 _MockPluginPaths.Object,
                 _MockPluginLoaderLogger.Object);
         }
@@ -61,7 +65,7 @@ namespace Rhyous.SimplePluginLoader.Tests
                 var loader = new TestPluginLoader(
                                    null,
                                    _MockPluginLoaderSettings.Object,
-                                   _MockPluginCacheFactory.Object,
+                                   _MockPluginLoaderFactory.Object,
                                    _MockPluginPaths.Object,
                                    _MockPluginLoaderLogger.Object);
             });
@@ -76,7 +80,7 @@ namespace Rhyous.SimplePluginLoader.Tests
                 var loader = new TestPluginLoader(
                                    _MockAppDomain.Object,
                                    null,
-                                   _MockPluginCacheFactory.Object,
+                                   _MockPluginLoaderFactory.Object,
                                    _MockPluginPaths.Object,
                                    _MockPluginLoaderLogger.Object);
             });
@@ -112,83 +116,11 @@ namespace Rhyous.SimplePluginLoader.Tests
             var loader = new TestPluginLoader(
                                    _MockAppDomain.Object,
                                    _MockPluginLoaderSettings.Object,
-                                   _MockPluginCacheFactory.Object,
+                                   _MockPluginLoaderFactory.Object,
                                    null,
                                    _MockPluginLoaderLogger.Object);
 
             // Assert
-            _MockRepository.VerifyAll();
-        }
-        #endregion
-
-        #region DefaultPluginDirectory
-        [TestMethod]
-        public void RuntimePluginLoaderBase_DefaultPluginPath_Test()
-        {
-            // Arrange
-            var expected = @"C:\ProgramData\Rhyous\App1\Plugins";
-            _MockPluginLoaderSettings.Setup(m=>m.DefaultPluginDirectory).Returns((string)null);
-            _MockPluginLoaderSettings.Setup(m => m.Company).Returns("Rhyous");
-            _MockPluginLoaderSettings.Setup(m => m.AppName).Returns("App1");
-            _MockPluginLoaderSettings.Setup(m => m.PluginFolder).Returns("Plugins");
-            var loader = CreateInstanceLoader();
-
-            // Act
-            var actual = loader.DefaultPluginDirectory;
-
-            // Assert
-            Assert.AreEqual(expected, actual);
-            _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void RuntimePluginLoaderBase_UseAppSettingsForDefaultPluginPath_Test()
-        {
-            // Arrange
-            var expected = @"c:\plugins";
-            _MockPluginLoaderSettings.Setup(m => m.DefaultPluginDirectory).Returns(@"c:\plugins");
-            var loader = CreateInstanceLoader();
-
-            // Act
-            var actual = loader.DefaultPluginDirectory;
-
-            // Assert
-            Assert.AreEqual(expected, actual);
-            _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void RuntimePluginLoaderBase_DefaultPluginPathWithSubFolder_Test()
-        {
-            // Arrange
-            var expected = @"C:\ProgramData\Rhyous\App1\Plugins\Sub2";
-            _MockPluginLoaderSettings.Setup(m => m.DefaultPluginDirectory).Returns((string)null);
-            _MockPluginLoaderSettings.Setup(m => m.Company).Returns("Rhyous");
-            _MockPluginLoaderSettings.Setup(m => m.AppName).Returns("App1");
-            _MockPluginLoaderSettings.Setup(m => m.PluginFolder).Returns("Plugins");
-            var loader = CreateInstance2Loader();
-
-            // Act
-            var actual = loader.DefaultPluginDirectory;
-
-            // Assert
-            Assert.AreEqual(expected, actual);
-            _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void RuntimePluginLoaderBase_UseAppSettingsAndPluginSubFolderForDefaultPluginPath_Test()
-        {
-            // Arrange
-            var expected = @"c:\plugins\Sub2";
-            _MockPluginLoaderSettings.Setup(m => m.DefaultPluginDirectory).Returns(@"c:\plugins");
-            var loader = CreateInstance2Loader();
-
-            // Act
-            var actual = loader.DefaultPluginDirectory;
-
-            // Assert
-            Assert.AreEqual(expected, actual);
             _MockRepository.VerifyAll();
         }
         #endregion
@@ -198,13 +130,15 @@ namespace Rhyous.SimplePluginLoader.Tests
         public void RuntimePluginLoaderBase_PluginCollection_Test()
         {
             // Arrange
-            var loader = CreateInstance2Loader();
-            var mockPluginLoader = _MockRepository.Create<IPluginLoader<Org>>();
-            loader.PluginLoader = mockPluginLoader.Object;
+            _MockPluginPaths.Setup(m => m.Paths).Returns(_Paths);
             var mockPlugin1 = _MockRepository.Create<IPlugin<Org>>();
             var mockPlugin2 = _MockRepository.Create<IPlugin<Org>>();
-            var plugins = new PluginCollection<Org> { mockPlugin1.Object, mockPlugin2.Object };
-            mockPluginLoader.Setup(m=>m.LoadPlugins()).Returns(plugins);
+            var plugins = new PluginCollection<Org> { mockPlugin1.Object, mockPlugin2.Object }; 
+            var mockPluginLoader = _MockRepository.Create<IPluginLoader<Org>>();
+            mockPluginLoader.Setup(m => m.LoadPlugins()).Returns(plugins);
+            var loader = CreateInstance2Loader();
+            _MockPluginLoaderFactory.Setup(m=>m.Create(It.IsAny<IPluginPaths>()))
+                                    .Returns(mockPluginLoader.Object);
 
             // Act
             var actual = loader.PluginCollection;
@@ -215,17 +149,17 @@ namespace Rhyous.SimplePluginLoader.Tests
         }
 
         [TestMethod]
-        public void RuntimePluginLoaderBase_PluginCollection_Empty_Test()
+        public void RuntimePluginLoaderBase_PluginCollection_Null_Test()
         {
             // Arrange
+            var paths = new List<string> { @"c:\plugins", @"c:\MyApp\Plugins" };
+            _MockPluginPaths.Setup(m => m.Paths).Returns(paths);
             var loader = CreateInstance2Loader();
             var mockPluginLoader = _MockRepository.Create<IPluginLoader<Org>>();
             loader.PluginLoader = mockPluginLoader.Object;
-            mockPluginLoader.Setup(m => m.LoadPlugins()).Returns(new PluginCollection<Org>());
+            mockPluginLoader.Setup(m => m.LoadPlugins()).Returns((PluginCollection<Org>)null);
             _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionIfNoPluginFound).Returns(false);
-            var paths = new List<string> { @"c:\plugins", @"c:\MyApp\Plugins" };
-            _MockPluginPaths.Setup(m => m.Paths).Returns(paths);
-            var msg = $@"No Sub2 plugins were found in these directories:{Environment.NewLine}c:\plugins{Environment.NewLine}c:\MyApp\Plugins";
+            var msg = $@"No Sub2 plugins were found in these directories:{Environment.NewLine}c:\plugins\Sub2{Environment.NewLine}c:\MyApp\Plugins\Sub2";
             _MockPluginLoaderLogger.Setup(m => m.WriteLine(PluginLoaderLogLevel.Debug, msg));
 
             // Act
@@ -237,17 +171,39 @@ namespace Rhyous.SimplePluginLoader.Tests
         }
 
         [TestMethod]
-        public void RuntimePluginLoaderBase_PluginCollection_Null_Test()
+        public void RuntimePluginLoaderBase_PluginCollection_Empty_Test()
         {
             // Arrange
+            var paths = new List<string> { @"c:\plugins", @"c:\MyApp\Plugins" };
+            _MockPluginPaths.Setup(m => m.Paths).Returns(paths);
+            var loader = CreateInstance2Loader();
+            var mockPluginLoader = _MockRepository.Create<IPluginLoader<Org>>();
+            loader.PluginLoader = mockPluginLoader.Object;
+            mockPluginLoader.Setup(m => m.LoadPlugins()).Returns(new PluginCollection<Org>());
+            _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionIfNoPluginFound).Returns(false);
+            var msg = $@"No Sub2 plugins were found in these directories:{Environment.NewLine}c:\plugins\Sub2{Environment.NewLine}c:\MyApp\Plugins\Sub2";
+            _MockPluginLoaderLogger.Setup(m => m.WriteLine(PluginLoaderLogLevel.Debug, msg));
+
+            // Act
+            var actual = loader.PluginCollection;
+
+            // Assert
+            Assert.AreEqual(0, actual.Count);
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        public void RuntimePluginLoaderBase_PluginCollection_Null_ThrowExceptionIfNoPluginFound_True_Throws()
+        {
+            // Arrange
+            var paths = new List<string> { @"c:\plugins", @"c:\MyApp\Plugins" };
+            _MockPluginPaths.Setup(m => m.Paths).Returns(paths);
             var loader = CreateInstance2Loader();
             var mockPluginLoader = _MockRepository.Create<IPluginLoader<Org>>();
             loader.PluginLoader = mockPluginLoader.Object;           
             mockPluginLoader.Setup(m => m.LoadPlugins()).Returns((PluginCollection<Org>)null);
             _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionIfNoPluginFound).Returns(true);
-            var paths = new List<string> { @"c:\plugins", @"c:\MyApp\Plugins" };
-            _MockPluginPaths.Setup(m=>m.Paths).Returns(paths);
-            var msg = $@"No Sub2 plugins were found in these directories:{Environment.NewLine}c:\plugins{Environment.NewLine}c:\MyApp\Plugins";
+            var msg = $@"No Sub2 plugins were found in these directories:{Environment.NewLine}c:\plugins\Sub2{Environment.NewLine}c:\MyApp\Plugins\Sub2";
             _MockPluginLoaderLogger.Setup(m => m.WriteLine(PluginLoaderLogLevel.Debug, msg));
 
             // Act
@@ -265,6 +221,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         public void RuntimePluginLoaderBase_PluginTypes_Test()
         {
             // Arrange
+            _MockPluginPaths.Setup(m => m.Paths).Returns(_Paths);
             var loader = CreateInstance2Loader();
             var mockPluginLoader = _MockRepository.Create<IPluginLoader<Org>>();
             loader.PluginLoader = mockPluginLoader.Object;
@@ -292,21 +249,21 @@ namespace Rhyous.SimplePluginLoader.Tests
         public void RuntimePluginLoaderBase_PluginTypes_Empty_Test()
         {
             // Arrange
+            var paths = new List<string> { @"c:\plugins", @"c:\MyApp\Plugins" };
+            _MockPluginPaths.Setup(m => m.Paths).Returns(paths);
             var loader = CreateInstance2Loader();
             var mockPluginLoader = _MockRepository.Create<IPluginLoader<Org>>();
             loader.PluginLoader = mockPluginLoader.Object;
             mockPluginLoader.Setup(m => m.LoadPlugins()).Returns(new PluginCollection<Org>());
             _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionIfNoPluginFound).Returns(false);
-            var paths = new List<string> { @"c:\plugins", @"c:\MyApp\Plugins" };
-            _MockPluginPaths.Setup(m => m.Paths).Returns(paths);
-            var msg = $@"No Sub2 plugins were found in these directories:{Environment.NewLine}c:\plugins{Environment.NewLine}c:\MyApp\Plugins";
+            var msg = $@"No Sub2 plugins were found in these directories:{Environment.NewLine}c:\plugins\Sub2{Environment.NewLine}c:\MyApp\Plugins\Sub2";
             _MockPluginLoaderLogger.Setup(m => m.WriteLine(PluginLoaderLogLevel.Debug, msg));
 
             // Act
             var actual = loader.PluginTypes;
 
             // Assert
-            Assert.IsNull(actual);
+            Assert.AreEqual(0, actual.Count);
             _MockRepository.VerifyAll();
         }
 
@@ -314,14 +271,14 @@ namespace Rhyous.SimplePluginLoader.Tests
         public void RuntimePluginLoaderBase_PluginTypes_Null_Test()
         {
             // Arrange
+            var paths = new List<string> { @"c:\plugins", @"c:\MyApp\Plugins" };
+            _MockPluginPaths.Setup(m => m.Paths).Returns(paths);
             var loader = CreateInstance2Loader();
             var mockPluginLoader = _MockRepository.Create<IPluginLoader<Org>>();
             loader.PluginLoader = mockPluginLoader.Object;
             mockPluginLoader.Setup(m => m.LoadPlugins()).Returns((PluginCollection<Org>)null);
             _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionIfNoPluginFound).Returns(true);
-            var paths = new List<string> { @"c:\plugins", @"c:\MyApp\Plugins" };
-            _MockPluginPaths.Setup(m => m.Paths).Returns(paths);
-            var msg = $@"No Sub2 plugins were found in these directories:{Environment.NewLine}c:\plugins{Environment.NewLine}c:\MyApp\Plugins";
+            var msg = $@"No Sub2 plugins were found in these directories:{Environment.NewLine}c:\plugins\Sub2{Environment.NewLine}c:\MyApp\Plugins\Sub2";
             _MockPluginLoaderLogger.Setup(m => m.WriteLine(PluginLoaderLogLevel.Debug, msg));
 
             // Act
@@ -336,16 +293,31 @@ namespace Rhyous.SimplePluginLoader.Tests
 
         #region PluginLoader
         [TestMethod]
-        public void RuntimePluginLoaderBase_PluginLoader_Test()
+        public void RuntimePluginLoaderBase_PluginLoader_FactoryReturnsPluginLoader_Test()
         {
             // Arrange
+            _MockPluginPaths.Setup(m => m.Paths).Returns(_Paths);
             var loader = CreateInstance2Loader();
+            var expectedPaths = new List<string>
+            {
+                $@"c:\my\path\{loader.PluginSubFolder}",
+                $@"c:\some\other\path\{loader.PluginSubFolder}"
+            };
+            var mockPluginCacheFactory = _MockRepository.Create<IPluginCacheFactory<Org>>();
+            IPluginPaths actualPluginPaths = null;
+            _MockPluginLoaderFactory.Setup(m => m.Create(It.IsAny<PluginPaths>()))
+                .Returns((IPluginPaths pluginPaths) => 
+                {
+                    actualPluginPaths = pluginPaths;
+                    return new PluginLoader<Org>(pluginPaths, mockPluginCacheFactory.Object);
+                });
 
             // Act
             var actual = loader.PluginLoader;
 
             // Assert
             Assert.IsNotNull(actual);
+            CollectionAssert.AreEqual(expectedPaths, actualPluginPaths.Paths.ToList());
             _MockRepository.VerifyAll();
         }
         #endregion

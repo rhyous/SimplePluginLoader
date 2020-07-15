@@ -16,37 +16,37 @@ namespace Rhyous.SimplePluginLoader
     {
         private readonly IAppDomain _AppDomain;
         private readonly IPluginLoaderSettings _Settings;
-        private readonly IPluginCacheFactory<T> _PluginCacheFactory;
+        private readonly IPluginLoaderFactory<T> _PluginLoaderFactory;
         private readonly IPluginPaths _PluginPaths;
         protected readonly IPluginLoaderLogger _Logger;
 
         public RuntimePluginLoaderBase(IAppDomain appDomain,
                                        IPluginLoaderSettings settings,
-                                       IPluginCacheFactory<T> pluginCacheFactory,
+                                       IPluginLoaderFactory<T> pluginLoaderFactory,
                                        IPluginPaths pluginPaths = null,
                                        IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _PluginCacheFactory = pluginCacheFactory ?? throw new ArgumentNullException(nameof(pluginCacheFactory));
-            _PluginPaths = pluginPaths ?? new PluginPaths(_Settings.AppName, DefaultPluginDirectory, _AppDomain, _Logger);
+            _PluginLoaderFactory = pluginLoaderFactory ?? throw new ArgumentNullException(nameof(pluginLoaderFactory));
+            pluginPaths = pluginPaths ?? new AppPluginPaths(_Settings.AppName, GetDefaultPluginDirectory(), _AppDomain, _Logger);
+            _PluginPaths = string.IsNullOrWhiteSpace(PluginSubFolder)
+                         ? pluginPaths
+                         : new PluginPaths { Paths = pluginPaths.Paths.Select(p => Path.Combine(p, PluginSubFolder)) };
             _Logger = logger;
         }
 
         /// <inheritdoc />
-        public virtual string DefaultPluginDirectory
+        private string GetDefaultPluginDirectory()
         {
-            get
-            {
-                var _DefaultPluginDirectory = _Settings.DefaultPluginDirectory;
-                if (_DefaultPluginDirectory == null)
-                    _DefaultPluginDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), 
-                                                           _Settings.Company, _Settings.AppName, _Settings.PluginFolder);
-                if (!string.IsNullOrWhiteSpace(PluginSubFolder))
-                    _DefaultPluginDirectory = Path.Combine(_DefaultPluginDirectory, PluginSubFolder);
-                return _DefaultPluginDirectory;
-            }
-        } internal string _DefaultPluginDirectory;
+            var _DefaultPluginDirectory = _Settings.DefaultPluginDirectory;
+            if (_DefaultPluginDirectory == null)
+                _DefaultPluginDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                                                       _Settings.Company, _Settings.AppName, _Settings.PluginFolder);
+            if (!string.IsNullOrWhiteSpace(PluginSubFolder))
+                _DefaultPluginDirectory = Path.Combine(_DefaultPluginDirectory, PluginSubFolder);
+            return _DefaultPluginDirectory;
+        }
 
         /// <inheritdoc />       
         public abstract string PluginSubFolder { get; }
@@ -66,7 +66,7 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual IPluginLoader<T> PluginLoader
         {
-            get { return _PluginLoader ?? new PluginLoader<T>(_PluginPaths, _PluginCacheFactory); }
+            get { return _PluginLoader ?? _PluginLoaderFactory.Create(_PluginPaths); }
             internal set { _PluginLoader = value; }
         } private IPluginLoader<T> _PluginLoader;
 
@@ -91,9 +91,14 @@ namespace Rhyous.SimplePluginLoader
                 {
                     throw new RuntimePluginLoaderException(msg);
                 }
-                return null;
+                return plugins;
             }
             return plugins;
+        }
+
+        public virtual IList<T> CreatePluginObjects()
+        {
+            return PluginCollection?.CreatePluginObjects();
         }
     }
 }

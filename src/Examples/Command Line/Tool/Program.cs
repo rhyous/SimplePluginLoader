@@ -1,11 +1,25 @@
 ﻿using Rhyous.SimplePluginLoader;
+using Rhyous.SimplePluginLoader.Factories;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Tool.Tools;
 
 namespace Tool
 {
+    public class CavemanHammerRuntimePluginLoader : RuntimePluginLoaderBase<ICaveManTool<Hammer>>
+    {
+        public CavemanHammerRuntimePluginLoader(IAppDomain appDomain, 
+                                                IPluginLoaderSettings settings, 
+                                                IPluginLoaderFactory<ICaveManTool<Hammer>> pluginLoaderFactory,
+                                                IPluginPaths pluginPaths = null, 
+                                                IPluginLoaderLogger logger = null) 
+            : base(appDomain, settings, pluginLoaderFactory, pluginPaths, logger)
+        {
+        }
+
+        public override string PluginSubFolder { get; }
+    }
+
     class Program
     {
         static void Main()
@@ -14,18 +28,17 @@ namespace Tool
             {
                 new Hammer()
             };
-            
+
             // Common objects
-            var logger = new PluginLoaderLogger();
+            var logger = PluginLoaderLogger.Instance;
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain, logger);
             var appSettings = new AppSettings();
-            var settings = new PluginLoaderSettings(appSettings);
+            PluginLoaderSettings.Default = new MyPluginLoaderSettings(appSettings);
+            var settings = PluginLoaderSettings.Default;
             var assemblyNameReader = new AssemblyNameReader();
             var assemblyCache = new AssemblyCache(appDomain, assemblyNameReader, logger);
             var assemblyLoader = new AssemblyLoader(appDomain, settings, assemblyCache, assemblyNameReader, logger);
-            string appName = "Tool.CommandLine";
-            string appSubFolder = null;
-            var pluginPaths = new PluginPaths(appName, appSubFolder, appDomain, logger);
+            var pluginPaths = new AppPluginPaths(settings.AppName, settings.PluginFolder, appDomain, logger);
             var pluginDependencyResolverObjectCreator = new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, logger);
             var pluginDependencyResolverFactory = new PluginDependencyResolverCacheFactory(pluginDependencyResolverObjectCreator, logger);
 
@@ -37,14 +50,10 @@ namespace Tool
             var plugins = pluginLoader.LoadPlugins();
             tools.AddRange(plugins.CreatePluginObjects());
 
-            // ICaveManTool<Hammer> plugin loader objects
-            var caveManTypeLoader = new TypeLoader<ICaveManTool<Hammer>>(PluginLoaderSettings.Default, logger);
-            var caveManToolObjectCreatorFactory = new PluginObjectCreatorFactory<ICaveManTool<Hammer>>(settings, logger);
-            var caveManPluginCacheFactory = new PluginCacheFactory<ICaveManTool<Hammer>>(caveManTypeLoader, caveManToolObjectCreatorFactory, pluginDependencyResolverFactory, assemblyLoader, logger);
-            var pluginLoaderCaveMan = new PluginLoader<ICaveManTool<Hammer>>(pluginPaths, caveManPluginCacheFactory);
-            var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
-            tools.AddRange(caveManPlugins.CreatePluginObjects());
-            
+            // ICaveManTool<Hammer> plugin loader objects - using RuntimePluginLoader
+            var caveManHammerRuntimePluginLoader = RuntimePluginLoaderFactory.Instance.Create<CavemanHammerRuntimePluginLoader, ICaveManTool<Hammer>>();
+            tools.AddRange(caveManHammerRuntimePluginLoader.PluginCollection.CreatePluginObjects());
+
             ShowPrompt(tools);
             // Only 4 plugins will show as this doesn't support plugins with Constructor parameters
             int input = ReadLine(tools);

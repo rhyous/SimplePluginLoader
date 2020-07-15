@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rhyous.SimplePluginLoader.Autofac</name>
+    </assembly>
+    <members>
+        <member name="T:Rhyous.SimplePluginLoader.DependencyInjection.ContainerBuilderExtensions">
+            <summary>
+            This class holds extension methods for the Autofac ContainerBuilder object.
+            </summary>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.ContainerBuilderExtensions.RegisterType(Autofac.ContainerBuilder,System.Type,System.Type)">
+            <summary>
+            This method figures out how to register a runtime type based on two passed in types.
+            It is especially useful for registering a GenericTypeDefinition.
+            </summary>
+            <param name="builder">The ContainerBuilder that allows for Autofac object registration.</param>
+            <param name="regType">The type to register.</param>
+            <param name="asType">The plugin type.</param>
+            <returns>The type to resolve. This could be the regType, the asType, or a custom built generic type.</returns>
+        </member>
+        <member name="T:Rhyous.SimplePluginLoader.DependencyInjection.AutofacObjectCreator`1">
+            <summary>
+            An Autofac object creator. It used registration and resolve to create the objects.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacObjectCreator`1.#ctor(Autofac.IComponentContext)">
+            <summary>
+            AutofacObjectCreator constructor
+            </summary>
+            <param name="componentContext">An Autofac ComponentContenxt object.</param>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacObjectCreator`1.Create(System.Type)">
+            <summary>
+            Create an instance of the given type using Autofac with 
+            Just-in-Time (JIT) regisration and resolving.
+            </summary>
+            <param name="type">The type to create.</param>
+            <returns></returns>
+        </member>
+        <member name="F:Rhyous.SimplePluginLoader.DependencyInjection.AutofacObjectCreator`1.RegisterTypeMethod">
+            <summary>This wrapper aroudn the extension method is used to add ease of Unit Testing</summary>
+        </member>
+        <member name="T:Rhyous.SimplePluginLoader.DependencyInjection.AutofacObjectCreatorFactory`1">
+            <summary>
+            A factory for creating AutofacObjectCreators
+            </summary>
+            <typeparam name="T">The type of the object to create.</typeparam>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacObjectCreatorFactory`1.#ctor(Autofac.IComponentContext)">
+            <summary>
+            AutofacObjectCreatorFactory constructor
+            </summary>
+            <param name="componentContext">An Autofac ComponentContext object.</param>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacObjectCreatorFactory`1.Create">
+            <summary>
+            This uses the Autofac ComponentContext to resolve (i.e. instantiate) a 
+            concrete instance of IObjectCreator{T}.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Rhyous.SimplePluginLoader.DependencyInjection.AutofacPluginObjectCreator`1">
+            <summary>
+            
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacPluginObjectCreator`1.#ctor(Autofac.IComponentContext,Rhyous.SimplePluginLoader.DependencyInjection.IPluginDependencyRegistrar)">
+            <summary>
+            The AutofacPluginObjectCreator constructor
+            </summary>
+            <param name="componentContext">An Autofac ComponentContext object.</param>
+            <param name="pluginDependecyRegistrar">An instance of a IPluginDependencyRegistrar 
+            that can be used to dynamically register objects in a plugin just-in-time or 
+            right before the lugin is loaded.</param>
+        </member>
+        <member name="P:Rhyous.SimplePluginLoader.DependencyInjection.AutofacPluginObjectCreator`1.Plugin">
+            <summary>
+            The Plugin object
+            </summary>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacPluginObjectCreator`1.Create(System.Type)">
+            <summary>
+            Create an instance of the given type using Autofac with 
+            Just-in-Time (JIT) regisration and resolving.
+            </summary>
+            <param name="type">The type to create.</param>
+            <returns>An instantiated instance of T.</returns>
+        </member>
+        <member name="F:Rhyous.SimplePluginLoader.DependencyInjection.AutofacPluginObjectCreator`1.RegisterTypeMethod">
+            <summary>This wrapper aroudn the extension method is used to add ease of Unit Testing</summary>
+        </member>
+        <member name="T:Rhyous.SimplePluginLoader.DependencyInjection.AutofacPluginObjectCreatorFactory`1">
+            <summary>
+            A factory for creating AutofacPluginObjectCreator{T} instances.
+            </summary>
+            <typeparam name="T">The type used in an IPluginObjectCreator{T} object.</typeparam>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacPluginObjectCreatorFactory`1.#ctor(Autofac.IComponentContext)">
+            <summary>
+            The AutofacPluginObjectCreatorFactory constructor.
+            </summary>
+            <param name="componentContext">An Autofac ComponentContext object.</param>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacPluginObjectCreatorFactory`1.Create">
+            <summary>
+            Create an instance of IPluginObjectCreator{T} using the Autofac 
+            ComponentContext to resolve.
+            </summary>
+            <returns>An instantiated instance of IPluginObjectCreator{T}.</returns>
+        </member>
+        <member name="T:Rhyous.SimplePluginLoader.DependencyInjection.AutofacRuntimePluginLoaderFactory">
+            <summary>
+            A factory for easily creating RuntimePluginLoader instances.
+            </summary>
+        </member>
+        <member name="P:Rhyous.SimplePluginLoader.DependencyInjection.AutofacRuntimePluginLoaderFactory.Instance">
+            <summary>
+            A static factory, that can be used in objects that may not have access
+            to Dependency Injection.
+            </summary>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacRuntimePluginLoaderFactory.#ctor(Autofac.IComponentContext)">
+            <summary>
+            The AutofacRuntimePluginLoaderFactory constructor
+            </summary>
+            <param name="componentContext">An Autofac ComponentContext object.</param>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacRuntimePluginLoaderFactory.Create``2(System.Object[])">
+            <summary>
+            Create an instance of IRuntimePluginLoader{T} using the Autofac 
+            ComponentContext to resolve.
+            </summary>
+            <typeparam name="TRuntimePluginLoader">A type of IRuntimePluginLoader{T} to create.</typeparam>
+            <typeparam name="T">The Plugin type. This is usually an interface.</typeparam>
+            <param name="dependencies">Additional dependencies. These must be passed in in order.</param>
+            <returns>An instantiated instance of IPluginObjectCreator{T}.</returns>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.PluginDependencyRegistrar.RegisterPluginDependencies(Autofac.ContainerBuilder,Rhyous.SimplePluginLoader.IPlugin,System.Type)">
+            <summary>
+            This method provides Just-in-time (JIT) dependency registration for a plugin's dependencies.
+            </summary>
+            <param name="builder">The Autofac ContainerBuilder</param>
+            <param name="plugin">The plugin that could contain an IDependencyRegistrar[ContainerBuilder] module..</param>
+            <param name="type">The type to resolve.</param>
+        </member>
+        <member name="T:Rhyous.SimplePluginLoader.DependencyInjection.SimplePluginLoaderModule">
+            <summary>
+            An Autofac module for registering all SimplePluginLoader tools.
+            </summary>
+        </member>
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.SimplePluginLoaderModule.Load(Autofac.ContainerBuilder)">
+            <summary>
+            This is used by Autofac when loading a module to load all SimplePluginLoader tools.
+            </summary>
+            <param name="builder">The Autofac ContainerBuilder.</param>
+        </member>
+    </members>
+</doc>

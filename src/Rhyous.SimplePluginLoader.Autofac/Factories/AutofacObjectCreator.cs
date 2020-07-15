@@ -11,6 +11,10 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
     {
         private readonly IComponentContext _ComponentContext;
 
+        /// <summary>
+        /// AutofacObjectCreator constructor
+        /// </summary>
+        /// <param name="componentContext">An Autofac ComponentContenxt object.</param>
         public AutofacObjectCreator(IComponentContext componentContext)
         {
             _ComponentContext = componentContext;

@@ -4,11 +4,22 @@ using System.Linq;
 
 namespace Rhyous.SimplePluginLoader.DependencyInjection
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class AutofacPluginObjectCreator<T> : IPluginObjectCreator<T>
     {
         private readonly IComponentContext _ComponentContext;
         private readonly IPluginDependencyRegistrar _PluginDependecyRegistrar;
 
+        /// <summary>
+        /// The AutofacPluginObjectCreator constructor
+        /// </summary>
+        /// <param name="componentContext">An Autofac ComponentContext object.</param>
+        /// <param name="pluginDependecyRegistrar">An instance of a IPluginDependencyRegistrar 
+        /// that can be used to dynamically register objects in a plugin just-in-time or 
+        /// right before the lugin is loaded.</param>
         public AutofacPluginObjectCreator(IComponentContext componentContext,
                                           IPluginDependencyRegistrar pluginDependecyRegistrar)
             : base()
@@ -17,6 +28,9 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             _PluginDependecyRegistrar = pluginDependecyRegistrar;
         }
 
+        /// <summary>
+        /// The Plugin object
+        /// </summary>
         public IPlugin Plugin { get; set; }
 
 
@@ -25,7 +39,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
         /// Just-in-Time (JIT) regisration and resolving.
         /// </summary>
         /// <param name="type">The type to create.</param>
-        /// <returns></returns>
+        /// <returns>An instantiated instance of T.</returns>
         public T Create(Type type)
         {
             var scope = _ComponentContext.Resolve<ILifetimeScope>();

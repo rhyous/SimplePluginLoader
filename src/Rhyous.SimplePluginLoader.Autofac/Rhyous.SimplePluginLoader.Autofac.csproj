@@ -21,6 +21,10 @@
     <PackageIconUrl />
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <DocumentationFile>C:\Dev\Git\Rhyous\SimplePluginLoader\src\Rhyous.SimplePluginLoader.Autofac\Rhyous.SimplePluginLoader.Autofac.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.4" />
   </ItemGroup>

@@ -35,7 +35,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         private PluginLoader<IOrg> CreatePluginLoader(string appName, string subFolder)
         {
             return new PluginLoader<IOrg>(
-                new PluginPaths(appName, subFolder, _MockAppDomain.Object, _MockLogger.Object),                
+                new AppPluginPaths(appName, subFolder, _MockAppDomain.Object, _MockLogger.Object),                
                 _MockCacheFactory.Object)
             {
                 Directory = _MockDirectory.Object,
@@ -62,7 +62,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             // Arrange
             string appName = "MyApp";
-            PluginPaths paths = null;
+            AppPluginPaths paths = null;
             var mockSettings = _MockRepository.Create<IPluginLoaderSettings>();
             var mockPluginObjectCreatorFactory = _MockRepository.Create<IPluginObjectCreatorFactory<IOrg>>();
             var mockAssemblyCache = _MockRepository.Create<IAssemblyCache>();

@@ -30,7 +30,7 @@ namespace Rhyous.SimplePluginLoader
                              IPluginLoaderLogger logger = null)
         {
             appDomain = appDomain ?? new AppDomainWrapper(AppDomain.CurrentDomain, logger);
-            paths = paths ?? new PluginPaths(appName, null, appDomain,  logger);
+            paths = paths ?? new AppPluginPaths(appName, null, appDomain,  logger);
             settings = settings ?? PluginLoaderSettings.Default;
             typeLoader = typeLoader ?? new TypeLoader<T>(settings, logger);
             pluginObjectCreatorFactory = pluginObjectCreatorFactory ?? new PluginObjectCreatorFactory<T>(settings, logger);
@@ -92,7 +92,7 @@ namespace Rhyous.SimplePluginLoader
                 if (fullPaths.Contains(info.FullName))
                     continue;
                 fullPaths.Add(info.FullName);
-                var allfiles = Directory.GetFiles(info.FullName, PluginPaths.DefaultDllSearchString, SearchOption.AllDirectories);
+                var allfiles = Directory.GetFiles(info.FullName, AppPluginPaths.DefaultDllSearchString, SearchOption.AllDirectories);
                 var foundplugins = LoadPlugins(allfiles.Where(s => !Path.GetDirectoryName(s).EndsWith(@"\bin")).ToArray());
                 plugins.AddRange(foundplugins);
             }

@@ -12,8 +12,14 @@ namespace Rhyous.SimplePluginLoader
         internal const string ThrowExceptionsOnLoadKey = "ThrowExceptionsOnLoad";
         internal const string LoadDependenciesProactivelyKey = "LoadDependenciesProactively";
 
-        public static PluginLoaderSettings Default = _Default ?? (_Default = new PluginLoaderSettings(new AppSettings()));
-        private static PluginLoaderSettings _Default;
+        /// <summary>
+        /// There is a default, but it allows you to upate the default.
+        /// </summary>
+        public static IPluginLoaderSettings Default
+        {
+            get => _Default ?? (_Default = new PluginLoaderSettings(new AppSettings()));
+            set => _Default = value;
+        } private static IPluginLoaderSettings _Default;
 
         private readonly IAppSettings _AppSettings;
 
