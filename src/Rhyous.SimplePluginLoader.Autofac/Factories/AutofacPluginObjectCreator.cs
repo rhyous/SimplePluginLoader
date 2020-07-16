@@ -29,18 +29,12 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
         }
 
         /// <summary>
-        /// The Plugin object
-        /// </summary>
-        public IPlugin Plugin { get; set; }
-
-
-        /// <summary>
         /// Create an instance of the given type using Autofac with 
         /// Just-in-Time (JIT) regisration and resolving.
         /// </summary>
         /// <param name="type">The type to create.</param>
         /// <returns>An instantiated instance of T.</returns>
-        public T Create(Type type)
+        public T Create(IPlugin<T> plugin, Type type)
         {
             var scope = _ComponentContext.Resolve<ILifetimeScope>();
             Type typeToLoad = null;
@@ -48,7 +42,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             using (var pluginScope = scope.BeginLifetimeScope((builder) =>
             {
                 typeToLoad = RegisterTypeMethod(builder, type, typeof(T));
-                _PluginDependecyRegistrar.RegisterPluginDependencies(builder, Plugin, type);
+                _PluginDependecyRegistrar.RegisterPluginDependencies(builder, plugin, type);
             }))
             {
                 if (typeToLoad == null || typeToLoad.IsGenericTypeDefinition)

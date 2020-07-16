@@ -9,11 +9,12 @@ namespace Tool
     public class CavemanHammerRuntimePluginLoader : RuntimePluginLoaderBase<ICaveManTool<Hammer>>
     {
         public CavemanHammerRuntimePluginLoader(IAppDomain appDomain, 
-                                                IPluginLoaderSettings settings, 
+                                                IPluginLoaderSettings settings,
                                                 IPluginLoaderFactory<ICaveManTool<Hammer>> pluginLoaderFactory,
+                                                IPluginObjectCreator<ICaveManTool<Hammer>> pluginObjectCreator,
                                                 IPluginPaths pluginPaths = null, 
                                                 IPluginLoaderLogger logger = null) 
-            : base(appDomain, settings, pluginLoaderFactory, pluginPaths, logger)
+            : base(appDomain, settings, pluginLoaderFactory, pluginObjectCreator, pluginPaths, logger)
         {
         }
 
@@ -44,15 +45,18 @@ namespace Tool
 
             // ITool plugin loader objects
             var typeLoader = new TypeLoader<ITool>(settings, logger);
-            var toolPluginObjectCreatorFactory = new PluginObjectCreatorFactory<ITool>(settings, logger);
-            var pluginCacheFactory = new PluginCacheFactory<ITool>(typeLoader, toolPluginObjectCreatorFactory, pluginDependencyResolverFactory, assemblyLoader, logger);
+            var objectCreator = new ObjectCreator<ITool>();
+            var pluginCacheFactory = new PluginCacheFactory<ITool>(typeLoader, pluginDependencyResolverFactory, assemblyLoader, logger);
             var pluginLoader = new PluginLoader<ITool>(pluginPaths, pluginCacheFactory);
             var plugins = pluginLoader.LoadPlugins();
-            tools.AddRange(plugins.CreatePluginObjects());
+            var toolPluginObjectCreator = new PluginObjectCreator<ITool>(settings, objectCreator, logger);
+            tools.AddRange(plugins.CreatePluginObjects(toolPluginObjectCreator));
 
             // ICaveManTool<Hammer> plugin loader objects - using RuntimePluginLoader
             var caveManHammerRuntimePluginLoader = RuntimePluginLoaderFactory.Instance.Create<CavemanHammerRuntimePluginLoader, ICaveManTool<Hammer>>();
-            tools.AddRange(caveManHammerRuntimePluginLoader.PluginCollection.CreatePluginObjects());
+            var caveManObjectCreator = new ObjectCreator<ICaveManTool<Hammer>>();
+            var caveManToolPluginObjectCreator = new PluginObjectCreator<ICaveManTool<Hammer>>(settings, caveManObjectCreator, logger);
+            tools.AddRange(caveManHammerRuntimePluginLoader.PluginCollection.CreatePluginObjects(caveManToolPluginObjectCreator));
 
             ShowPrompt(tools);
             // Only 4 plugins will show as this doesn't support plugins with Constructor parameters

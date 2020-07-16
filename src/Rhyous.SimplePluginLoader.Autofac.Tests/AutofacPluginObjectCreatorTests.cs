@@ -13,7 +13,6 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
 
         private Mock<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>> _MockContainerBuilderPluginLoader;
         private Mock<IPluginDependencyRegistrar> _MockPluginDependencyRegistrar;
-        private Mock<IPlugin> _MockPlugin;
 
         [TestInitialize]
         public void TestInitialize()
@@ -22,15 +21,11 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
 
             _MockContainerBuilderPluginLoader = _MockRepository.Create<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
             _MockPluginDependencyRegistrar = _MockRepository.Create<IPluginDependencyRegistrar>();
-            _MockPlugin = _MockRepository.Create<IPlugin>();
         }
 
         private AutofacPluginObjectCreator<T> CreateAutofacPluginObjectCreator<T>(IComponentContext context)
         {
-            return new AutofacPluginObjectCreator<T>(context, _MockPluginDependencyRegistrar.Object)
-            {
-                Plugin = _MockPlugin.Object
-            };
+            return new AutofacPluginObjectCreator<T>(context, _MockPluginDependencyRegistrar.Object);
         }
 
         [TestMethod]
@@ -44,7 +39,6 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
                    .As(typeof(IUser));
             var container = builder.Build();
 
-            _MockPlugin.Setup(m => m.FullPath).Returns((string)null);
             _MockPluginDependencyRegistrar.Setup(m => m.RegisterPluginDependencies(
                                     It.IsAny<ContainerBuilder>(),
                                     It.IsAny<IPlugin>(),
@@ -56,8 +50,11 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
             var autofacPluginObjectCreator = CreateAutofacPluginObjectCreator<User>(container);
             Type type = typeof(User);
 
+            var mockPlugin = _MockRepository.Create<IPlugin<User>>();
+            mockPlugin.Setup(m => m.FullPath).Returns((string)null);
+
             // Act
-            var result = autofacPluginObjectCreator.Create(type);
+            var result = autofacPluginObjectCreator.Create(mockPlugin.Object, type);
 
             // Assert
             Assert.AreEqual(result.GetType(), typeof(User));
@@ -75,7 +72,6 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
                    .As(typeof(IUser));
             var container = builder.Build();
 
-            _MockPlugin.Setup(m => m.FullPath).Returns((string)null);
             _MockPluginDependencyRegistrar.Setup(m => m.RegisterPluginDependencies(
                                     It.IsAny<ContainerBuilder>(), 
                                     It.IsAny<IPlugin>(),
@@ -87,8 +83,11 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
             var creator = CreateAutofacPluginObjectCreator<IUser>(container);
             var type = typeof(User);
 
+            var mockPlugin = _MockRepository.Create<IPlugin<IUser>>();
+            mockPlugin.Setup(m => m.FullPath).Returns((string)null);
+
             // Act
-            var actual = creator.Create(type);
+            var actual = creator.Create(mockPlugin.Object, type);
 
             // Assert
             Assert.AreEqual(type, actual.GetType());
@@ -114,12 +113,13 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
                     new PluginDependencyRegistrar(container).RegisterPluginDependencies(inBuilder, plugin, type);
                 });
 
-            _MockPlugin.Setup(m => m.FullPath).Returns((string)null);
+            var mockPlugin = _MockRepository.Create<IPlugin<IService<Organization, IOrganization, int>>>();
+            mockPlugin.Setup(m => m.FullPath).Returns((string)null);
 
             var creator = CreateAutofacPluginObjectCreator<IService<Organization, IOrganization, int>>(container);
 
             // Act
-            var actual = creator.Create(typeof(Service<Organization, IOrganization, int>));
+            var actual = creator.Create(mockPlugin.Object, typeof(Service<Organization, IOrganization, int>));
 
             // Assert
             Assert.AreEqual(actual.GetType(), typeof(Service<Organization, IOrganization, int>));
@@ -146,8 +146,11 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
             var autofacPluginObjectCreator = new AutofacPluginObjectCreator<IOrganization>(container, _MockPluginDependencyRegistrar.Object);
             autofacPluginObjectCreator.RegisterTypeMethod = (ContainerBuilder b, Type t1, Type t2) => { return null; };
 
+            var mockPlugin = _MockRepository.Create<IPlugin<IOrganization>>();
+            mockPlugin.Setup(m => m.FullPath).Returns((string)null);
+
             // Act
-            var result = autofacPluginObjectCreator.Create(type);
+            var result = autofacPluginObjectCreator.Create(mockPlugin.Object, type);
 
             // Assert
             Assert.IsNull(result);
@@ -174,8 +177,11 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
             var autofacPluginObjectCreator = new AutofacPluginObjectCreator<IOrganization>(container, _MockPluginDependencyRegistrar.Object);
             autofacPluginObjectCreator.RegisterTypeMethod = (ContainerBuilder b, Type t1, Type t2) => { return typeof(Service<,,>); };
 
+            var mockPlugin = _MockRepository.Create<IPlugin<IOrganization>>();
+            mockPlugin.Setup(m => m.FullPath).Returns((string)null);
+
             // Act
-            var result = autofacPluginObjectCreator.Create(type);
+            var result = autofacPluginObjectCreator.Create(mockPlugin.Object, type);
 
             // Assert
             Assert.IsNull(result);

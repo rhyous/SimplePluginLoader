@@ -15,6 +15,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         private Mock<IAppDomain> _MockAppDomain;
         private Mock<IPluginLoaderSettings> _MockPluginLoaderSettings;
         private Mock<IPluginLoaderFactory<Org>> _MockPluginLoaderFactory;
+        private Mock<IPluginObjectCreator<Org>> _MockPluginObjectCreator;
         private Mock<IPluginPaths> _MockPluginPaths;
         private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
         private List<string> _Paths;
@@ -27,6 +28,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockAppDomain = _MockRepository.Create<IAppDomain>();
             _MockPluginLoaderSettings = _MockRepository.Create<IPluginLoaderSettings>();
             _MockPluginLoaderFactory = _MockRepository.Create<IPluginLoaderFactory<Org>>();
+            _MockPluginObjectCreator = _MockRepository.Create<IPluginObjectCreator<Org>>();
             _MockPluginPaths = _MockRepository.Create<IPluginPaths>();
             _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
             _Paths = new List<string>
@@ -42,6 +44,7 @@ namespace Rhyous.SimplePluginLoader.Tests
                 _MockAppDomain.Object,
                 _MockPluginLoaderSettings.Object,
                 _MockPluginLoaderFactory.Object,
+                _MockPluginObjectCreator.Object,
                 _MockPluginPaths.Object,
                 _MockPluginLoaderLogger.Object);
         }
@@ -52,6 +55,7 @@ namespace Rhyous.SimplePluginLoader.Tests
                 _MockAppDomain.Object,
                 _MockPluginLoaderSettings.Object,
                 _MockPluginLoaderFactory.Object,
+                _MockPluginObjectCreator.Object,
                 _MockPluginPaths.Object,
                 _MockPluginLoaderLogger.Object);
         }
@@ -66,6 +70,7 @@ namespace Rhyous.SimplePluginLoader.Tests
                                    null,
                                    _MockPluginLoaderSettings.Object,
                                    _MockPluginLoaderFactory.Object,
+                                   _MockPluginObjectCreator.Object,
                                    _MockPluginPaths.Object,
                                    _MockPluginLoaderLogger.Object);
             });
@@ -81,6 +86,7 @@ namespace Rhyous.SimplePluginLoader.Tests
                                    _MockAppDomain.Object,
                                    null,
                                    _MockPluginLoaderFactory.Object,
+                                   _MockPluginObjectCreator.Object,
                                    _MockPluginPaths.Object,
                                    _MockPluginLoaderLogger.Object);
             });
@@ -88,7 +94,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         }
 
         [TestMethod]
-        public void RuntimePluginLoaderBase_Constructor_Null_PluginCache_Throws_Test()
+        public void RuntimePluginLoaderBase_Constructor_Null_PluginLoaderFactory_Throws_Test()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
@@ -96,12 +102,28 @@ namespace Rhyous.SimplePluginLoader.Tests
                                    _MockAppDomain.Object,
                                    _MockPluginLoaderSettings.Object,
                                    null,
+                                   _MockPluginObjectCreator.Object,
                                    _MockPluginPaths.Object,
                                    _MockPluginLoaderLogger.Object);
             });
             _MockRepository.VerifyAll();
         }
 
+        [TestMethod]
+        public void RuntimePluginLoaderBase_Constructor_Null_PluginObjectCreator_Throws_Test()
+        {
+            Assert.ThrowsException<ArgumentNullException>(() =>
+            {
+                var loader = new TestPluginLoader(
+                                   _MockAppDomain.Object,
+                                   _MockPluginLoaderSettings.Object,
+                                   _MockPluginLoaderFactory.Object,
+                                   null,
+                                   _MockPluginPaths.Object,
+                                   _MockPluginLoaderLogger.Object);
+            });
+            _MockRepository.VerifyAll();
+        }
 
         [TestMethod]
         public void RuntimePluginLoaderBase_Constructor_Null_PluginPaths_CreatesNew_Test()
@@ -117,6 +139,7 @@ namespace Rhyous.SimplePluginLoader.Tests
                                    _MockAppDomain.Object,
                                    _MockPluginLoaderSettings.Object,
                                    _MockPluginLoaderFactory.Object,
+                                   _MockPluginObjectCreator.Object,
                                    null,
                                    _MockPluginLoaderLogger.Object);
 

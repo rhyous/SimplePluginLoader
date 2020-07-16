@@ -11,18 +11,14 @@ namespace Rhyous.SimplePluginLoader
     public class Plugin<T> : IPlugin<T>
     {
         private readonly ITypeLoader<T> _TypeLoader;
-        private readonly IPluginObjectCreator<T> _PluginObjectCreator;
         private readonly IPluginDependencyResolver _DependencyResolver;
         private readonly IAssemblyLoader _AssemblyLoader;
 
         public Plugin(ITypeLoader<T> typeLoader,
-                      IPluginObjectCreator<T> pluginObjectCreator,
                       IPluginDependencyResolver dependencyResolver,
                       IAssemblyLoader assemblyLoader)
         {
             _TypeLoader = typeLoader ?? throw new ArgumentNullException(nameof(typeLoader));
-            _PluginObjectCreator = pluginObjectCreator ?? throw new ArgumentNullException(nameof(pluginObjectCreator));
-            _PluginObjectCreator.Plugin = this;
             _DependencyResolver = dependencyResolver ?? throw new ArgumentNullException(nameof(dependencyResolver));
             if (_DependencyResolver.Plugin == null)
                 _DependencyResolver.Plugin = this;
@@ -102,9 +98,12 @@ namespace Rhyous.SimplePluginLoader
             return types;
         }
 
-        public List<T> CreatePluginObjects() => PluginTypes?.Select(t => CreatePluginObject(t)).Where(o => o != null).ToList();
+        public List<T> CreatePluginObjects(IPluginObjectCreator<T> pluginObjectCreator) => PluginTypes?.Select(t => CreatePluginObject(t, pluginObjectCreator)).Where(o => o != null).ToList();
 
-        public T CreatePluginObject(Type t) => _PluginObjectCreator.Create(t);
+        public T CreatePluginObject(Type t, IPluginObjectCreator<T> pluginObjectCreator)
+        {
+            return pluginObjectCreator.Create(this, t);
+        }
 
         #region IDisposable
         bool _disposed;

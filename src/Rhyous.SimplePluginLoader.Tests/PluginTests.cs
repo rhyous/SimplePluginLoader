@@ -38,13 +38,11 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             if (includeMocks)
             {
-                _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
                 _MockPluginDependencyResolver.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
                 _MockPluginDependencyResolver.Setup(m => m.Plugin).Returns((IPlugin)null);
             }
             return new Plugin<T>(
                 _MockTypeLoader.Object,
-                _MockPluginObjectCreator.Object,
                 _MockPluginDependencyResolver.Object,
                 _MockAssemblyLoader.Object);
         }
@@ -58,20 +56,6 @@ namespace Rhyous.SimplePluginLoader.Tests
             {
                 new Plugin<T>(
                     null,
-                    _MockPluginObjectCreator.Object,
-                    _MockPluginDependencyResolver.Object,
-                    _MockAssemblyLoader.Object);
-            });
-        }
-
-        [TestMethod]
-        public void Plugin_Constructor_NullInstanceLoader_Test()
-        {
-            Assert.ThrowsException<ArgumentNullException>(() =>
-            {
-                new Plugin<T>(
-                    _MockTypeLoader.Object,
-                    null,
                     _MockPluginDependencyResolver.Object,
                     _MockAssemblyLoader.Object);
             });
@@ -80,12 +64,10 @@ namespace Rhyous.SimplePluginLoader.Tests
         [TestMethod]
         public void Plugin_Constructor_NullPluginDependencyResolver_Test()
         {
-            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
                 new Plugin<T>(
                     _MockTypeLoader.Object,
-                    _MockPluginObjectCreator.Object,
                     null,
                     _MockAssemblyLoader.Object);
             });
@@ -94,14 +76,12 @@ namespace Rhyous.SimplePluginLoader.Tests
         [TestMethod]
         public void Plugin_Constructor_NullAssemblyLoader_Test()
         {
-            _MockPluginObjectCreator.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             _MockPluginDependencyResolver.SetupSet(m => m.Plugin = It.IsAny<IPlugin>());
             _MockPluginDependencyResolver.Setup(m => m.Plugin).Returns((IPlugin)null);
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
                 new Plugin<T>(
                     _MockTypeLoader.Object,
-                    _MockPluginObjectCreator.Object,
                     _MockPluginDependencyResolver.Object,
                     null);
             });
@@ -203,12 +183,12 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Arrange
             var plugin = CreatePlugin(true);
             plugin.PluginTypes = new List<Type> { typeof(Org2), null, typeof(Org) };
-            _MockPluginObjectCreator.Setup(m => m.Create(typeof(Org2))).Returns(new Org2());
-            _MockPluginObjectCreator.Setup(m => m.Create(null)).Returns((Org)null);
-            _MockPluginObjectCreator.Setup(m => m.Create(typeof(Org))).Returns(new Org());
+            _MockPluginObjectCreator.Setup(m => m.Create(plugin, typeof(Org2))).Returns(new Org2());
+            _MockPluginObjectCreator.Setup(m => m.Create(plugin, null)).Returns((Org)null);
+            _MockPluginObjectCreator.Setup(m => m.Create(plugin, typeof(Org))).Returns(new Org());
 
             // Act
-            var actual = plugin.CreatePluginObjects();
+            var actual = plugin.CreatePluginObjects(_MockPluginObjectCreator.Object);
 
             // Assert
             Assert.AreEqual(2, actual.Count);
@@ -227,9 +207,8 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockPluginDependencyResolver.Setup(m => m.RemoveDependencyResolver());
             _MockPluginDependencyResolver.Setup(m => m.Plugin).Returns(plugin);
 
-
             // Act
-            var actual = plugin.CreatePluginObjects();
+            var actual = plugin.CreatePluginObjects(_MockPluginObjectCreator.Object);
 
             // Assert
             Assert.IsNull(actual);

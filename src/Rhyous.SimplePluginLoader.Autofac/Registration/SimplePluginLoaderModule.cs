@@ -62,8 +62,6 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
                    .As(typeof(IObjectCreatorFactory<>));
             builder.RegisterGeneric(typeof(AutofacObjectCreator<>))
                    .As(typeof(IObjectCreator<>));
-            builder.RegisterGeneric(typeof(AutofacPluginObjectCreatorFactory<>))
-                   .As(typeof(IPluginObjectCreatorFactory<>));
             builder.RegisterGeneric(typeof(AutofacPluginObjectCreator<>))
                    .As(typeof(IPluginObjectCreator<>));
             builder.RegisterGeneric(typeof(PluginLoaderFactory<>))
@@ -89,8 +87,6 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
                    .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
             builder.RegisterType<PluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>()
                    .As<IPluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
-            builder.RegisterType<PluginObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>()
-                   .As<IPluginObjectCreatorFactory<IDependencyRegistrar<ContainerBuilder>>>(); //Instance per dependency
         }
     }
 }

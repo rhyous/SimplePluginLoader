@@ -36,12 +36,12 @@ namespace Rhyous.SimplePluginLoader
             }
         }
 
-        public List<T> CreatePluginObjects()
+        public List<T> CreatePluginObjects(IPluginObjectCreator<T> pluginObjectCreator)
         {
             var list = new List<T>();
             foreach (var plugin in this)
             {
-                var pluginObjects = plugin.CreatePluginObjects();
+                var pluginObjects = plugin.CreatePluginObjects(pluginObjectCreator);
                 if (pluginObjects != null && pluginObjects.Any())
                     list.AddRange(pluginObjects);
             }

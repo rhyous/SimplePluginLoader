@@ -3,6 +3,7 @@ using Moq;
 using Rhyous.SimplePluginLoader;
 using Rhyous.SimplePluginLoader.Tests.TestClasses;
 using System;
+using System.Collections.Generic;
 
 namespace Rhyous.SimplePluginLoader.Tests.Factories
 {
@@ -13,7 +14,6 @@ namespace Rhyous.SimplePluginLoader.Tests.Factories
 
         private Mock<IPluginLoaderSettings> _MockPluginLoaderSettings;
         private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
-        private Mock<IPlugin> _MockPlugin;
 
         [TestInitialize]
         public void TestInitialize()
@@ -22,253 +22,140 @@ namespace Rhyous.SimplePluginLoader.Tests.Factories
 
             _MockPluginLoaderSettings = _MockRepository.Create<IPluginLoaderSettings>();
             _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
-            _MockPlugin = _MockRepository.Create<IPlugin>();
         }
 
-        private PluginObjectCreator<T> CreatePluginObjectCreator<T>(bool nullLogger = false)
+
+        private PluginObjectCreator<T> CreatePluginObjectCreator<T>(bool nullLogger = false, Mock<IObjectCreator<T>> mockObjectCreator = null)
             where T : class
         {
+            mockObjectCreator = mockObjectCreator ?? _MockRepository.Create<IObjectCreator<T>>();
             return new PluginObjectCreator<T>(
                 _MockPluginLoaderSettings.Object,
-                nullLogger ? null : _MockPluginLoaderLogger.Object)
-            { Plugin = _MockPlugin.Object };
+                mockObjectCreator.Object,
+                nullLogger ? null : _MockPluginLoaderLogger.Object);
         }
 
-        #region Non-generic
+        #region Create
 
         [TestMethod]
-        public void ObjectCreator_Create_Constructorless_Model()
+        public void ObjectCreator_Create_TypeIsNull_ObjectCreatorReturns_Model()
         {
             // Arrange
-            var objectCreator = CreatePluginObjectCreator<Org>();
-
-            // Act
-            var result = objectCreator.Create();
-
-            // Assert
-            Assert.AreEqual(typeof(Org), result.GetType());
-            Assert.IsNotNull(result);
-            _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void ObjectCreator_Create_EmptyConstructor_Model()
-        {
-            // Arrange
-            var objectCreator = CreatePluginObjectCreator<Org2>();
-
-            // Act
-            var result = objectCreator.Create();
-
-            // Assert
-            Assert.AreEqual(typeof(Org2), result.GetType());
-            Assert.IsNotNull(result);
-            _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void ObjectCreator_Create_CreatorIsForParentEmptyConstructor_Model()
-        {
-            // Arrange
-            var objectCreator = CreatePluginObjectCreator<Org>();
-            var type = typeof(Org2);
-
-            // Act
-            var result = objectCreator.Create(type);
-
-            // Assert
-            Assert.AreEqual(typeof(Org2), result.GetType());
-            Assert.IsNotNull(result);
-            _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void ObjectCreator_Create_BaseCreateReturnsNull()
-        {
-            // Arrange
-            var objectCreator = CreatePluginObjectCreator<Org>();
-            var type = typeof(Org2);
-            objectCreator.BaseCreateMethod = (Type t) => { return null; };
-            _MockPluginLoaderSettings.Setup(m=>m.ThrowExceptionsOnLoad).Returns(true);
-            _MockPluginLoaderLogger.Setup(m=>m.Log(It.IsAny<PluginTypeLoadException>()));
-
-            // Act
-            // Assert
-            Assert.ThrowsException<PluginTypeLoadException>(() =>
-            {
-                objectCreator.Create(type);
-            });
-            _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void ObjectCreator_Create_BaseCreateReturnsNull_NullLogger()
-        {
-            // Arrange
-            var objectCreator = CreatePluginObjectCreator<Org>(true);
-            var type = typeof(Org2);
-            objectCreator.BaseCreateMethod = (Type t) => { return null; };
-            _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionsOnLoad).Returns(true);
-
-            // Act
-            // Assert
-            Assert.ThrowsException<PluginTypeLoadException>(() =>
-            {
-                objectCreator.Create(type);
-            });
-            _MockRepository.VerifyAll();
-        }
-        #endregion
-
-        #region Non-generic Interface parent
-
-        [TestMethod]
-        public void ObjectCreator_Create_InterfaceParent_Constructorless_Model()
-        {
-            // Arrange
-            var objectCreator = CreatePluginObjectCreator<IOrg>();
+            var mockObjectCreator = _MockRepository.Create<IObjectCreator<Org>>();
             var type = typeof(Org);
+            mockObjectCreator.Setup(m => m.Create(type)).Returns(new Org());
+            var objectCreator = CreatePluginObjectCreator<Org>(false, mockObjectCreator);
+            var mockPlugin = _MockRepository.Create<IPlugin<Org>>();
 
             // Act
-            var result = objectCreator.Create(type);
+            var result = objectCreator.Create(mockPlugin.Object);
 
             // Assert
-            Assert.AreEqual(typeof(Org), result.GetType());
             Assert.IsNotNull(result);
+            Assert.AreEqual(type, result.GetType());
             _MockRepository.VerifyAll();
         }
 
         [TestMethod]
-        public void ObjectCreator_Create_InterfaceParent_EmptyConstructor_Model()
+        public void ObjectCreator_Create_TypeIsNull_ObjectCreatorThrows_Model()
         {
             // Arrange
-            var objectCreator = CreatePluginObjectCreator<IOrg>();
-            var type = typeof(Org2);
-
-            // Act
-            var result = objectCreator.Create(type);
-
-            // Assert
-            Assert.AreEqual(typeof(Org2), result.GetType());
-            Assert.IsNotNull(result);
-            _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void ObjectCreator_Create_InterfaceParent_CreatorIsForParentEmptyConstructor_Model()
-        {
-            // Arrange
-            var objectCreator = CreatePluginObjectCreator<IOrg>();
-            var type = typeof(Org2);
-
-            // Act
-            var result = objectCreator.Create(type);
-
-            // Assert
-            Assert.AreEqual(typeof(Org2), result.GetType());
-            Assert.IsNotNull(result);
-            _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void ObjectCreator_Create_InterfaceParent_NoEmptyConstructor_Model_Setting_ThrowsExceptionOnLoad_True()
-        {
-            // Arrange
-            var objectCreator = CreatePluginObjectCreator<IRuntimePluginLoader<Org>>();
-            _MockPlugin.Setup(m => m.Name).Returns("MyPlugin");
-            Type type = typeof(TestPluginLoader);
-            _MockPluginLoaderLogger.Setup(m => m.Log(It.IsAny<PluginTypeLoadException>()));
-            _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionsOnLoad).Returns(true);
-            // Act
-            // Assert
-            Assert.ThrowsException<PluginTypeLoadException>(() =>
-            {
-                objectCreator.Create(type);
-            });
-            _MockRepository.VerifyAll();
-        }
-
-        [TestMethod]
-        public void ObjectCreator_Create_InterfaceParent_NoEmptyConstructor_Model_Setting_ThrowsExceptionOnLoad_False()
-        {
-            // Arrange
-            var objectCreator = CreatePluginObjectCreator<IRuntimePluginLoader<Org>>();
-            _MockPlugin.Setup(m=>m.Name).Returns("MyPlugin");
-            Type type = typeof(TestPluginLoader);
+            var mockObjectCreator = _MockRepository.Create<IObjectCreator<Org>>();
+            mockObjectCreator.Setup(m => m.Create(typeof(Org))).Throws(new MissingMethodException());
+            var objectCreator = CreatePluginObjectCreator<Org>(false, mockObjectCreator);
+            var mockPlugin = _MockRepository.Create<IPlugin<Org>>();
+            mockPlugin.Setup(m => m.Name).Returns("OrgPlugin");
             _MockPluginLoaderLogger.Setup(m => m.Log(It.IsAny<PluginTypeLoadException>()));
             _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionsOnLoad).Returns(false);
 
             // Act
-            var actual = objectCreator.Create(type);
+            var result = objectCreator.Create(mockPlugin.Object);
 
             // Assert
-            Assert.IsNull(actual);
-            _MockRepository.VerifyAll();
-        }
-        #endregion
-
-        #region Generic
-        [TestMethod]
-        public void ObjectCreator_Create_GenericWithParameter_Constructorless_Model()
-        {
-            // Arrange
-            var objectCreator = CreatePluginObjectCreator<Entity<Org>>();
-            var type = typeof(Entity<Org>);
-
-            // Act
-            var result = objectCreator.Create(type);
-
-            // Assert
-            Assert.AreEqual(typeof(Entity<Org>), result.GetType());
-            Assert.IsNotNull(result);
+            Assert.IsNull(result);
             _MockRepository.VerifyAll();
         }
 
         [TestMethod]
-        public void ObjectCreator_Create_GenericWithoutParameter_Constructorless_Model()
+        public void ObjectCreator_Create_TypeSpecified_ObjectCreatorReturns_Model()
         {
             // Arrange
-            var objectCreator = CreatePluginObjectCreator<Entity<Org>>();
-            var type = typeof(Entity<>);
+            var mockObjectCreator = _MockRepository.Create<IObjectCreator<Org>>();
+            var type = typeof(Org2);
+            mockObjectCreator.Setup(m => m.Create(typeof(Org2))).Returns(new Org2());
+            var objectCreator = CreatePluginObjectCreator<Org>(false, mockObjectCreator);
+            var mockPlugin = _MockRepository.Create<IPlugin<Org>>();
 
             // Act
-            var result = objectCreator.Create(type);
+            var result = objectCreator.Create(mockPlugin.Object, type);
 
             // Assert
-            Assert.AreEqual(typeof(Entity<Org>), result.GetType());
             Assert.IsNotNull(result);
+            Assert.AreEqual(type, result.GetType());
             _MockRepository.VerifyAll();
         }
 
         [TestMethod]
-        public void ObjectCreator_Create_Interface_GenericWithParameter_Constructorless_Model()
+        public void ObjectCreator_Create_TypeSpecified_ObjectCreatorThrows_Model()
         {
             // Arrange
-            var objectCreator = CreatePluginObjectCreator<IEntity<Org>>();
-            var type = typeof(Entity<Org>);
+            var mockObjectCreator = _MockRepository.Create<IObjectCreator<Org>>();
+            var type = typeof(Org2);
+            mockObjectCreator.Setup(m => m.Create(type)).Throws(new MissingMethodException());
+            var objectCreator = CreatePluginObjectCreator<Org>(false, mockObjectCreator);
+            var mockPlugin = _MockRepository.Create<IPlugin<Org>>();
+            mockPlugin.Setup(m => m.Name).Returns("OrgPlugin");
+            _MockPluginLoaderLogger.Setup(m => m.Log(It.IsAny<PluginTypeLoadException>()));
+            _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionsOnLoad).Returns(false);
 
             // Act
-            var result = objectCreator.Create(type);
+            var result = objectCreator.Create(mockPlugin.Object, type);
 
             // Assert
-            Assert.AreEqual(typeof(Entity<Org>), result.GetType());
-            Assert.IsNotNull(result);
+            Assert.IsNull(result);
             _MockRepository.VerifyAll();
         }
 
         [TestMethod]
-        public void ObjectCreator_Create_Interface_GenericWithoutParameter_Constructorless_Model()
+        public void ObjectCreator_Create_TypeSpecified_ObjectCreatorReturnsNull_Model()
         {
             // Arrange
-            var objectCreator = CreatePluginObjectCreator<IEntity<Org>>();
-            var type = typeof(Entity<>);
+            var mockObjectCreator = _MockRepository.Create<IObjectCreator<Org>>();
+            var type = typeof(Org2);
+            mockObjectCreator.Setup(m => m.Create(typeof(Org2))).Returns((Org)null);
+            var objectCreator = CreatePluginObjectCreator<Org>(false, mockObjectCreator);
+            var mockPlugin = _MockRepository.Create<IPlugin<Org>>(); 
+            mockPlugin.Setup(m => m.Name).Returns("OrgPlugin");
+            _MockPluginLoaderLogger.Setup(m => m.Log(It.IsAny<PluginTypeLoadException>()));
+            _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionsOnLoad).Returns(true);
 
             // Act
-            var result = objectCreator.Create(type);
-
             // Assert
-            Assert.AreEqual(typeof(Entity<Org>), result.GetType());
-            Assert.IsNotNull(result);
+            Assert.ThrowsException<PluginTypeLoadException>(() => 
+            {
+                objectCreator.Create(mockPlugin.Object, type);
+            });
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        public void ObjectCreator_Create_TypeSpecified_ObjectCreatorReturnsNull_LoggerNull_Model()
+        {
+            // Arrange
+            var mockObjectCreator = _MockRepository.Create<IObjectCreator<Org>>();
+            var type = typeof(Org2);
+            mockObjectCreator.Setup(m => m.Create(typeof(Org2))).Returns((Org)null);
+            var objectCreator = CreatePluginObjectCreator<Org>(true, mockObjectCreator);
+            var mockPlugin = _MockRepository.Create<IPlugin<Org>>();
+            mockPlugin.Setup(m => m.Name).Returns("OrgPlugin");
+            _MockPluginLoaderSettings.Setup(m => m.ThrowExceptionsOnLoad).Returns(true);
+
+            // Act
+            // Assert
+            Assert.ThrowsException<PluginTypeLoadException>(() =>
+            {
+                objectCreator.Create(mockPlugin.Object, type);
+            });
             _MockRepository.VerifyAll();
         }
         #endregion

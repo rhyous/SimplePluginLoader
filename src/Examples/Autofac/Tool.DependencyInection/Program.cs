@@ -13,6 +13,8 @@ namespace Tool.DependencyInjection
         {
             var builder = new ContainerBuilder();
             builder.RegisterModule<SimplePluginLoaderModule>();
+            builder.RegisterGeneric(typeof(CustomPluginObjectCreator<>))
+                   .As(typeof(IPluginObjectCreator<>));
 
             builder.RegisterInstance(new StaticPluginPaths(new[] { "Plugins" }))
                    .As<IPluginPaths>();
@@ -33,13 +35,27 @@ namespace Tool.DependencyInjection
             {
                 var tools = new List<ITool> { new Hammer() };
 
-                var pluginLoader = globalScope.Resolve<IPluginLoader<ITool>>();
-                var plugins = pluginLoader.LoadPlugins();
-                tools.AddRange(plugins.CreatePluginObjects());
+                using (var iToolScope = globalScope.BeginLifetimeScope(b=>
+                {
+                    b.RegisterType<ScopedSetting1>().As<IScopedSetting>();
+                }))
+                {
+                    var pluginLoader = iToolScope.Resolve<IPluginLoader<ITool>>();
+                    var pluginObjectCreator = iToolScope.Resolve<IPluginObjectCreator<ITool>>();
+                    var plugins = pluginLoader.LoadPlugins();
+                    tools.AddRange(plugins.CreatePluginObjects(pluginObjectCreator));
+                }
 
-                var pluginLoaderCaveMan = globalScope.Resolve<IPluginLoader<ICaveManTool<Hammer>>>();
-                var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
-                tools.AddRange(caveManPlugins.CreatePluginObjects());
+                using (var caveManScope = globalScope.BeginLifetimeScope(b =>
+                {
+                    b.RegisterType<ScopedSetting2>().As<IScopedSetting>();
+                }))
+                {
+                    var pluginLoaderCaveMan = caveManScope.Resolve<IPluginLoader<ICaveManTool<Hammer>>>();
+                    var pluginObjectCreatorCaveMan = caveManScope.Resolve<IPluginObjectCreator<ICaveManTool<Hammer>>>();
+                    var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
+                    tools.AddRange(caveManPlugins.CreatePluginObjects(pluginObjectCreatorCaveMan));
+                }
 
                 ShowPrompt(tools);
                 int input = ReadLine(tools);

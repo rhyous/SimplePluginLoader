@@ -17,18 +17,21 @@ namespace Rhyous.SimplePluginLoader
         private readonly IAppDomain _AppDomain;
         private readonly IPluginLoaderSettings _Settings;
         private readonly IPluginLoaderFactory<T> _PluginLoaderFactory;
+        private readonly IPluginObjectCreator<T> _PluginObjectCreator;
         private readonly IPluginPaths _PluginPaths;
         protected readonly IPluginLoaderLogger _Logger;
 
         public RuntimePluginLoaderBase(IAppDomain appDomain,
                                        IPluginLoaderSettings settings,
                                        IPluginLoaderFactory<T> pluginLoaderFactory,
+                                       IPluginObjectCreator<T> pluginObjectCreator,
                                        IPluginPaths pluginPaths = null,
                                        IPluginLoaderLogger logger = null)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _PluginLoaderFactory = pluginLoaderFactory ?? throw new ArgumentNullException(nameof(pluginLoaderFactory));
+            _PluginObjectCreator = pluginObjectCreator ?? throw new ArgumentNullException(nameof(pluginObjectCreator));
             pluginPaths = pluginPaths ?? new AppPluginPaths(_Settings.AppName, GetDefaultPluginDirectory(), _AppDomain, _Logger);
             _PluginPaths = string.IsNullOrWhiteSpace(PluginSubFolder)
                          ? pluginPaths
@@ -96,9 +99,9 @@ namespace Rhyous.SimplePluginLoader
             return plugins;
         }
 
-        public virtual IList<T> CreatePluginObjects()
+        public virtual IList<T> CreatePluginObjects(IPluginObjectCreator<T> pluginObjectCreator = null)
         {
-            return PluginCollection?.CreatePluginObjects();
+            return PluginCollection?.CreatePluginObjects(pluginObjectCreator ?? _PluginObjectCreator);
         }
     }
 }

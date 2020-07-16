@@ -64,7 +64,6 @@ namespace Rhyous.SimplePluginLoader.Tests
             string appName = "MyApp";
             AppPluginPaths paths = null;
             var mockSettings = _MockRepository.Create<IPluginLoaderSettings>();
-            var mockPluginObjectCreatorFactory = _MockRepository.Create<IPluginObjectCreatorFactory<IOrg>>();
             var mockAssemblyCache = _MockRepository.Create<IAssemblyCache>();
             var mockAssemblyNameReader = _MockRepository.Create<IAssemblyNameReader>();
             var mockPluginDependencyResolverObjectCreator = _MockRepository.Create<IPluginDependencyResolverObjectCreator>();
@@ -79,7 +78,6 @@ namespace Rhyous.SimplePluginLoader.Tests
                 _MockAppDomain.Object,
                 mockSettings.Object,
                 _MockTypeLoader.Object,
-                mockPluginObjectCreatorFactory.Object,
                 mockAssemblyCache.Object,
                 mockAssemblyNameReader.Object,
                 _MockAssemblyLoader.Object,

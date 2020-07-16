@@ -22,22 +22,25 @@ namespace Rhyous.SimplePluginLoader.Factories
             if (Singletons == null)
                 Singletons = new SingletonObjects();
             var typeLoader = new TypeLoader<T>(Singletons.Settings, Singletons.Logger);
-            var toolPluginObjectCreatorFactory = new PluginObjectCreatorFactory<T>(Singletons.Settings, Singletons.Logger);
-            var pluginCacheFactory = new PluginCacheFactory<T>(typeLoader, toolPluginObjectCreatorFactory, 
+            var pluginCacheFactory = new PluginCacheFactory<T>(typeLoader, 
                                                                Singletons.PluginDependencyResolverFactory,
-                                                               Singletons.AssemblyLoader, Singletons.Logger);
+                                                               Singletons.AssemblyLoader, 
+                                                               Singletons.Logger);
             var pluginLoaderFactory = new PluginLoaderFactory<T>(pluginCacheFactory);
+            var pluginObjectCreator = new PluginObjectCreator<T>(Singletons.Settings, new ObjectCreator<T>(), Singletons.Logger);
             IRuntimePluginLoader<T> runtimePluginLoader = (dependencies == null || !dependencies.Any())
                 ? Activator.CreateInstance(typeof(TRuntimePluginLoader),
                                            Singletons.AppDomain,
                                            Singletons.Settings,
                                            pluginLoaderFactory,
+                                           pluginObjectCreator,
                                            Singletons.PluginPaths,
                                            Singletons.Logger) as IRuntimePluginLoader<T>
                 : Activator.CreateInstance(typeof(TRuntimePluginLoader),
                                            Singletons.AppDomain,
                                            Singletons.Settings,
                                            pluginLoaderFactory,
+                                           pluginObjectCreator,
                                            Singletons.PluginPaths,
                                            Singletons.Logger,
                                            dependencies) as IRuntimePluginLoader<T>;

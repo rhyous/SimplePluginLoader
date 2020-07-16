@@ -40,6 +40,6 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         IPluginLoader<T> PluginLoader { get; }
 
-        IList<T> CreatePluginObjects();
+        IList<T> CreatePluginObjects(IPluginObjectCreator<T> pluginObjectCreator = null);
     }
 }

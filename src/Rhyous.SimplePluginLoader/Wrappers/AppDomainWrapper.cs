@@ -52,8 +52,7 @@ namespace Rhyous.SimplePluginLoader
                 _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.GetFixedDeclaringType().Name} unsubscribed to AppDomain.AssemblyResolve.");
                 _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Total subscriptions: {AssemblyResolveSubscriberCount}");
             }
-        }
-        private event ResolveEventHandler _AssemblyResolve;
+        } private event ResolveEventHandler _AssemblyResolve;
 
         internal Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
         {

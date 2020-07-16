@@ -14,7 +14,9 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
         Mock<IPlugin> _MockPlugin;
         Mock<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>> _MockPluginLoader;
         Mock<IPlugin<IDependencyRegistrar<ContainerBuilder>>> _MockPluginDependencyRegistrar;
-        Mock<IDependencyRegistrar<ContainerBuilder>> _MockDependencyRegistrar;
+        Mock<IPluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>> _MockPluginObjectCreator;
+
+        IContainer _Container;
 
         [TestInitialize]
         public void TestInitialize()
@@ -23,7 +25,14 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
             _MockPlugin = _MockRepository.Create<IPlugin>();
             _MockPluginLoader = _MockRepository.Create<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
             _MockPluginDependencyRegistrar = _MockRepository.Create<IPlugin<IDependencyRegistrar<ContainerBuilder>>>();
-            _MockDependencyRegistrar = _MockRepository.Create<IDependencyRegistrar<ContainerBuilder>>();
+            _MockPluginObjectCreator = _MockRepository.Create<IPluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>();
+
+            var builder = new ContainerBuilder();
+            builder.RegisterInstance(_MockPluginLoader.Object)
+                   .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
+            builder.RegisterInstance(_MockPluginObjectCreator.Object)
+                   .As<IPluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>();
+            _Container = builder.Build();
         }
 
         private PluginDependencyRegistrar CreatePluginDependencyRegistrar(IComponentContext context)
@@ -44,19 +53,18 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
         public void PluginDependencyRegistrar_RegisterPluginDependencies_NoPluginReturned()
         {
             // Arrange
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(_MockPluginLoader.Object)
-                   .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            var container = builder.Build();
-            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(container);
+            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(_Container);
             Type type = typeof(Organization);
 
             var pluginFullPath = @"c:\Plugins\MyPlugin\my.dll";
             _MockPlugin.Setup(m => m.FullPath).Returns(pluginFullPath);
             _MockPluginLoader.Setup(m => m.LoadPlugin(pluginFullPath)).Returns((IPlugin<IDependencyRegistrar<ContainerBuilder>>)null);
-            
+
             // Act
-            pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            _Container.BeginLifetimeScope(builder => 
+            {
+                pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            });
 
             // Assert
             _MockRepository.VerifyAll();
@@ -66,11 +74,7 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
         public void PluginDependencyRegistrar_RegisterPluginDependencies_PluginTypesEmpty()
         {
             // Arrange
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(_MockPluginLoader.Object)
-                   .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            var container = builder.Build();
-            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(container);
+            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(_Container);
             Type type = typeof(Organization);
 
             var pluginFullPath = @"c:\Plugins\MyPlugin\my.dll";
@@ -80,7 +84,10 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
             _MockPluginDependencyRegistrar.Setup(m => m.PluginTypes).Returns(types);
 
             // Act
-            pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            _Container.BeginLifetimeScope(builder =>
+            {
+                pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            });
 
             // Assert
             _MockRepository.VerifyAll();
@@ -90,11 +97,7 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
         public void PluginDependencyRegistrar_RegisterPluginDependencies_PluginTypesNull()
         {
             // Arrange
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(_MockPluginLoader.Object)
-                   .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            var container = builder.Build();
-            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(container);
+            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(_Container);
             Type type = typeof(Organization);
 
             var pluginFullPath = @"c:\Plugins\MyPlugin\my.dll";
@@ -103,7 +106,10 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
             _MockPluginDependencyRegistrar.Setup(m => m.PluginTypes).Returns((List<Type>)null);
 
             // Act
-            pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            _Container.BeginLifetimeScope(builder =>
+            {
+                pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            });
 
             // Assert
             _MockRepository.VerifyAll();
@@ -113,11 +119,7 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
         public void PluginDependencyRegistrar_RegisterPluginDependencies_PluginCreatesNullObjects()
         {
             // Arrange
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(_MockPluginLoader.Object)
-                   .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            var container = builder.Build();
-            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(container);
+            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(_Container);
             Type type = typeof(Organization);
 
             var pluginFullPath = @"c:\Plugins\MyPlugin\my.dll";
@@ -125,10 +127,14 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
             _MockPluginLoader.Setup(m => m.LoadPlugin(pluginFullPath)).Returns(_MockPluginDependencyRegistrar.Object);
             var types = new List<Type> { typeof(FakeDependencyRegistrar) };
             _MockPluginDependencyRegistrar.Setup(m => m.PluginTypes).Returns(types);
-            _MockPluginDependencyRegistrar.Setup(m => m.CreatePluginObjects()).Returns((List<IDependencyRegistrar<ContainerBuilder>>)null);
+            _MockPluginDependencyRegistrar.Setup(m => m.CreatePluginObjects(It.IsAny< IPluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>()))
+                                          .Returns((List<IDependencyRegistrar<ContainerBuilder>>)null);
 
             // Act
-            pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            _Container.BeginLifetimeScope(builder =>
+            {
+                pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            });
 
             // Assert
             _MockRepository.VerifyAll();
@@ -138,11 +144,7 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
         public void PluginDependencyRegistrar_RegisterPluginDependencies_Works()
         {
             // Arrange
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(_MockPluginLoader.Object)
-                   .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            var container = builder.Build();
-            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(container);
+            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(_Container);
             Type type = typeof(Organization);
 
             var pluginFullPath = @"c:\Plugins\MyPlugin\my.dll";
@@ -152,10 +154,14 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
             _MockPluginDependencyRegistrar.Setup(m => m.PluginTypes).Returns(types);
             var fakeDependencyRegistrar = new FakeDependencyRegistrar();
             var list = new List<IDependencyRegistrar<ContainerBuilder>> { fakeDependencyRegistrar };
-            _MockPluginDependencyRegistrar.Setup(m => m.CreatePluginObjects()).Returns(list);
+            _MockPluginDependencyRegistrar.Setup(m => m.CreatePluginObjects(It.IsAny<IPluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>()))
+                                          .Returns(list);
 
             // Act
-            pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            _Container.BeginLifetimeScope(builder =>
+            {
+                pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            });
 
             // Assert
             Assert.IsTrue(fakeDependencyRegistrar.RegisterWasCalled);
@@ -166,11 +172,7 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
         public void PluginDependencyRegistrar_RegisterPluginDependencies_TypeFromDifferentAssembly_Works()
         {
             // Arrange
-            var builder = new ContainerBuilder();
-            builder.RegisterInstance(_MockPluginLoader.Object)
-                   .As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            var container = builder.Build();
-            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(container);
+            var pluginDependencyRegistrar = CreatePluginDependencyRegistrar(_Container);
             Type type = typeof(string);
 
             var pluginFullPath = @"c:\Plugins\MyPlugin\my.dll";
@@ -180,10 +182,13 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Registration
             _MockPluginDependencyRegistrar.Setup(m => m.PluginTypes).Returns(types);
             var fakeDependencyRegistrar = new FakeDependencyRegistrar();
             var list = new List<IDependencyRegistrar<ContainerBuilder>> { fakeDependencyRegistrar };
-            _MockPluginDependencyRegistrar.Setup(m => m.CreatePluginObjects()).Returns(list);
+            _MockPluginDependencyRegistrar.Setup(m => m.CreatePluginObjects(It.IsAny<IPluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>())).Returns(list);
 
             // Act
-            pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            _Container.BeginLifetimeScope(builder =>
+            {
+                pluginDependencyRegistrar.RegisterPluginDependencies(builder, _MockPlugin.Object, type);
+            });
 
             // Assert
             Assert.IsTrue(fakeDependencyRegistrar.RegisterWasCalled);

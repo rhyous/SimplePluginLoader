@@ -4,10 +4,18 @@ using System.Linq;
 
 namespace Rhyous.SimplePluginLoader.DependencyInjection
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class PluginDependencyRegistrar : IPluginDependencyRegistrar
     {
         private readonly IComponentContext _ComponentContext;
 
+        /// <summary>
+        /// The constructor for PluginDependencyRegistrar{T}
+        /// </summary>
+        /// <param name="componentContext"></param>
         public PluginDependencyRegistrar(IComponentContext componentContext)
         {
             _ComponentContext = componentContext;
@@ -29,7 +37,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             {
                 if (registrarPlugin.PluginTypes == null || !registrarPlugin.PluginTypes.Any())
                     return;
-                var registrars = registrarPlugin.CreatePluginObjects();
+                var registrars = registrarPlugin.CreatePluginObjects(_ComponentContext.Resolve<IPluginObjectCreator<IDependencyRegistrar<ContainerBuilder>>>());
                 if (registrars == null)
                     return;
                 foreach (var dependencyRegistrar in registrars)

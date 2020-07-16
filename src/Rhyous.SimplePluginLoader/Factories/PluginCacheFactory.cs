@@ -6,19 +6,16 @@ namespace Rhyous.SimplePluginLoader
     public class PluginCacheFactory<T> : CacheFactory<string, IPlugin<T>>, IPluginCacheFactory<T>
     {
         private readonly ITypeLoader<T> _TypeLoader;
-        private readonly IPluginObjectCreatorFactory<T> _PluginObjectCreatorFactory;
         private readonly IPluginDependencyResolverCacheFactory _DependencyResolverCacheFactory;
         private readonly IAssemblyLoader _AssemblyLoader;
 
         public PluginCacheFactory(ITypeLoader<T> typeLoader,
-                                  IPluginObjectCreatorFactory<T> pluginObjectCreatorFactory,
                                   IPluginDependencyResolverCacheFactory dependencyResolverCacheFactory,
                                   IAssemblyLoader assemblyLoader,
                                   IPluginLoaderLogger logger)
                     : base(null, logger)
         {
             _TypeLoader = typeLoader;
-            _PluginObjectCreatorFactory = pluginObjectCreatorFactory;
             _DependencyResolverCacheFactory = dependencyResolverCacheFactory;
             _AssemblyLoader = assemblyLoader;
         }
@@ -46,7 +43,7 @@ namespace Rhyous.SimplePluginLoader
             if (pluginDir.EndsWith(binDir, StringComparison.OrdinalIgnoreCase))
                 pluginDir = pluginDir.Substring(0, pluginDir.Length - binDir.Length);
             var resolver = _DependencyResolverCacheFactory.Create(pluginDir, typeof(PluginDependencyResolver));
-            plugin = new Plugin<T>(_TypeLoader, _PluginObjectCreatorFactory.Create(), resolver, _AssemblyLoader)
+            plugin = new Plugin<T>(_TypeLoader, resolver, _AssemblyLoader)
             {
                 Directory = Path.GetDirectoryName(pluginFile),
                 File = Path.GetFileName(pluginFile)

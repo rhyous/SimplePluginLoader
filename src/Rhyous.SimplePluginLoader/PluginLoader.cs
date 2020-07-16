@@ -20,7 +20,6 @@ namespace Rhyous.SimplePluginLoader
                              IAppDomain appDomain = null,
                              IPluginLoaderSettings settings = null,
                              ITypeLoader<T> typeLoader = null,
-                             IPluginObjectCreatorFactory<T> pluginObjectCreatorFactory = null,
                              IAssemblyCache assemblyDictionary = null,
                              IAssemblyNameReader assemblyNameReader = null,
                              IAssemblyLoader assemblyLoader = null,
@@ -33,13 +32,12 @@ namespace Rhyous.SimplePluginLoader
             paths = paths ?? new AppPluginPaths(appName, null, appDomain,  logger);
             settings = settings ?? PluginLoaderSettings.Default;
             typeLoader = typeLoader ?? new TypeLoader<T>(settings, logger);
-            pluginObjectCreatorFactory = pluginObjectCreatorFactory ?? new PluginObjectCreatorFactory<T>(settings, logger);
             assemblyNameReader = assemblyNameReader ?? new AssemblyNameReader();
             assemblyDictionary = assemblyDictionary ?? new AssemblyCache(appDomain, assemblyNameReader, logger);
             assemblyLoader = assemblyLoader ?? new AssemblyLoader(appDomain, settings, assemblyDictionary, assemblyNameReader, logger);
             pluginDependencyResolverObjectCreator = pluginDependencyResolverObjectCreator ?? new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, logger);
             pluginDependencyResolverCacheFactory = pluginDependencyResolverCacheFactory ?? new PluginDependencyResolverCacheFactory(pluginDependencyResolverObjectCreator, logger);
-            pluginCacheFactory = pluginCacheFactory ?? new PluginCacheFactory<T>(typeLoader, pluginObjectCreatorFactory, pluginDependencyResolverCacheFactory, assemblyLoader,  logger);
+            pluginCacheFactory = pluginCacheFactory ?? new PluginCacheFactory<T>(typeLoader, pluginDependencyResolverCacheFactory, assemblyLoader,  logger);
             return new PluginLoader<T>(paths, pluginCacheFactory);
         }
         #endregion
