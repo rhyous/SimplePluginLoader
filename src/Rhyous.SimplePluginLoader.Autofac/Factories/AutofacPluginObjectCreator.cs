@@ -32,6 +32,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
         /// Create an instance of the given type using Autofac with 
         /// Just-in-Time (JIT) regisration and resolving.
         /// </summary>
+        /// <param name="plugin">The plugin</param>
         /// <param name="type">The type to create.</param>
         /// <returns>An instantiated instance of T.</returns>
         public T Create(IPlugin<T> plugin, Type type)

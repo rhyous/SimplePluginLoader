@@ -51,6 +51,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Wrappers
 
         #region TryLoad
         [TestMethod]
+        [TestCategory("LocalOnly")] // Some build agents don't like loading dlls
         public void AppDomainWrapper_TryLoad_RawAssembly()
         {
             // Arrange
@@ -155,6 +156,8 @@ namespace Rhyous.SimplePluginLoader.Tests.Wrappers
         }
 
         [TestMethod]
+
+        [TestCategory("LocalOnly")] // Some build agents don't like loading dlls
         public void AppDomainWrapper_TryLoad_Assembly_and_Pdb_FilePaths()
         {
             // Arrange

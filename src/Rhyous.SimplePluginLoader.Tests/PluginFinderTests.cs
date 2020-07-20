@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Rhyous.Collections;
 using Rhyous.SimplePluginLoader;
+using Rhyous.UnitTesting;
 using System;
 
 namespace Rhyous.SimplePluginLoader.Tests
@@ -14,6 +15,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         private Mock<IPluginLoader<IOrg>> _MockPluginLoader;
         private Mock<IPluginObjectCreator<IOrg>> _MockPluginObjectCreator;
         private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
+        private Mock<IDirectory> _MockDirector;
 
         [TestInitialize]
         public void TestInitialize()
@@ -23,6 +25,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockPluginLoader = _MockRepository.Create<IPluginLoader<IOrg>>();
             _MockPluginObjectCreator = _MockRepository.Create<IPluginObjectCreator<IOrg>>();
             _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
+            _MockDirector = _MockRepository.Create<IDirectory>();
         }
 
         private PluginFinder<IOrg> CreatePluginFinder()
@@ -30,28 +33,50 @@ namespace Rhyous.SimplePluginLoader.Tests
             return new PluginFinder<IOrg>(
                 _MockPluginLoader.Object,
                 _MockPluginObjectCreator.Object,
-                _MockPluginLoaderLogger.Object);
+                _MockPluginLoaderLogger.Object)
+            {
+                Directory = _MockDirector.Object
+            };
         }
 
         [TestMethod]
-        public void PluginFinder_FindPlugin_StateUnderTest_ExpectedBehavior()
+        [StringIsNullEmptyOrWhitespace]
+        public void PluginFinder_FindPlugin_NameNullEmptyOrWhitespace_ExpectedBehavior(string s)
         {
             // Arrange
             var pluginFinder = CreatePluginFinder();
-            string pluginName = null;
-            string dir = null;
+            string pluginName = s;
+            string dir = @"C:\some\path";
             IPluginObjectCreator<IOrg> pluginObjectCreator = null;
 
             // Act
             var result = pluginFinder.FindPlugin(pluginName, dir, pluginObjectCreator);
 
             // Assert
-            Assert.Fail();
+            Assert.IsNull(result);
             _MockRepository.VerifyAll();
         }
 
         [TestMethod]
-        public void PluginFinder_Dispose_StateUnderTest_ExpectedBehavior()
+        [StringIsNullEmptyOrWhitespace]
+        public void PluginFinder_FindPlugin_DirNullEmptyOrWhitespace_ExpectedBehavior(string s)
+        {
+            // Arrange
+            var pluginFinder = CreatePluginFinder();
+            string pluginName = "MyPlugin";
+            string dir = s;
+            IPluginObjectCreator<IOrg> pluginObjectCreator = null;
+
+            // Act
+            var result = pluginFinder.FindPlugin(pluginName, dir, pluginObjectCreator);
+
+            // Assert
+            Assert.IsNull(result);
+            _MockRepository.VerifyAll();
+        }
+
+        [TestMethod]
+        public void PluginFinder_Dispose_Test()
         {
             // Arrange
             var pluginFinder = CreatePluginFinder();

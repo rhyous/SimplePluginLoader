@@ -62,8 +62,8 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockRepository.VerifyAll();
         }
 
-
         [TestMethod]
+        [TestCategory("LocalOnly")] // Some build agents don't like loading dlls
         public void AssemblyNameReader_GetAssemblyName_FileExists_Test()
         {
             // Arrange
@@ -73,7 +73,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockFile.Setup(m => m.Exists(dll)).Returns(true);
 
             // Act
-            var result = assemblyNameReader.GetAssemblyName(dll);
+            var result = assemblyNameReader.GetAssemblyName(dll); // This loads a dll
 
             // Assert
             Assert.IsNotNull(result);

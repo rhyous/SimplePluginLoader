@@ -5,9 +5,8 @@ using System.Linq;
 namespace Rhyous.SimplePluginLoader.DependencyInjection
 {
     /// <summary>
-    /// 
+    /// This class registers dependencies of a plugin with Autofac.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class PluginDependencyRegistrar : IPluginDependencyRegistrar
     {
         private readonly IComponentContext _ComponentContext;

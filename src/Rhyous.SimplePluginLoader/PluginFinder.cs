@@ -35,6 +35,10 @@ namespace Rhyous.SimplePluginLoader
         /// <returns>A found plugin of type T.</returns>
         public T FindPlugin(string pluginName, string dir, IPluginObjectCreator<T> pluginObjectCreator = null)
         {
+            if (string.IsNullOrWhiteSpace(pluginName))
+                return null;
+            if (string.IsNullOrWhiteSpace(dir))
+                return null;
             _Logger?.WriteLine(PluginLoaderLogLevel.Info, $"Attempting to find plugin: {pluginName}; from path: {dir}");
             var plugins = _PluginLoader.LoadPlugins(Directory.GetFiles(dir, DllExtension));
             if (plugins == null || !plugins.Any())
@@ -91,6 +95,13 @@ namespace Rhyous.SimplePluginLoader
             _Disposed = true;
         }
         #endregion
+
+        internal IDirectory Directory
+        {
+            get { return _Directory ?? (_Directory = new DirectoryWrapper()); }
+            set { _Directory = value; }
+        } private IDirectory _Directory;
+
     }
 }
 
