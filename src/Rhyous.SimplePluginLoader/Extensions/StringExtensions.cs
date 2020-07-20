@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Rhyous.SimplePluginLoader.Extensions
 {
+    /// <summary>
+    /// These come from Rhyous.StringLibrary and are unit tested in that project.
+    /// We copied the code so as not to have any dependency on another NuGet package.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
     internal static class StringExtensions
     {
         internal static T ToEnum<T>(this string str, T defaultValue, bool ignoreCase = true, bool allowNumeric = true)

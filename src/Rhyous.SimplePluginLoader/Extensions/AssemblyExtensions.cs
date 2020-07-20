@@ -9,6 +9,8 @@ namespace Rhyous.SimplePluginLoader
     {
         public static IEnumerable<Type> TryGetTypes(this IAssembly assembly, bool throwException, IPluginLoaderLogger logger)
         {
+            if (assembly == null)
+                return null;
             // I hate using a catch but assembly doesn't have a safe way to get Types
             // that don't crash.
             try { return assembly.GetTypes(); }
@@ -16,7 +18,7 @@ namespace Rhyous.SimplePluginLoader
             {
                 foreach (var loaderException in ex.LoaderExceptions)
                 {
-                    logger.Log(loaderException);
+                    logger?.Log(loaderException);
                 }
                 if (throwException)
                 {

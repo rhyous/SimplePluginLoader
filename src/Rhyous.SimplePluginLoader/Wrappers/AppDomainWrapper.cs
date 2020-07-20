@@ -1,138 +1,132 @@
 ﻿using System;
-using System.Configuration.Assemblies;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
-using System.Security.Principal;
 
 namespace Rhyous.SimplePluginLoader
 {
+    /// <summary>
+    /// This method wraps an AppDomain, allowing for interface-based design in consumers of an AppDomain.
+    /// </summary>
+    /// <remarks>This wraps the events by subscribing and then hosting its own copy of each event. This code does
+    /// not provide a way to trigger such events, as doing so would trigger only subscribers to the 
+    /// wrapper and not subscribers directly the events in the concrete AppDomain being wrapped.</remarks>
     public class AppDomainWrapper : IAppDomain
     {
         private readonly AppDomain _AppDomain;
-        public AppDomainWrapper(AppDomain appDomain) { _AppDomain = appDomain; }
+        private readonly IPluginLoaderLogger _Logger;
+        private readonly ConcurrentDictionary<ResolveEventHandler, byte> Handlers = new ConcurrentDictionary<ResolveEventHandler, byte>();
 
+        public AppDomainWrapper(AppDomain appDomain, IPluginLoaderLogger logger = null)
+        {
+            _AppDomain = appDomain;
+            _Logger = logger;
+            _AppDomain.AssemblyResolve += OnAssemblyResolve;
+        }
+
+        [ExcludeFromCodeCoverage]
         public string BaseDirectory => _AppDomain.BaseDirectory;
 
-        public string DynamicDirectory => _AppDomain.DynamicDirectory;
-
-        public string FriendlyName => _AppDomain.FriendlyName;
-
-        public int Id => _AppDomain.Id;
-
-        public bool IsFullyTrusted => _AppDomain.IsFullyTrusted;
-
-        public bool IsHomogenous => _AppDomain.IsHomogenous;
-
-        public bool ShadowCopyFiles => _AppDomain.ShadowCopyFiles;
-
-        public string RelativeSearchPath => _AppDomain.RelativeSearchPath;
-
-        public TimeSpan MonitoringTotalProcessorTime => _AppDomain.MonitoringTotalProcessorTime;
-
-        public long MonitoringSurvivedMemorySize => _AppDomain.MonitoringSurvivedMemorySize;
-
-        public long MonitoringTotalAllocatedMemorySize => _AppDomain.MonitoringTotalAllocatedMemorySize;
-
         #region Events
-        public event UnhandledExceptionEventHandler UnhandledException
-        {
-            add { _AppDomain.UnhandledException += value; }
-            remove { _AppDomain.UnhandledException -= value; }
-        }
-        public event ResolveEventHandler TypeResolve
-        {
-            add { _AppDomain.TypeResolve += value; }
-            remove { _AppDomain.TypeResolve -= value; }
-        }
-        public event AssemblyLoadEventHandler AssemblyLoad
-        {
-            add { _AppDomain.AssemblyLoad += value; }
-            remove { _AppDomain.AssemblyLoad -= value; }
-        }
 
         public event ResolveEventHandler AssemblyResolve
         {
-            add { _AppDomain.AssemblyResolve += value; }
-            remove { _AppDomain.AssemblyResolve -= value; }
+            add
+            {
+                if (Handlers.TryGetValue(value, out _))
+                {
+                    _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.GetFixedDeclaringType().Name} tried to subscribed to AppDomain.AssemblyResolve, but was already subscribed.");
+                    return;
+                }
+                _AssemblyResolve += value;
+                Handlers.TryAdd(value, 1);
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.GetFixedDeclaringType().Name} subscribed to AppDomain.AssemblyResolve.");
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Total subscriptions: {AssemblyResolveSubscriberCount}");
+            }
+            remove
+            {
+                _AssemblyResolve -= value;
+                Handlers.TryRemove(value, out _);
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"{value.Method.GetFixedDeclaringType().Name} unsubscribed to AppDomain.AssemblyResolve.");
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, $"Total subscriptions: {AssemblyResolveSubscriberCount}");
+            }
+        } private event ResolveEventHandler _AssemblyResolve;
+
+        internal Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            if (_AssemblyResolve == null)
+                return null;
+            foreach (ResolveEventHandler handler in _AssemblyResolve.GetInvocationList())
+            {
+                var assembly = handler.Invoke(sender, args);
+                if (assembly != null)
+                    return assembly;
+            }
+            return null;
         }
 
-        public event EventHandler DomainUnload
+        public int AssemblyResolveSubscriberCount => _AssemblyResolve?.GetInvocationList().Length ?? 0;
+        #endregion
+
+        public IAssembly[] GetAssemblies() => _AppDomain.GetAssemblies().Select(a => new AssemblyWrapper(a)).ToArray();
+
+        [ExcludeFromCodeCoverage]
+        public IAssembly Load(byte[] rawAssembly, byte[] rawSymbolStore)
+            => new AssemblyWrapper(_AppDomain.Load(rawAssembly, rawSymbolStore));
+
+        [ExcludeFromCodeCoverage]
+        public IAssembly Load(byte[] rawAssembly) => new AssemblyWrapper(_AppDomain.Load(rawAssembly));
+
+        #region Custom Methods
+        public IAssembly TryLoad(byte[] rawAssembly)
         {
-            add { _AppDomain.DomainUnload += value; }
-            remove { _AppDomain.DomainUnload -= value; }
+            try { return Load(rawAssembly); }
+            catch (Exception e)
+            {
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
+                return null;
+            }
         }
 
-        public event EventHandler<FirstChanceExceptionEventArgs> FirstChanceException
+        public IAssembly TryLoad(byte[] rawAssembly, byte[] rawSymbolStore)
         {
-            add { _AppDomain.FirstChanceException += value; }
-            remove { _AppDomain.FirstChanceException -= value; }
+            try { return Load(rawAssembly, rawSymbolStore); }
+            catch (Exception e)
+            {
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, e.Message);
+                return null;
+            }
         }
 
-        public event EventHandler ProcessExit
+        public IAssembly TryLoad(string dll, string pdb)
         {
-            add { _AppDomain.ProcessExit += value; }
-            remove { _AppDomain.ProcessExit -= value; }
-        }
-
-        public event ResolveEventHandler ReflectionOnlyAssemblyResolve
-        {
-            add { _AppDomain.ReflectionOnlyAssemblyResolve += value; }
-            remove { _AppDomain.ReflectionOnlyAssemblyResolve -= value; }
-        }
-
-        public event ResolveEventHandler ResourceResolve
-        {
-            add { _AppDomain.ResourceResolve += value; }
-            remove { _AppDomain.ResourceResolve -= value; }
+            if (File.Exists(dll))
+            {
+                var assembly = File.Exists(pdb)
+                    ? TryLoad(File.ReadAllBytes(dll), File.ReadAllBytes(pdb)) // Allow debugging
+                    : TryLoad(File.ReadAllBytes(dll));
+                return assembly;
+            }
+            return null;
         }
         #endregion
 
-        public string ApplyPolicy(string assemblyName) => _AppDomain.ApplyPolicy(assemblyName);
-        
-        public int ExecuteAssembly(string assemblyFile, string[] args, byte[] hashValue, AssemblyHashAlgorithm hashAlgorithm)
+        #region Wrappers -  While this could come from the constructor, these are only used in Unit Tests, so we hide them internally
+        [ExcludeFromCodeCoverage]
+        internal IDirectory Directory
         {
-            return _AppDomain.ExecuteAssembly(assemblyFile, args, hashValue, hashAlgorithm);
-        }
+            get { return _Directory ?? (_Directory = DirectoryWrapper.Instance); }
+            set { _Directory = value; }
+        } private IDirectory _Directory;
 
-        public int ExecuteAssembly(string assemblyFile) => _AppDomain.ExecuteAssembly(assemblyFile);
-
-        public int ExecuteAssembly(string assemblyFile, string[] args) => _AppDomain.ExecuteAssembly(assemblyFile, args);
-
-        public int ExecuteAssemblyByName(string assemblyName) => _AppDomain.ExecuteAssemblyByName(assemblyName);
-
-        public int ExecuteAssemblyByName(string assemblyName, params string[] args) => _AppDomain.ExecuteAssemblyByName(assemblyName, args);
-
-        public int ExecuteAssemblyByName(AssemblyName assemblyName, params string[] args) => _AppDomain.ExecuteAssemblyByName(assemblyName, args);
-
-        public IAssembly[] GetAssemblies() => _AppDomain.GetAssemblies().Select(a=> new AssemblyWrapper(a)).ToArray();
-
-        public object GetData(string name) => _AppDomain.GetData(name);
-
-        public object InitializeLifetimeService() => _AppDomain.InitializeLifetimeService();
-
-        public bool? IsCompatibilitySwitchSet(string value) => _AppDomain.IsCompatibilitySwitchSet(value);
-
-        public bool IsDefaultAppDomain() => _AppDomain.IsDefaultAppDomain();
-
-        public bool IsFinalizingForUnload() => _AppDomain.IsFinalizingForUnload();
-
-        public IAssembly Load(byte[] rawAssembly, byte[] rawSymbolStore) 
-            => new AssemblyWrapper(_AppDomain.Load(rawAssembly, rawSymbolStore));
-
-        public IAssembly Load(AssemblyName assemblyRef) => new AssemblyWrapper(_AppDomain.Load(assemblyRef));
-
-        public IAssembly Load(string assemblyString) => new AssemblyWrapper(_AppDomain.Load(assemblyString));
-
-        public IAssembly Load(byte[] rawAssembly) => new AssemblyWrapper(_AppDomain.Load(rawAssembly));
-
-        public IAssembly[] ReflectionOnlyGetAssemblies() 
-            => _AppDomain.ReflectionOnlyGetAssemblies().Select(a=> new AssemblyWrapper(a)).ToArray();
-
-        public void SetData(string name, object data) => _AppDomain.SetData(name, data);
-
-        public void SetPrincipalPolicy(PrincipalPolicy policy) => _AppDomain.SetPrincipalPolicy(policy);
-        
-        public void SetThreadPrincipal(IPrincipal principal) => _AppDomain.SetThreadPrincipal(principal);
+        [ExcludeFromCodeCoverage]
+        internal IFile File
+        {
+            get { return _File ?? (_File = FileWrapper.Instance); }
+            set { _File = value; }
+        } private IFile _File;
+        #endregion
     }
 }

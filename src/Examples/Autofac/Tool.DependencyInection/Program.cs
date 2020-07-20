@@ -13,32 +13,49 @@ namespace Tool.DependencyInjection
         {
             var builder = new ContainerBuilder();
             builder.RegisterModule<SimplePluginLoaderModule>();
+            builder.RegisterGeneric(typeof(CustomPluginObjectCreator<>))
+                   .As(typeof(IPluginObjectCreator<>));
+
+            builder.RegisterInstance(new StaticPluginPaths(new[] { "Plugins" }))
+                   .As<IPluginPaths>();
 
             // ITool Plugin Loader registrations
             builder.RegisterType<PluginLoader<ITool>>()
                    .As<IPluginLoader<ITool>>()
-                   .WithParameter("paths", null)
                    .SingleInstance();
 
             // ICaveManTool<Hammer>> Plugin Loader registrations
             builder.RegisterType<Hammer>();
             builder.RegisterType<PluginLoader<ICaveManTool<Hammer>>>()
                    .As<IPluginLoader<ICaveManTool<Hammer>>>()
-                   .WithParameter("paths", null)
                    .SingleInstance();
 
             var container = builder.Build();
             using (var globalScope = container.BeginLifetimeScope())
             {
-                var pluginLoader = globalScope.Resolve<IPluginLoader<ITool>>();
                 var tools = new List<ITool> { new Hammer() };
 
-                var plugins = pluginLoader.LoadPlugins();
-                tools.AddRange(plugins.AllObjects);
+                using (var iToolScope = globalScope.BeginLifetimeScope(b=>
+                {
+                    b.RegisterType<ScopedSetting1>().As<IScopedSetting>();
+                }))
+                {
+                    var pluginLoader = iToolScope.Resolve<IPluginLoader<ITool>>();
+                    var pluginObjectCreator = iToolScope.Resolve<IPluginObjectCreator<ITool>>();
+                    var plugins = pluginLoader.LoadPlugins();
+                    tools.AddRange(plugins.CreatePluginObjects(pluginObjectCreator));
+                }
 
-                var pluginLoaderCaveMan = globalScope.Resolve<IPluginLoader<ICaveManTool<Hammer>>>();
-                var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
-                tools.AddRange(caveManPlugins.AllObjects);
+                using (var caveManScope = globalScope.BeginLifetimeScope(b =>
+                {
+                    b.RegisterType<ScopedSetting2>().As<IScopedSetting>();
+                }))
+                {
+                    var pluginLoaderCaveMan = caveManScope.Resolve<IPluginLoader<ICaveManTool<Hammer>>>();
+                    var pluginObjectCreatorCaveMan = caveManScope.Resolve<IPluginObjectCreator<ICaveManTool<Hammer>>>();
+                    var caveManPlugins = pluginLoaderCaveMan.LoadPlugins();
+                    tools.AddRange(caveManPlugins.CreatePluginObjects(pluginObjectCreatorCaveMan));
+                }
 
                 ShowPrompt(tools);
                 int input = ReadLine(tools);
@@ -56,11 +73,15 @@ namespace Tool.DependencyInjection
         {
             Console.WriteLine("Which tool do you want to use:");
             Console.WriteLine("0. Exit");
-            for (int i = 0; i < tools.Count;)
+            var expectedToolCount = 8;
+            int i = 0;
+            for (; i < tools.Count;)
             {
                 var tool = tools[i];
                 Console.WriteLine("{0}. {1}", ++i, tool.Name);
             }
+            if (i != expectedToolCount)
+                Console.WriteLine($"Something went wrong. You should see {expectedToolCount} tools here.");
             Console.Write("Choose an option> ");
         }
 

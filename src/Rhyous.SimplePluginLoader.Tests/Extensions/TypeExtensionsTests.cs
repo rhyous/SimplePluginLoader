@@ -14,7 +14,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
         public class With3 : IWith3<int, int, int> { }
 
         [TestMethod]
-        public void IsAssignableFrom_With3Generics()
+        public void TypeExtensions_IsAssignableFrom_With3Generics()
         {
             // Arrange
             var type1 = typeof(IWith3<int, int, int>);
@@ -28,7 +28,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
         }
 
         [TestMethod]
-        public void IsAssignableFrom_With3GenericsOrg()
+        public void TypeExtensions_IsAssignableFrom_With3GenericsOrg()
         {
             // Arrange
             var type1 = typeof(IRepository<Org, IOrg, int>);
@@ -42,7 +42,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
         }
 
         [TestMethod]
-        public void IsGenericInterfaceOf_EmptyConcreteGeneric()
+        public void TypeExtensions_IsGenericInterfaceOf_EmptyConcreteGeneric()
         {
             // Arrange
             var type1 = typeof(IA<>);
@@ -56,7 +56,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
         }
 
         [TestMethod]
-        public void IsGenericInterfaceOf_ConcreteGeneric()
+        public void TypeExtensions_IsGenericInterfaceOf_ConcreteGeneric()
         {
             // Arrange
             var type1 = typeof(IA<>);
@@ -70,7 +70,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
         }
         
         [TestMethod]
-        public void IsGenericInterfaceOf_NonInterfaceNonGeneric()
+        public void TypeExtensions_IsGenericInterfaceOf_NonInterfaceNonGeneric()
         {
             // Arrange
             var type1 = typeof(IA<>);
@@ -84,7 +84,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
         }
 
         [TestMethod]
-        public void IsGenericInterfaceOf_ConcreteNonGeneric()
+        public void TypeExtensions_IsGenericInterfaceOf_ConcreteNonGeneric()
         {
             // Arrange
             var type1 = typeof(IA<>);
@@ -94,20 +94,36 @@ namespace Rhyous.SimplePluginLoader.Tests.Extensions
             var actual = type1.IsGenericInterfaceOf(type2);
 
             // Assert
-            Assert.IsFalse(actual);
+            Assert.IsTrue(actual);
         }
 
         [TestMethod]
-        public void IsPluginType_Test()
+        public void TypeExtensions_IsPluginType_Test()
         {
             // Arrange
             var type = typeof(With3);
 
             // Act
-            var actual = type.IsPluginType<IWith3<int, int, int>>();
+            var actual = type.IsTypeOf(typeof(IWith3<int, int, int>));
 
             // Assert
             Assert.IsTrue(actual);
         }
+
+        [TestMethod]
+        public void TypeExtensions__Test()
+        {
+            // Arrange
+            MyDelegate1 d = (int a) => { return true; };
+
+            // Act
+            var actual = d.GetType().GetFixedDeclaringType();
+
+            // Assert
+            Assert.AreEqual(this.GetType(), actual);
+        }
+
+        public delegate bool MyDelegate1(int a);
+
     }
 }

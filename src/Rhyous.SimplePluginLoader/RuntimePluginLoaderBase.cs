@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 
@@ -10,70 +8,58 @@ namespace Rhyous.SimplePluginLoader
     /// <summary>
     /// A base class for loading plugins from a default Plugins directory.
     /// This just makes it easy for a consuming application to mark the plugin directory and get plugins.
+    /// It allows for finding plugins that are global or per user.
     /// </summary>
     /// <typeparam name="T">The type of the plugin to load.</typeparam>
     public abstract class RuntimePluginLoaderBase<T> : IRuntimePluginLoader<T>
         where T : class
     {
-        /// <summary>
-        /// If you set this appSettings in the app.config or the web.config, the DefaultPluginDirectory will
-        /// be the configured path.
-        /// </summary>
-        public const string PluginDirConfig = "PluginDirectory";
-
-        public static string AppRoot = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        // After creating a concrete (non-generic) version of this class, you need to update these values.
-        // RuntimePluginLoaderBase<MyPlugins>.Company = "ABC, Inc."
-        public static string Company = "Rhyous";
-        public static string AppName = "App1";
-        public static string PluginFolder = "Plugins";
-
-        public virtual bool ThrowExceptionIfNoPluginFound => true;
-
         private readonly IAppDomain _AppDomain;
         private readonly IPluginLoaderSettings _Settings;
-        private readonly ITypeLoader<T> _TypeLoader;
-        private readonly IInstanceLoaderFactory<T> _InstanceLoaderFactory;
-        private readonly IAssemblyLoader _AssemblyLoader;
+        private readonly IPluginLoaderFactory<T> _PluginLoaderFactory;
+        private readonly IPluginObjectCreator<T> _PluginObjectCreator;
+        private readonly IPluginPaths _PluginPaths;
         protected readonly IPluginLoaderLogger _Logger;
 
         public RuntimePluginLoaderBase(IAppDomain appDomain,
-                                       IPluginLoaderSettings settings = null,
-                                       ITypeLoader<T> typeLoader = null,
-                                       IInstanceLoaderFactory<T> instanceLoaderFactory = null,
-                                       IAssemblyLoader assemblyLoader = null,
+                                       IPluginLoaderSettings settings,
+                                       IPluginLoaderFactory<T> pluginLoaderFactory,
+                                       IPluginObjectCreator<T> pluginObjectCreator,
+                                       IPluginPaths pluginPaths = null,
                                        IPluginLoaderLogger logger = null)
         {
-            _AppDomain = appDomain;
-            _Settings = settings ?? PluginLoaderSettings.Default;
-            _TypeLoader = typeLoader ?? new TypeLoader<T>(_Settings, logger);
-            _InstanceLoaderFactory = instanceLoaderFactory ?? new InstanceLoaderFactory<T>(new ObjectCreatorFactory<T>(), _TypeLoader, _Settings, _Logger);
-            _AssemblyLoader = assemblyLoader ?? new AssemblyLoader(_AppDomain, _Settings, _Logger);
+            _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
+            _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _PluginLoaderFactory = pluginLoaderFactory ?? throw new ArgumentNullException(nameof(pluginLoaderFactory));
+            _PluginObjectCreator = pluginObjectCreator ?? throw new ArgumentNullException(nameof(pluginObjectCreator));
+            pluginPaths = pluginPaths ?? new AppPluginPaths(_Settings.AppName, GetDefaultPluginDirectory(), _AppDomain, _Logger);
+            _PluginPaths = string.IsNullOrWhiteSpace(PluginSubFolder)
+                         ? pluginPaths
+                         : new PluginPaths { Paths = pluginPaths.Paths.Select(p => Path.Combine(p, PluginSubFolder)) };
             _Logger = logger;
         }
 
         /// <inheritdoc />
-        public virtual string DefaultPluginDirectory
+        private string GetDefaultPluginDirectory()
         {
-            get
-            {
-                var _DefaultPluginDirectory = _Settings.DefaultPluginDirectory;
-                if (_DefaultPluginDirectory == null)
-                    _DefaultPluginDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Company, AppName, PluginFolder);
-                if (!string.IsNullOrWhiteSpace(PluginSubFolder))
-                    _DefaultPluginDirectory = Path.Combine(_DefaultPluginDirectory, PluginSubFolder);
-                return _DefaultPluginDirectory;
-            }
-        } internal string _DefaultPluginDirectory;
+            var _DefaultPluginDirectory = _Settings.DefaultPluginDirectory;
+            if (_DefaultPluginDirectory == null)
+                _DefaultPluginDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                                                       _Settings.Company, _Settings.AppName, _Settings.PluginFolder);
+            if (!string.IsNullOrWhiteSpace(PluginSubFolder))
+                _DefaultPluginDirectory = Path.Combine(_DefaultPluginDirectory, PluginSubFolder);
+            return _DefaultPluginDirectory;
+        }
 
-        /// <inheritdoc />
+        /// <inheritdoc />       
         public abstract string PluginSubFolder { get; }
 
         /// <inheritdoc />
         public virtual string PluginGroup => PluginSubFolder;
 
         /// <summary>
-        /// Instantiated instances of the plugins. If multiple dlls have plugins, there could be multiple collections. To get a flattened list, use the Plugins property.
+        /// Instantiated instances of the plugins. If multiple dlls have plugins, there could be
+        /// multiple collections.
         /// </summary>
         public virtual PluginCollection<T> PluginCollection
         {
@@ -83,9 +69,8 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual IPluginLoader<T> PluginLoader
         {
-            get { return _PluginLoader ?? new PluginLoader<T>(new PluginPaths(AppName, _AppDomain, DefaultPluginDirectory, _Logger), _AppDomain, 
-                                                              _Settings, _TypeLoader, _InstanceLoaderFactory, _AssemblyLoader, _Logger); }
-            set { _PluginLoader = value; }
+            get { return _PluginLoader ?? _PluginLoaderFactory.Create(_PluginPaths); }
+            internal set { _PluginLoader = value; }
         } private IPluginLoader<T> _PluginLoader;
 
         /// <summary>
@@ -93,12 +78,6 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         public virtual List<Type> PluginTypes { get { return _PluginTypes ?? (_PluginTypes = PluginCollection?.SelectMany(p => p.PluginTypes).ToList()); } }
         private List<Type> _PluginTypes;
-
-        /// <summary>
-        /// Gets instantiated instances of the plugins. This is a flattened list of plugins.
-        /// </summary>
-        public virtual List<T> Plugins { get { return _Plugins ?? (_Plugins = PluginCollection?.Where(p=>p.PluginObjects != null && p.PluginObjects.Any()).SelectMany(p => p?.PluginObjects)?.ToList()); } }
-        private List<T> _Plugins;
 
         /// <summary>
         /// This populates PluginCollection.
@@ -109,20 +88,20 @@ namespace Rhyous.SimplePluginLoader
             var plugins = PluginLoader.LoadPlugins();
             if (plugins == null || !plugins.Any())
             {
-                if (ThrowExceptionIfNoPluginFound)
-                    throw new Exception($"No {PluginSubFolder} plugin found.");
-                return null;
+                var msg = $"No {PluginGroup} plugins were found in these directories:{Environment.NewLine}{string.Join(Environment.NewLine, _PluginPaths.Paths)}";
+                _Logger?.WriteLine(PluginLoaderLogLevel.Debug, msg);
+                if (_Settings.ThrowExceptionIfNoPluginFound)
+                {
+                    throw new RuntimePluginLoaderException(msg);
+                }
+                return plugins;
             }
             return plugins;
         }
 
-        /// <summary>
-        /// Allows for replacing this during unit tests
-        /// </summary>
-        internal NameValueCollection AppSettings
+        public virtual IList<T> CreatePluginObjects(IPluginObjectCreator<T> pluginObjectCreator = null)
         {
-            get { return _AppSettings ?? (_AppSettings = ConfigurationManager.AppSettings); }
-            set { _AppSettings = value; }
-        } private NameValueCollection _AppSettings;
+            return PluginCollection?.CreatePluginObjects(pluginObjectCreator ?? _PluginObjectCreator);
+        }
     }
 }

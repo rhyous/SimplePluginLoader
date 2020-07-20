@@ -18,10 +18,19 @@ namespace Rhyous.SimplePluginLoader
             return type.IsSameOrSubclassAs(typeof(T)) || typeof(T).IsAssignableFrom(type) || typeof(T).IsGenericInterfaceOf(type);
         }
 
+        public static bool IsTypeOf(this Type type, Type type2)
+        {
+            return type.IsSameOrSubclassAs(type2) || type2.IsAssignableFrom(type) || type2.IsGenericInterfaceOf(type) || type2.IsGenericTypeDefinitionOf(type);
+        }
+
         public static bool IsGenericInterfaceOf(this Type left, Type right)
         {
             if (!left.IsGenericType || !left.IsInterface || !right.IsGenericType)
+            {
+                if (right.BaseType != null)
+                    return left.IsGenericInterfaceOf(right.BaseType);
                 return false;
+            }
             var rightInterfaces = right.GetInterfaces();
             if (rightInterfaces.Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == left))
                 return true;
@@ -31,6 +40,16 @@ namespace Rhyous.SimplePluginLoader
             {
                 if (!left.ContainsGenericParameters && right.ContainsGenericParameters)
                     return true;
+            }
+            return false;
+        }
+
+        public static bool IsGenericTypeDefinitionOf(this Type left, Type right)
+        {
+            if (left.IsGenericType && left.IsGenericTypeDefinition && right.IsGenericType)
+            {
+                return (right.GetGenericTypeDefinition() == left)
+                    || (right.BaseType.IsGenericType && right.IsGenericTypeDefinition && right.GetGenericTypeDefinition() == left);
             }
             return false;
         }
@@ -48,6 +67,39 @@ namespace Rhyous.SimplePluginLoader
                 throw new ArgumentNullException("methodName");
             return type.GetMethods().FirstOrDefault(m => m.Name == methodName && m.IsGenericMethod == true);
         }
+
+        /// <summary>
+        /// Type.DeclaringType could be a compile-time generated type if the DeclaryingType is a dynamically generated object or method.
+        /// If what you are after is the class you defined the dynamically generated object or method, then you can use this method.
+        /// </summary>
+        /// <param name="t">The type.</param>
+        /// <returns>The first DeclaringType that is not a System.RuntimeType</returns>
+        public static Type GetFixedDeclaringType(this Type t)
+        {
+            if (t.DeclaringType == null)
+                return t;
+            while (t.GetType() == _RunTimeType) 
+                return GetFixedDeclaringType(t.DeclaringType);
+            return t;
+        }
+
+        /// <summary>
+        /// Type.DeclaringType could be a compile-time generated type if the DeclaryingType is a dynamically generated object or method.
+        /// If what you are after is the class you defined the dynamically generated object or method, then you can use this method.
+        /// </summary>
+        /// <param name="t">The type.</param>
+        /// <returns>The first DeclaringType that is not a System.RuntimeType</returns>
+        public static Type GetFixedDeclaringType(this MethodInfo mi)
+        {
+            if (mi.DeclaringType == null)
+                return mi.DeclaringType;
+            if (mi.DeclaringType.GetType() == _RunTimeType)
+                return GetFixedDeclaringType(mi.DeclaringType);
+            return mi.DeclaringType;
+        }
+
+        /// <summary> System.RuntimeType is internal so we can't use it directly</summary>
+        private static Type _RunTimeType = Type.GetType("System.RuntimeType");
     }
 
 }

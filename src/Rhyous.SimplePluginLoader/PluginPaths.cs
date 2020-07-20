@@ -1,67 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class PluginPaths
+    internal class PluginPaths : IPluginPaths
     {
-        public const string DefaultPluginDirectory = "Plugins";
-        public const string DefaultDllSearchString = "*.dll";
-
-        private IPluginLoaderLogger _Logger;
-        private IAppDomain _AppDomain;
-        private readonly string _PluginSubFolder;
-
-        public PluginPaths(string appName, IAppDomain appDomain, string PluginSubFolder, IPluginLoaderLogger logger)
-        {
-            AppName = appName;
-            _Logger = logger;
-            _AppDomain = appDomain;
-            _PluginSubFolder = PluginSubFolder;
-        }
-
-        public string AppName { get; set; }
-
-        /// <summary>
-        /// The name of the subdirectory where plugins are stored. The default is:
-        /// Plugins
-        /// </summary>
-        public string PluginDirectoryName
-        {
-            get
-            {
-                return (string.IsNullOrWhiteSpace(_PluginDirectoryName))
-                    ? (_PluginDirectoryName = string.IsNullOrWhiteSpace(_PluginSubFolder) 
-                                            ? DefaultPluginDirectory
-                                            : Path.Combine(DefaultPluginDirectory, _PluginSubFolder))
-                    : _PluginDirectoryName;
-            }
-            set { _PluginDirectoryName = value; }
-        } private string _PluginDirectoryName;
-
-        public string UserProfilePlugins
-        {
-            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), AppName, PluginDirectoryName); }
-        }
-
-        public string ApplicationDataPlugins
-        {
-            get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppName, PluginDirectoryName); }
-        }
-
-        public string RelativePathPlugins
-        {
-            get { return Path.Combine(_AppDomain.BaseDirectory, PluginDirectoryName); }
-        }
-
-        public IEnumerable<string> GetDefaultPluginDirectories()
-        {
-            var distinctPaths = new[] { PluginDirectoryName, UserProfilePlugins, ApplicationDataPlugins, RelativePathPlugins }.Distinct();
-            _Logger?.WriteLine(PluginLoaderLogLevel.Info, "Paths: " + string.Join(Environment.NewLine, distinctPaths));
-            return distinctPaths;
-        }
+        public IEnumerable<string> Paths { get; set; }
     }
 }
 

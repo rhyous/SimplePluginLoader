@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -13,30 +14,42 @@ namespace Rhyous.SimplePluginLoader
     public class PluginLoader<T> : IPluginLoader<T>
         where T : class
     {
-        private readonly IAppDomain _AppDomain;
-        private readonly IPluginLoaderSettings _Settings;
-        private readonly ITypeLoader<T> _TypeLoader;
-        private readonly IInstanceLoaderFactory<T> _InstanceLoaderFactory;
-        private readonly IAssemblyLoader _AssemblyLoader;
-        private readonly IPluginLoaderLogger _Logger;
+        #region static create
+        public static PluginLoader<T> Create(string appName,
+                             IPluginPaths paths = null,
+                             IAppDomain appDomain = null,
+                             IPluginLoaderSettings settings = null,
+                             ITypeLoader<T> typeLoader = null,
+                             IAssemblyCache assemblyDictionary = null,
+                             IAssemblyNameReader assemblyNameReader = null,
+                             IAssemblyLoader assemblyLoader = null,
+                             IPluginDependencyResolverObjectCreator pluginDependencyResolverObjectCreator = null,
+                             IPluginDependencyResolverCacheFactory pluginDependencyResolverCacheFactory = null,
+                             IPluginCacheFactory<T> pluginCacheFactory = null,
+                             IPluginLoaderLogger logger = null)
+        {
+            appDomain = appDomain ?? new AppDomainWrapper(AppDomain.CurrentDomain, logger);
+            paths = paths ?? new AppPluginPaths(appName, null, appDomain,  logger);
+            settings = settings ?? PluginLoaderSettings.Default;
+            typeLoader = typeLoader ?? new TypeLoader<T>(settings, logger);
+            assemblyNameReader = assemblyNameReader ?? new AssemblyNameReader();
+            assemblyDictionary = assemblyDictionary ?? new AssemblyCache(appDomain, assemblyNameReader, logger);
+            assemblyLoader = assemblyLoader ?? new AssemblyLoader(appDomain, settings, assemblyDictionary, assemblyNameReader, logger);
+            pluginDependencyResolverObjectCreator = pluginDependencyResolverObjectCreator ?? new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, logger);
+            pluginDependencyResolverCacheFactory = pluginDependencyResolverCacheFactory ?? new PluginDependencyResolverCacheFactory(pluginDependencyResolverObjectCreator, logger);
+            pluginCacheFactory = pluginCacheFactory ?? new PluginCacheFactory<T>(typeLoader, pluginDependencyResolverCacheFactory, assemblyLoader,  logger);
+            return new PluginLoader<T>(paths, pluginCacheFactory);
+        }
+        #endregion
+
+        private readonly IPluginCacheFactory<T> _PluginCacheFactory;
 
         #region Constructors
-
-        public PluginLoader(PluginPaths paths, 
-                            IAppDomain appDomain,
-                            IPluginLoaderSettings settings = null,
-                            ITypeLoader<T> typeLoader = null,
-                            IInstanceLoaderFactory<T> instanceLoaderFactory = null,
-                            IAssemblyLoader assemblyLoader = null,
-                            IPluginLoaderLogger logger = null)
+        public PluginLoader(IPluginPaths paths, 
+                            IPluginCacheFactory<T> pluginCacheFactory)
         {
-            _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
-            Paths = paths ?? new PluginPaths(DefaultAppName, appDomain, null, logger);
-            _Settings = settings ?? PluginLoaderSettings.Default;
-            _TypeLoader = typeLoader ?? new TypeLoader<T>(_Settings, logger);
-            _InstanceLoaderFactory = instanceLoaderFactory ?? new InstanceLoaderFactory<T>(new ObjectCreatorFactory<T>(), _TypeLoader, _Settings, _Logger);
-            _AssemblyLoader = assemblyLoader ?? new AssemblyLoader(_AppDomain, _Settings, _Logger);
-            _Logger = logger;
+            Paths = paths ?? throw new ArgumentNullException(nameof(paths));
+            _PluginCacheFactory = pluginCacheFactory ?? throw new ArgumentNullException(nameof(pluginCacheFactory));
         }
 
         #endregion
@@ -45,14 +58,9 @@ namespace Rhyous.SimplePluginLoader
         public List<IPlugin<T>> Plugins
         {
             get { return _Plugins.Value; }
-        } private Lazy<List<IPlugin<T>>> _Plugins = new Lazy<List<IPlugin<T>>>(true);
+        } private readonly Lazy<List<IPlugin<T>>> _Plugins = new Lazy<List<IPlugin<T>>>(true);
 
-        public string DefaultAppName
-        {
-            get { return _DefaultAppName ?? (_DefaultAppName = Path.GetFileName(_AppDomain.BaseDirectory)); }
-        } private string _DefaultAppName;
-
-        public PluginPaths Paths { get; set; }
+        public IPluginPaths Paths { get; set; }
 
         #endregion
 
@@ -64,7 +72,7 @@ namespace Rhyous.SimplePluginLoader
         /// </summary>
         public PluginCollection<T> LoadPlugins()
         {
-            var dirs = Paths.GetDefaultPluginDirectories();
+            var dirs = Paths.Paths;
             return LoadPlugins(dirs);
         }
 
@@ -82,7 +90,7 @@ namespace Rhyous.SimplePluginLoader
                 if (fullPaths.Contains(info.FullName))
                     continue;
                 fullPaths.Add(info.FullName);
-                var allfiles = Directory.GetFiles(info.FullName, PluginPaths.DefaultDllSearchString, SearchOption.AllDirectories);
+                var allfiles = Directory.GetFiles(info.FullName, AppPluginPaths.DefaultDllSearchString, SearchOption.AllDirectories);
                 var foundplugins = LoadPlugins(allfiles.Where(s => !Path.GetDirectoryName(s).EndsWith(@"\bin")).ToArray());
                 plugins.AddRange(foundplugins);
             }
@@ -114,15 +122,26 @@ namespace Rhyous.SimplePluginLoader
         {
             if (!File.Exists(pluginFile))
                 return null;
-            var resolver = new PluginDependencyResolver<T>(_AppDomain, _Settings, _AssemblyLoader);
-            var plugin = new Plugin<T>(_AppDomain, _TypeLoader, _InstanceLoaderFactory.Create(), resolver, _AssemblyLoader, _Logger)
-            {
-                Directory = Path.GetDirectoryName(pluginFile),
-                File = Path.GetFileName(pluginFile)
-            };
+            var plugin = _PluginCacheFactory.Create(pluginFile, typeof(Plugin<T>));
             Plugins.Add(plugin);
             return plugin;
         }
+        #endregion
+
+        #region Wrappers -  While this could come from the constructor, these are only used in Unit Tests, so we hide them internally
+        [ExcludeFromCodeCoverage]
+        internal IDirectory Directory
+        {
+            get { return _Directory ?? (_Directory = DirectoryWrapper.Instance); }
+            set { _Directory = value; }
+        } private IDirectory _Directory;
+
+        [ExcludeFromCodeCoverage]
+        internal IFile File
+        {
+            get { return _File ?? (_File = FileWrapper.Instance); }
+            set { _File = value; }
+        } private IFile _File;
         #endregion
     }
 }

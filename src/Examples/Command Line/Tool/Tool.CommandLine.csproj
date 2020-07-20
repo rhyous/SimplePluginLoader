@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MyPluginLoaderSettings.cs" />
     <Compile Include="Tools\ICaveManTool.cs" />
     <Compile Include="Tools\ITool.cs" />
     <Compile Include="Program.cs" />

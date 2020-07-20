@@ -1,6 +1,7 @@
 using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Rhyous.SimplePluginLoader.Autofac.Tests;
 using Rhyous.SimplePluginLoader.DependencyInjection;
 using System;
 
@@ -10,71 +11,60 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
     public class AutofacObjectCreatorTests
     {
         [TestMethod]
-        public void AutofacObjectCreator_Create_T_IsSimpleClass()
+        public void AutofacObjectCreator_Create_Works()
         {
             // Arrange
-            var mockPluginLoader = new Mock<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            mockPluginLoader.Setup(m => m.LoadPlugin(It.IsAny<string>()))
-                            .Returns((IPlugin<IDependencyRegistrar<ContainerBuilder>>)null);
+            Type type = typeof(Organization);
 
             var builder = new ContainerBuilder();
-            builder.RegisterInstance(mockPluginLoader.Object).As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            builder.RegisterType<User>().As(typeof(IUser));
+            builder.RegisterType<Organization>().As<IOrganization>();
             var container = builder.Build();
 
-            var creator = new AutofacObjectCreator<IUser>(container);
+            var autofacObjectCreator = new AutofacObjectCreator<IOrganization>(container);
 
             // Act
-            var actual = creator.Create(typeof(User));
+            var result = autofacObjectCreator.Create(type);
 
             // Assert
-            Assert.AreEqual(actual.GetType(), typeof(User));
+            Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void AutofacObjectCreator_Create_T_IsInterface()
+        public void AutofacObjectCreator_Create_Null_TypeToLoad()
         {
             // Arrange
-            var mockPluginLoader = new Mock<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            mockPluginLoader.Setup(m => m.LoadPlugin(It.IsAny<string>()))
-                            .Returns((IPlugin<IDependencyRegistrar<ContainerBuilder>>)null);
+            Type type = typeof(Organization);
 
             var builder = new ContainerBuilder();
-            builder.RegisterInstance(mockPluginLoader.Object).As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            builder.RegisterType<User>().As(typeof(IUser));
             var container = builder.Build();
 
-            var creator = new AutofacObjectCreator<IUser>(container);
+            var autofacObjectCreator = new AutofacObjectCreator<IOrganization>(container);
+            autofacObjectCreator.RegisterTypeMethod = (ContainerBuilder b, Type t1, Type t2) => { return null; };
 
             // Act
-            var actual = creator.Create(typeof(IUser));
+            var result = autofacObjectCreator.Create(type);
 
             // Assert
-            Assert.AreEqual(actual.GetType(), typeof(User));
+            Assert.IsNull(result);
         }
 
         [TestMethod]
-        public void AutofacObjectCreator_Create_T_IsGeneric()
+        public void AutofacObjectCreator_Create_EmptyGeneric_TypeToLoad()
         {
             // Arrange
-            var mockPluginLoader = new Mock<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            mockPluginLoader.Setup(m => m.LoadPlugin(It.IsAny<string>()))
-                            .Returns((IPlugin<IDependencyRegistrar<ContainerBuilder>>)null);
+            Type type = typeof(Organization);
 
             var builder = new ContainerBuilder();
-            builder.RegisterInstance(mockPluginLoader.Object).As<IPluginLoader<IDependencyRegistrar<ContainerBuilder>>>();
-            builder.RegisterGeneric(typeof(Service<,,>)).As(typeof(IService<,,>));
             var container = builder.Build();
 
-            var creator = new AutofacObjectCreator<IService<Organization, IOrganization, int>>(container);
+            var autofacObjectCreator = new AutofacObjectCreator<IOrganization>(container);
+            autofacObjectCreator.RegisterTypeMethod = (ContainerBuilder b, Type t1, Type t2) => { return typeof(Service<,,>); };
 
             // Act
-            var actual = creator.Create(typeof(Service<Organization, IOrganization, int>));
+            var result = autofacObjectCreator.Create(type);
 
             // Assert
-            Assert.AreEqual(actual.GetType(), typeof(Service<Organization, IOrganization, int>));
+            Assert.IsNull(result);
         }
-
-
     }
 }

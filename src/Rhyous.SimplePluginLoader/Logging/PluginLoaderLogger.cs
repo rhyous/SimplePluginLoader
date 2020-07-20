@@ -14,10 +14,21 @@ namespace Rhyous.SimplePluginLoader
     {
         public static string LogPathConfiguration { get { return ConfigurationManager.AppSettings["PluginLoaderLogPath"]; } }
         public static string LogLevelConfiguration { get { return ConfigurationManager.AppSettings["PluginLoaderLogLevel"]; } }
-        internal static int InstanceCount = 0;
-        internal int Instance;
-                
-        public PluginLoaderLogger() { Instance = ++InstanceCount; }
+
+        #region Singleton
+
+        private static readonly Lazy<PluginLoaderLogger> Lazy = new Lazy<PluginLoaderLogger>(() => new PluginLoaderLogger());
+
+        internal static Locked<int> InstanceCount => new Locked<int>();
+        internal int InstanceId;
+
+        public static PluginLoaderLogger Instance { get { return Lazy.Value; } }
+
+        internal PluginLoaderLogger() { InstanceId = ++InstanceCount.Value; }
+
+        #endregion
+
+
 
         public StreamWriter Writer
         {

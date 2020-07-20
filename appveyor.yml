@@ -20,6 +20,7 @@ test:
   categories:
     except:
     - slow
+    - LocalOnly
 nuget:
   disable_publish_on_pr: true
 artifacts:
