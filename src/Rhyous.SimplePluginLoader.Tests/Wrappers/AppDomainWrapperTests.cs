@@ -1,6 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Rhyous.Collections;
 using System;
 using System.IO;
 using System.Linq;
@@ -102,6 +101,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Wrappers
         }
 
         [TestMethod]
+        [TestCategory("LocalOnly")] // Some build agents don't like loading dlls
         public void AppDomainWrapper_TryLoad_RawAssembly_and_Pdb()
         {
             // Arrange
@@ -119,6 +119,7 @@ namespace Rhyous.SimplePluginLoader.Tests.Wrappers
 
 
         [TestMethod]
+        [TestCategory("LocalOnly")] // Some build agents don't like loading dlls
         public void AppDomainWrapper_TryLoad_RawAssembly_and_Pdb_EmptyByteArray()
         {
             // Arrange
@@ -178,6 +179,8 @@ namespace Rhyous.SimplePluginLoader.Tests.Wrappers
         }
 
         [TestMethod]
+        [TestCategory("LocalOnly")] // Some build agents don't like loading dlls
+
         public void AppDomainWrapper_TryLoad_Assembly_and_Pdb_FilePaths_Pdb_NotFound()
         {
             // Arrange
