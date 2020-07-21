@@ -74,7 +74,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
 
             // Both set the default factory and return it.
             // To override this, simply register it again after registering this module.
-            builder.Register((c) => { return AutofacRuntimePluginLoaderFactory.Instance = new AutofacRuntimePluginLoaderFactory(c); })
+            builder.Register((c) => { return new AutofacRuntimePluginLoaderFactory(c.Resolve<ILifetimeScope>()); })
                    .As<IRuntimePluginLoaderFactory>();
 
             // Plugin Loader Registration for a plugin's own registration module

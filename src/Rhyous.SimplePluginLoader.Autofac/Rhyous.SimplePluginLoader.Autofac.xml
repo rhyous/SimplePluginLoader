@@ -99,11 +99,11 @@
             to Dependency Injection.
             </summary>
         </member>
-        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacRuntimePluginLoaderFactory.#ctor(Autofac.IComponentContext)">
+        <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacRuntimePluginLoaderFactory.#ctor(Autofac.ILifetimeScope)">
             <summary>
             The AutofacRuntimePluginLoaderFactory constructor
             </summary>
-            <param name="componentContext">An Autofac ComponentContext object.</param>
+            <param name="scope">An Autofac ComponentContext object.</param>
         </member>
         <member name="M:Rhyous.SimplePluginLoader.DependencyInjection.AutofacRuntimePluginLoaderFactory.Create``2(System.Object[])">
             <summary>

@@ -1,5 +1,4 @@
 ﻿using Rhyous.SimplePluginLoader;
-using Rhyous.SimplePluginLoader.Factories;
 using System;
 using System.Collections.Generic;
 using Tool.Tools;

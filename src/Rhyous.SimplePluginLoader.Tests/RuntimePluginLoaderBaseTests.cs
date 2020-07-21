@@ -38,9 +38,9 @@ namespace Rhyous.SimplePluginLoader.Tests
             };
         }
 
-        private TestPluginLoader CreateInstanceLoader()
+        private TestRuntimePluginLoader CreateInstanceLoader()
         {
-            return new TestPluginLoader(
+            return new TestRuntimePluginLoader(
                 _MockAppDomain.Object,
                 _MockPluginLoaderSettings.Object,
                 _MockPluginLoaderFactory.Object,
@@ -49,9 +49,9 @@ namespace Rhyous.SimplePluginLoader.Tests
                 _MockPluginLoaderLogger.Object);
         }
 
-        private TestPluginLoader2 CreateInstance2Loader()
+        private TestRuntimePluginLoader2 CreateInstance2Loader()
         {
-            return new TestPluginLoader2(
+            return new TestRuntimePluginLoader2(
                 _MockAppDomain.Object,
                 _MockPluginLoaderSettings.Object,
                 _MockPluginLoaderFactory.Object,
@@ -66,7 +66,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
-                var loader = new TestPluginLoader(
+                var loader = new TestRuntimePluginLoader(
                                    null,
                                    _MockPluginLoaderSettings.Object,
                                    _MockPluginLoaderFactory.Object,
@@ -82,7 +82,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
-                var loader = new TestPluginLoader(
+                var loader = new TestRuntimePluginLoader(
                                    _MockAppDomain.Object,
                                    null,
                                    _MockPluginLoaderFactory.Object,
@@ -98,7 +98,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
-                var loader = new TestPluginLoader(
+                var loader = new TestRuntimePluginLoader(
                                    _MockAppDomain.Object,
                                    _MockPluginLoaderSettings.Object,
                                    null,
@@ -114,7 +114,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
-                var loader = new TestPluginLoader(
+                var loader = new TestRuntimePluginLoader(
                                    _MockAppDomain.Object,
                                    _MockPluginLoaderSettings.Object,
                                    _MockPluginLoaderFactory.Object,
@@ -135,7 +135,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockPluginLoaderSettings.Setup(m => m.PluginFolder).Returns("Plugins");
 
             // Act
-            var loader = new TestPluginLoader(
+            var loader = new TestRuntimePluginLoader(
                                    _MockAppDomain.Object,
                                    _MockPluginLoaderSettings.Object,
                                    _MockPluginLoaderFactory.Object,

@@ -1,6 +1,7 @@
 ﻿using Rhyous.SimplePluginLoader.Extensions;
 using System;
 using System.Configuration;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
@@ -120,5 +121,21 @@ namespace Rhyous.SimplePluginLoader
                 Directory.CreateDirectory(LogPath);
             }
         }
+
+        #region Wrappers -  While this could come from the constructor, these are only used in Unit Tests, so we hide them internally
+        [ExcludeFromCodeCoverage]
+        internal IDirectory Directory
+        {
+            get { return _Directory ?? (_Directory = DirectoryWrapper.Instance); }
+            set { _Directory = value; }
+        } private IDirectory _Directory;
+
+        [ExcludeFromCodeCoverage]
+        internal IFile File
+        {
+            get { return _File ?? (_File = FileWrapper.Instance); }
+            set { _File = value; }
+        } private IFile _File;
+        #endregion
     }
 }
