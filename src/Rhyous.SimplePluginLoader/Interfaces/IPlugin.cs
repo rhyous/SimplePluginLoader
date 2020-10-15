@@ -12,7 +12,8 @@ namespace Rhyous.SimplePluginLoader
         string FullPath { get; }
         string FullPathPdb { get; }
         IAssembly Assembly { get; }
-        List<Type> PluginTypes { get;  }
+        List<Type> PluginTypes { get; }
+        IPluginDependencyResolver DependencyResolver { get; }
     }
 
     public interface IPlugin<T> : IPlugin

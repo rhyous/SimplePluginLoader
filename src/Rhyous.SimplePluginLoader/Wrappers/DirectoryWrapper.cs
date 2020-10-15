@@ -23,5 +23,7 @@ namespace Rhyous.SimplePluginLoader
 
         public string[] GetFiles(string path, string searchPattern, SearchOption searchOption)
                         => Directory.GetFiles(path, searchPattern, searchOption);
+
+        public DirectoryInfo CreateDirectory(string path) => Directory.CreateDirectory(path);
     }
 }

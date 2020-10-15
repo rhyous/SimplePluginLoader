@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace Rhyous.SimplePluginLoader
 {
@@ -15,15 +16,23 @@ namespace Rhyous.SimplePluginLoader
         private readonly IPluginLoaderSettings _Settings;
         private readonly IAssemblyLoader _AssemblyLoader;
         private readonly IPluginLoaderLogger _Logger;
-
+        private readonly IWaiter _Waiter;
+        private readonly IAssemblyResolveCache _AssemblyResolveCache;
         internal readonly Locked<bool> IsRegisteredWithAssemblyResolve = new Locked<bool>();
         internal readonly ConcurrentDictionary<string, List<string>> _AttemptedPaths = new ConcurrentDictionary<string, List<string>>();
 
-        public PluginDependencyResolver(IAppDomain appDomain, IPluginLoaderSettings settings, IAssemblyLoader assemblyLoader, IPluginLoaderLogger logger)
+        public PluginDependencyResolver(IAppDomain appDomain,
+                                        IPluginLoaderSettings settings,
+                                        IAssemblyLoader assemblyLoader,
+                                        IWaiter waiter,
+                                        IAssemblyResolveCache assemblyResolveCache,
+                                        IPluginLoaderLogger logger)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _AssemblyLoader = assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
+            _Waiter = waiter;
+            _AssemblyResolveCache = assemblyResolveCache;
             _Logger = logger;
         }
 
@@ -64,26 +73,26 @@ namespace Rhyous.SimplePluginLoader
             var version = assemblyDetails.FirstOrDefault(ad => ad.StartsWith("Version="))?
                                          .Split("=".ToArray(), StringSplitOptions.RemoveEmptyEntries)
                                          .Skip(1)?.First();
-            var paths = Paths?.Where(Directory.Exists).ToList();
+            var key = $"{file}_{version}";
+            _Waiter.Wait(key);
+            if (_AssemblyResolveCache.Cache.TryGetValue(key, out IAssembly cachedAssembly))
+            {
+                _Waiter.InProgress[key] = true;
+                return cachedAssembly.Instance;
+            }
+            var paths = GetPathsToSearch(Paths, args, key);
             if (paths == null || !paths.Any())
-                return null;
-            if (!_AttemptedPaths.TryGetValue(args.Name, out List<string> alreadyTriedPaths))
             {
-                alreadyTriedPaths = new List<string>();
-                _AttemptedPaths.TryAdd(args.Name, alreadyTriedPaths);
-            }
-            foreach (var path in alreadyTriedPaths)
-            {
-                paths.Remove(path);
-            }
-            if (!paths.Any())
+                _Waiter.InProgress[key] = true;
                 return null;
+            }
             foreach (var path in paths)
             {
-                alreadyTriedPaths.Add(path);
+                _AttemptedPaths[args.Name].Add(path);
                 if (!Directory.Exists(path))
                 {
                     Paths.Remove(path);
+                    _Waiter.InProgress[key] = true;
                     continue;
                 }
                 var dll = System.IO.Path.Combine(path, file + ".dll");
@@ -93,10 +102,34 @@ namespace Rhyous.SimplePluginLoader
                     : _AssemblyLoader.TryLoad(dll, pdb, version);
                 if (assembly != null)
                 {
+                    _Waiter.InProgress[key] = true;
+                    _AssemblyResolveCache.Cache.TryAdd(key, assembly);
                     return assembly.Instance;
                 }
             }
+            _Waiter.InProgress[key] = true;
             return null;
+        }
+
+        private List<string> GetPathsToSearch(List<string> allPaths, ResolveEventArgs args, string key)
+        {
+            var paths = allPaths?.Where(Directory.Exists).ToList();
+            if (paths == null || !paths.Any())
+            {
+                return null;
+            }
+            if (!_AttemptedPaths.TryGetValue(args.Name, out List<string> alreadyTriedPaths))
+            {
+                alreadyTriedPaths = new List<string>();
+                if (!_AttemptedPaths.TryAdd(args.Name, alreadyTriedPaths))
+                    _AttemptedPaths.TryGetValue(args.Name, out alreadyTriedPaths);
+            }
+            // Use a copy of alreadyTriedPaths in case another action gets and changes the list
+            foreach (var path in alreadyTriedPaths.ToList())
+            {
+                paths.Remove(path);
+            }
+            return paths;
         }
 
         internal IDirectory Directory

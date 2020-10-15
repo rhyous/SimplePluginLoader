@@ -56,8 +56,8 @@ namespace Rhyous.SimplePluginLoader.Tests
         public void ObjectCreator_Create_NoEmptyConstructor_Model()
         {
             // Arrange
-            var objectCreator = new ObjectCreator<TestPluginLoader>();
-            Type type = typeof(TestPluginLoader);
+            var objectCreator = new ObjectCreator<TestRuntimePluginLoader>();
+            Type type = typeof(TestRuntimePluginLoader);
 
             // Act
             // Assert
@@ -120,7 +120,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         {
             // Arrange
             var objectCreator = new ObjectCreator<IRuntimePluginLoader<Org>>();
-            Type type = typeof(TestPluginLoader);
+            Type type = typeof(TestRuntimePluginLoader);
 
             // Act
             // Assert

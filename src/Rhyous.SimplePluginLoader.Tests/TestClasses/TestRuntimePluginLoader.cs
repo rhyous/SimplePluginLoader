@@ -1,8 +1,8 @@
 ﻿namespace Rhyous.SimplePluginLoader.Tests
 {
-    class TestPluginLoader : RuntimePluginLoaderBase<Org>
+    class TestRuntimePluginLoader : RuntimePluginLoaderBase<Org>
     {
-        public TestPluginLoader(IAppDomain appDomain,
+        public TestRuntimePluginLoader(IAppDomain appDomain,
                                 IPluginLoaderSettings settings,
                                 IPluginLoaderFactory<Org> pluginLoaderFactory,
                                 IPluginObjectCreator<Org> pluginObjectCreator,
@@ -15,9 +15,9 @@
         public override string PluginSubFolder { get; }
     }
 
-    class TestPluginLoader2 : RuntimePluginLoaderBase<Org>
+    class TestRuntimePluginLoader2 : RuntimePluginLoaderBase<Org>
     {
-        public TestPluginLoader2(IAppDomain appDomain, 
+        public TestRuntimePluginLoader2(IAppDomain appDomain, 
                                  IPluginLoaderSettings settings,
                                  IPluginLoaderFactory<Org> pluginLoaderFactory,
                                  IPluginObjectCreator<Org> pluginObjectCreator,

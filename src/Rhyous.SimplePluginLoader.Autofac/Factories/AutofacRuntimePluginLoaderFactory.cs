@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using System;
 
 namespace Rhyous.SimplePluginLoader.DependencyInjection
 {
@@ -14,17 +13,17 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
         /// A static factory, that can be used in objects that may not have access
         /// to Dependency Injection.
         /// </summary>
-        public static AutofacRuntimePluginLoaderFactory Instance { get; set; }
+        public static IRuntimePluginLoaderFactory Instance { get; set; }
 
-        private readonly IComponentContext _Context;
+        private readonly ILifetimeScope _Scope;
 
         /// <summary>
         /// The AutofacRuntimePluginLoaderFactory constructor
         /// </summary>
-        /// <param name="componentContext">An Autofac ComponentContext object.</param>
-        public AutofacRuntimePluginLoaderFactory(IComponentContext componentContext)
+        /// <param name="scope">An Autofac ComponentContext object.</param>
+        public AutofacRuntimePluginLoaderFactory(ILifetimeScope scope)
         {
-            _Context = componentContext;
+            _Scope = scope;
         }
 
         #endregion
@@ -39,10 +38,16 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
         /// <param name="dependencies">Additional dependencies. These must be passed in in order.</param>
         /// <returns>An instantiated instance of IPluginObjectCreator{T}.</returns>
         public IRuntimePluginLoader<T> Create<TRuntimePluginLoader, T>(params object[] dependencies)
-            where TRuntimePluginLoader : IRuntimePluginLoader<T>
+            where TRuntimePluginLoader : class, IRuntimePluginLoader<T>
             where T : class
         {
-            return _Context.Resolve<TRuntimePluginLoader>();
+            var t = _Scope.ResolveOptional<TRuntimePluginLoader>();
+            if (t == null)
+            {
+                var subscope = _Scope.BeginLifetimeScope(b => { b.RegisterType<TRuntimePluginLoader>(); });
+                t = subscope.Resolve<TRuntimePluginLoader>();
+            }
+            return t;
         }
     }
 }

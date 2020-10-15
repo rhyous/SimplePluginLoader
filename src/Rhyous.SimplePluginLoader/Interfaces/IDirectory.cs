@@ -8,5 +8,6 @@ namespace Rhyous.SimplePluginLoader
         bool Exists(string path);
         string[] GetFiles(string path, string searchPattern);
         string[] GetFiles(string path, string searchPattern, SearchOption searchOption);
+        DirectoryInfo CreateDirectory(string path);
     }
 }

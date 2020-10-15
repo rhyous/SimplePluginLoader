@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Linq;
 
-namespace Rhyous.SimplePluginLoader.Factories
+namespace Rhyous.SimplePluginLoader
 {
     public class RuntimePluginLoaderFactory : IRuntimePluginLoaderFactory
     {
         #region Singleton
 
-        public static RuntimePluginLoaderFactory Instance { get; set; } = new RuntimePluginLoaderFactory();
+        public static IRuntimePluginLoaderFactory Instance { get; set; } = new RuntimePluginLoaderFactory();
 
         internal RuntimePluginLoaderFactory() { }
 
-        public SingletonObjects Singletons { get; set; }
+        public ISingletonObjects Singletons { get; set; }
 
         #endregion
 
         public IRuntimePluginLoader<T> Create<TRuntimePluginLoader, T>(params object[] dependencies)
-            where TRuntimePluginLoader : IRuntimePluginLoader<T>
+            where TRuntimePluginLoader : class, IRuntimePluginLoader<T>
             where T : class
         {
             if (Singletons == null)
@@ -45,27 +45,6 @@ namespace Rhyous.SimplePluginLoader.Factories
                                            Singletons.Logger,
                                            dependencies) as IRuntimePluginLoader<T>;
             return runtimePluginLoader;
-        }
-
-        public class SingletonObjects
-        {
-            public IPluginLoaderSettings Settings
-            {
-                get => _Settings ?? (_Settings = PluginLoaderSettings.Default);
-                set => _Settings = value;
-            } private IPluginLoaderSettings _Settings;
-
-            public IPluginLoaderLogger Logger => PluginLoaderLogger.Instance;
-            public IAppDomain AppDomain => new AppDomainWrapper(System.AppDomain.CurrentDomain, Logger);
-            public IAppSettings AppSettings => new AppSettings();
-            public IAssemblyNameReader AssemblyNameReader => new AssemblyNameReader();
-            public IAssemblyCache AssemblyCache => new AssemblyCache(AppDomain, AssemblyNameReader, Logger);
-            public AssemblyLoader AssemblyLoader => new AssemblyLoader(AppDomain, Settings, AssemblyCache, AssemblyNameReader, Logger);
-            public IPluginPaths PluginPaths => new AppPluginPaths(Settings.AppName, Settings.PluginFolder, AppDomain, Logger);
-            public IPluginDependencyResolverObjectCreator PluginDependencyResolverObjectCreator 
-                         => new PluginDependencyResolverObjectCreator(AppDomain, Settings, AssemblyLoader, Logger);
-            public IPluginDependencyResolverCacheFactory PluginDependencyResolverFactory 
-                        => new PluginDependencyResolverCacheFactory(PluginDependencyResolverObjectCreator, Logger);
-        }
+        }        
     }
 }
