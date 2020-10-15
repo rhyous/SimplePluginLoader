@@ -60,10 +60,12 @@ namespace Rhyous.SimplePluginLoader.Factories
             public IAppSettings AppSettings => new AppSettings();
             public IAssemblyNameReader AssemblyNameReader => new AssemblyNameReader();
             public IAssemblyCache AssemblyCache => new AssemblyCache(AppDomain, AssemblyNameReader, Logger);
+            public IAssemblyResolveCache AssemblyResolveCache => new AssemblyResolveCache();
+            public IWaiter Waiter => new Waiter(Logger);
             public AssemblyLoader AssemblyLoader => new AssemblyLoader(AppDomain, Settings, AssemblyCache, AssemblyNameReader, Logger);
             public IPluginPaths PluginPaths => new AppPluginPaths(Settings.AppName, Settings.PluginFolder, AppDomain, Logger);
             public IPluginDependencyResolverObjectCreator PluginDependencyResolverObjectCreator 
-                         => new PluginDependencyResolverObjectCreator(AppDomain, Settings, AssemblyLoader, Logger);
+                         => new PluginDependencyResolverObjectCreator(AppDomain, Settings, AssemblyLoader, Waiter, AssemblyResolveCache, Logger);
             public IPluginDependencyResolverCacheFactory PluginDependencyResolverFactory 
                         => new PluginDependencyResolverCacheFactory(PluginDependencyResolverObjectCreator, Logger);
         }

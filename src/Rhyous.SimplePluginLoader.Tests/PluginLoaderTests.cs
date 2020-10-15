@@ -81,6 +81,8 @@ namespace Rhyous.SimplePluginLoader.Tests
                 mockAssemblyCache.Object,
                 mockAssemblyNameReader.Object,
                 _MockAssemblyLoader.Object,
+                new Waiter(mockLogger.Object),
+                new AssemblyResolveCache(),
                 mockPluginDependencyResolverObjectCreator.Object,
                 mockPluginDependencyResolverFactory.Object,
                 mockPluginCacheFactory.Object,

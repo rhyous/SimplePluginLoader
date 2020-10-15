@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace Rhyous.SimplePluginLoader
 {
-
+    /// <summary>
+    /// This caches the Assembly and version by the dll path as a string
+    /// </summary>
     public class AssemblyCache : IAssemblyCache
     {
         private readonly IAppDomain _AppDomain;

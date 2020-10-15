@@ -3,7 +3,10 @@ using Moq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Rhyous.SimplePluginLoader.Tests
 {
@@ -17,6 +20,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         private Mock<IAssemblyLoader> _MockAssemblyLoader;
         private Mock<IPlugin> _MockPlugin;
         private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
+        private Mock<IDirectory> _MockDirectory;
 
         [TestInitialize]
         public void TestInitialize()
@@ -28,14 +32,20 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockAssemblyLoader = _MockRepository.Create<IAssemblyLoader>();
             _MockPlugin = _MockRepository.Create<IPlugin>();
             _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
+            _MockDirectory = _MockRepository.Create<IDirectory>();
         }
 
         private PluginDependencyResolver CreatePluginDependencyResolver()
         {
-            return new PluginDependencyResolver(_MockAppDomain.Object, _MockIPluginLoaderSettings.Object,
-                                                _MockAssemblyLoader.Object, _MockPluginLoaderLogger.Object)
+            return new PluginDependencyResolver(_MockAppDomain.Object,
+                                                _MockIPluginLoaderSettings.Object,
+                                                _MockAssemblyLoader.Object,
+                                                new Waiter(_MockPluginLoaderLogger.Object),
+                                                new AssemblyResolveCache(),
+                                                _MockPluginLoaderLogger.Object)
             {
-                Plugin = _MockPlugin.Object
+                Plugin = _MockPlugin.Object,
+                Directory = _MockDirectory.Object
             };
         }
 
@@ -50,6 +60,8 @@ namespace Rhyous.SimplePluginLoader.Tests
                     null,
                     _MockIPluginLoaderSettings.Object,
                     _MockAssemblyLoader.Object,
+                    new Waiter(_MockPluginLoaderLogger.Object),
+                    new AssemblyResolveCache(),
                     _MockPluginLoaderLogger.Object);
             });
         }
@@ -63,12 +75,14 @@ namespace Rhyous.SimplePluginLoader.Tests
                     _MockAppDomain.Object,
                     null,
                     _MockAssemblyLoader.Object,
+                    new Waiter(_MockPluginLoaderLogger.Object),
+                    new AssemblyResolveCache(),
                     _MockPluginLoaderLogger.Object);
             });
         }
 
         [TestMethod]
-        public void PluginDependencyResolver_Constructor_NullAssemblyLoade_Test()
+        public void PluginDependencyResolver_Constructor_NullAssemblyLoader_Test()
         {
             Assert.ThrowsException<ArgumentNullException>(() =>
             {
@@ -76,6 +90,8 @@ namespace Rhyous.SimplePluginLoader.Tests
                     _MockAppDomain.Object,
                     _MockIPluginLoaderSettings.Object,
                     null,
+                    new Waiter(_MockPluginLoaderLogger.Object),
+                    new AssemblyResolveCache(),
                     _MockPluginLoaderLogger.Object);
             });
         }
@@ -133,6 +149,8 @@ namespace Rhyous.SimplePluginLoader.Tests
             var pluginDependencyResolver = new PluginDependencyResolver(_MockAppDomain.Object,
                                                                         _MockIPluginLoaderSettings.Object,
                                                                         _MockAssemblyLoader.Object,
+                                                                        new Waiter(_MockPluginLoaderLogger.Object),
+                                                                        new AssemblyResolveCache(),
                                                                         _MockPluginLoaderLogger.Object);
             _MockPluginLoaderLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), "Removed AssemblyResolver for plugin: unknown."));
 
@@ -154,6 +172,17 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockPlugin.Setup(m => m.Directory).Returns(@"c:\my\plugins");
             _MockPlugin.Setup(m => m.Name).Returns(@"MyPlugin");
             _MockIPluginLoaderSettings.Setup(m => m.SharedPaths).Returns((IEnumerable<string>)null);
+            _MockPluginLoaderLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>()));
+                var pathList = _MockPlugin.Object.GetPaths(_MockIPluginLoaderSettings.Object);
+            foreach (var path in pathList)
+            {
+                _MockDirectory.Setup(m => m.Exists(path)).Returns(true);
+            }
+
+            var mockAssembly = _MockRepository.Create<IAssembly>();
+            mockAssembly.Setup(m => m.Instance).Returns(Assembly.GetExecutingAssembly());
+            _MockAssemblyLoader.Setup(m => m.TryLoad(@"name.dll", @"name.pdb", null))
+                   .Returns(mockAssembly.Object);
 
             var pluginDependencyResolver = CreatePluginDependencyResolver();
 
@@ -161,7 +190,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             var result = pluginDependencyResolver.AssemblyResolveHandler(sender, args);
 
             // Assert
-            Assert.IsNull(result);
+            Assert.IsNotNull(result);
             _MockRepository.VerifyAll();
         }
 
@@ -173,7 +202,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             ResolveEventArgs args = new ResolveEventArgs("name");
             var pluginDependencyResolver = CreatePluginDependencyResolver();
             pluginDependencyResolver.Paths = new List<string>();
-
+            _MockPluginLoaderLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>()));
             // Act
             var result = pluginDependencyResolver.AssemblyResolveHandler(sender, args);
 
@@ -192,16 +221,15 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockPlugin.Setup(m => m.Directory).Returns(@"c:\my\plugins");
             _MockPlugin.Setup(m => m.Name).Returns(@"MyPlugin");
             _MockIPluginLoaderSettings.Setup(m => m.SharedPaths).Returns((IEnumerable<string>)null);
+            _MockPluginLoaderLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>()));
+            var pathList = _MockPlugin.Object.GetPaths(_MockIPluginLoaderSettings.Object);
+            foreach (var path in pathList)
+            {
+                _MockDirectory.Setup(m => m.Exists(path)).Returns(true);
+            }
+
             var pluginDependencyResolver = CreatePluginDependencyResolver();
-            var pathList = new List<string> {
-                                "",
-                                "c:\\my\\plugins" ,
-                                "c:\\my\\plugins\\bin" ,
-                                "c:\\my\\plugins\\MyPlugin" ,
-                                @"c:\bin" ,
-                                @"c:\sharedbin\" ,
-                                @"c:\Libs"
-                            };
+
             pluginDependencyResolver._AttemptedPaths.TryAdd("name", pathList);
 
             // Act
@@ -213,20 +241,64 @@ namespace Rhyous.SimplePluginLoader.Tests
         }
 
         [TestMethod]
-        public void PluginDependencyResolver_AssemblyResolveHandler_StateUnderTest_ExpectedBehavior()
+        public void PluginDependencyResolver_AssemblyResolveHandler_MultipleHitsAtTheSameTime_Test()
         {
             // Arrange
             object sender = new { };
             ResolveEventArgs args = new ResolveEventArgs("name");
+            _MockPlugin.Setup(m => m.FullPath).Returns(@"c:\my\plugins\MyPlugin.dll");
+            _MockPlugin.Setup(m => m.Directory).Returns(@"c:\my\plugins");
+            _MockPlugin.Setup(m => m.Name).Returns(@"MyPlugin");
+            _MockIPluginLoaderSettings.Setup(m => m.SharedPaths).Returns((IEnumerable<string>)null);
             var pluginDependencyResolver = CreatePluginDependencyResolver();
-            pluginDependencyResolver.Paths = new List<string>();
+            var pathList = _MockPlugin.Object.GetPaths(_MockIPluginLoaderSettings.Object);
+            foreach (var path in pathList)
+            {
+                _MockDirectory.Setup(m => m.Exists(path)).Returns(true);
+            }
+            var mockAssembly = _MockRepository.Create<IAssembly>();
+            mockAssembly.Setup(m => m.Instance).Returns(Assembly.GetExecutingAssembly());
+            _MockAssemblyLoader.Setup(m => m.TryLoad(@"name.dll", @"name.pdb", null))
+                               .Returns(mockAssembly.Object);
 
+            var listLog = new ConcurrentBag<string>();
+            _MockPluginLoaderLogger.Setup(m => m.WriteLine(It.IsAny<PluginLoaderLogLevel>(), It.IsAny<string>()))
+                                   .Callback((PluginLoaderLogLevel level, string msg) => listLog.Add($"{level} - {msg}{Environment.NewLine}"));
 
             // Act
-            var result = pluginDependencyResolver.AssemblyResolveHandler(sender, args);
+            Parallel.Invoke(() => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 01
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 02
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 03
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 04
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 05
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 06
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 07
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 08
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 09
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 10
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 11
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 12
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 13
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 14
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 15
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 16
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 17
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 18
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 19
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 20
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 21
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 22
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 23
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 24
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 25
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 26
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 27
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args), // 28
+                            () => pluginDependencyResolver.AssemblyResolveHandler(sender, args));// 29
 
             // Assert
-            Assert.IsNull(result);
+            Assert.AreEqual(1, listLog.Count(l=> Regex.IsMatch(l,"Debug - Thread [0-9]+ is searching for name_.\r\n")));
+            Assert.AreEqual(28, listLog.Count(l => Regex.IsMatch(l, "Debug - Thread [0-9]+ is waiting name_.\r\n")));
             _MockRepository.VerifyAll();
         }
         #endregion

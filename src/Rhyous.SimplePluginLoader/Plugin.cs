@@ -11,7 +11,6 @@ namespace Rhyous.SimplePluginLoader
     public class Plugin<T> : IPlugin<T>
     {
         private readonly ITypeLoader<T> _TypeLoader;
-        private readonly IPluginDependencyResolver _DependencyResolver;
         private readonly IAssemblyLoader _AssemblyLoader;
 
         public Plugin(ITypeLoader<T> typeLoader,
@@ -19,9 +18,9 @@ namespace Rhyous.SimplePluginLoader
                       IAssemblyLoader assemblyLoader)
         {
             _TypeLoader = typeLoader ?? throw new ArgumentNullException(nameof(typeLoader));
-            _DependencyResolver = dependencyResolver ?? throw new ArgumentNullException(nameof(dependencyResolver));
-            if (_DependencyResolver.Plugin == null)
-                _DependencyResolver.Plugin = this;
+            DependencyResolver = dependencyResolver ?? throw new ArgumentNullException(nameof(dependencyResolver));
+            if (DependencyResolver.Plugin == null)
+                DependencyResolver.Plugin = this;
             _AssemblyLoader = assemblyLoader ?? throw new ArgumentNullException(nameof(assemblyLoader));
         }
 
@@ -34,6 +33,8 @@ namespace Rhyous.SimplePluginLoader
                 return Path.GetFileNameWithoutExtension(File);
             }
         }
+
+        public IPluginDependencyResolver DependencyResolver { get; }
 
         [ExcludeFromCodeCoverage]
         public string Directory { get; set; }
@@ -91,10 +92,10 @@ namespace Rhyous.SimplePluginLoader
 
         internal List<Type> GetPluginTypes()
         {
-            _DependencyResolver.AddDependencyResolver();
+            DependencyResolver.AddDependencyResolver();
             var types = _TypeLoader.Load(Assembly);
-            if ((types == null || !types.Any()) && _DependencyResolver.Plugin == this)
-                _DependencyResolver.RemoveDependencyResolver();
+            if ((types == null || !types.Any()) && DependencyResolver.Plugin == this)
+                DependencyResolver.RemoveDependencyResolver();
             return types;
         }
 
@@ -124,8 +125,8 @@ namespace Rhyous.SimplePluginLoader
                 // Remove should already be done by _DependencyResolver.Dispose(), but if a custom IDependencyResolver is 
                 // used, we can't guarantee that, so let's both unregister and dispose of it. It doesn't cause any issue 
                 // if a registration with an event is removed twice.
-                _DependencyResolver.RemoveDependencyResolver();
-                _DependencyResolver.Dispose();
+                DependencyResolver.RemoveDependencyResolver();
+                DependencyResolver.Dispose();
             }
             _disposed = true;
         }

@@ -23,6 +23,8 @@ namespace Rhyous.SimplePluginLoader
                              IAssemblyCache assemblyDictionary = null,
                              IAssemblyNameReader assemblyNameReader = null,
                              IAssemblyLoader assemblyLoader = null,
+                             IWaiter waiter = null,
+                             IAssemblyResolveCache assemblyResolveCache = null,
                              IPluginDependencyResolverObjectCreator pluginDependencyResolverObjectCreator = null,
                              IPluginDependencyResolverCacheFactory pluginDependencyResolverCacheFactory = null,
                              IPluginCacheFactory<T> pluginCacheFactory = null,
@@ -35,7 +37,9 @@ namespace Rhyous.SimplePluginLoader
             assemblyNameReader = assemblyNameReader ?? new AssemblyNameReader();
             assemblyDictionary = assemblyDictionary ?? new AssemblyCache(appDomain, assemblyNameReader, logger);
             assemblyLoader = assemblyLoader ?? new AssemblyLoader(appDomain, settings, assemblyDictionary, assemblyNameReader, logger);
-            pluginDependencyResolverObjectCreator = pluginDependencyResolverObjectCreator ?? new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, logger);
+            waiter = waiter ?? new Waiter(logger);
+            assemblyResolveCache = assemblyResolveCache = new AssemblyResolveCache();
+            pluginDependencyResolverObjectCreator = pluginDependencyResolverObjectCreator ?? new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, waiter, assemblyResolveCache, logger);
             pluginDependencyResolverCacheFactory = pluginDependencyResolverCacheFactory ?? new PluginDependencyResolverCacheFactory(pluginDependencyResolverObjectCreator, logger);
             pluginCacheFactory = pluginCacheFactory ?? new PluginCacheFactory<T>(typeLoader, pluginDependencyResolverCacheFactory, assemblyLoader,  logger);
             return new PluginLoader<T>(paths, pluginCacheFactory);
