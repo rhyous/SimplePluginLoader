@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="copy &quot;$(SolutionDir)\Examples\Dependencies\Example.Dependency\bin\$(ConfigurationName)\Example.Dependency.dll&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.Dependency\bin\$(ConfigurationName)\Example.Dependency.pdb&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.DependencyOfDependency\bin\$(ConfigurationName)\Example.DependencyOfDependency.dll&quot; &quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.DependencyOfDependency\bin\$(ConfigurationName)\Example.DependencyOfDependency.pdb&quot; &quot;$(ProjectDir)\PluginDLLs&quot;" />
+    <Exec Command="SET copyToDir=&quot;$(ProjectDir)\PluginDLLs&quot;&#xD;&#xA;IF NOT EXIST &quot;%25copyToDir%25&quot; MKDIR &quot;%25copyToDir%25&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.Dependency\bin\$(ConfigurationName)\Example.Dependency.dll&quot; &quot;%25copyToDir%25&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.Dependency\bin\$(ConfigurationName)\Example.Dependency.pdb&quot; &quot;%25copyToDir%25&quot;&#xD;&#xA;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.DependencyOfDependency\bin\$(ConfigurationName)\Example.DependencyOfDependency.dll&quot; &quot;%25copyToDir%25&quot;&#xD;&#xA;copy &quot;$(SolutionDir)\Examples\Dependencies\Example.DependencyOfDependency\bin\$(ConfigurationName)\Example.DependencyOfDependency.pdb&quot; &quot;%25copyToDir%25&quot;" />
   </Target>
 
 </Project>
