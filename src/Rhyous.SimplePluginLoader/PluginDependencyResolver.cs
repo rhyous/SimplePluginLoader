@@ -77,13 +77,13 @@ namespace Rhyous.SimplePluginLoader
             _Waiter.Wait(key);
             if (_AssemblyResolveCache.Cache.TryGetValue(key, out IAssembly cachedAssembly))
             {
-                _Waiter.InProgress[key] = true;
+                _Waiter.InProgress[key] = false;
                 return cachedAssembly.Instance;
             }
             var paths = GetPathsToSearch(Paths, args, key);
             if (paths == null || !paths.Any())
             {
-                _Waiter.InProgress[key] = true;
+                _Waiter.InProgress[key] = false;
                 return null;
             }
             foreach (var path in paths)
@@ -92,7 +92,7 @@ namespace Rhyous.SimplePluginLoader
                 if (!Directory.Exists(path))
                 {
                     Paths.Remove(path);
-                    _Waiter.InProgress[key] = true;
+                    _Waiter.InProgress[key] = false;
                     continue;
                 }
                 var dll = System.IO.Path.Combine(path, file + ".dll");
@@ -102,12 +102,12 @@ namespace Rhyous.SimplePluginLoader
                     : _AssemblyLoader.TryLoad(dll, pdb, version);
                 if (assembly != null)
                 {
-                    _Waiter.InProgress[key] = true;
+                    _Waiter.InProgress[key] = false;
                     _AssemblyResolveCache.Cache.TryAdd(key, assembly);
                     return assembly.Instance;
                 }
             }
-            _Waiter.InProgress[key] = true;
+            _Waiter.InProgress[key] = false;
             return null;
         }
 
