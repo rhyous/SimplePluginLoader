@@ -21,6 +21,8 @@ namespace Rhyous.SimplePluginLoader.Tests
         private Mock<IPlugin> _MockPlugin;
         private Mock<IPluginLoaderLogger> _MockPluginLoaderLogger;
         private Mock<IDirectory> _MockDirectory;
+        private IWaiter _Waiter;
+        private IAssemblyResolveCache _AssemblyResolveCache;
 
         [TestInitialize]
         public void TestInitialize()
@@ -33,6 +35,8 @@ namespace Rhyous.SimplePluginLoader.Tests
             _MockPlugin = _MockRepository.Create<IPlugin>();
             _MockPluginLoaderLogger = _MockRepository.Create<IPluginLoaderLogger>();
             _MockDirectory = _MockRepository.Create<IDirectory>();
+            _Waiter = new Waiter(_MockPluginLoaderLogger.Object);
+            _AssemblyResolveCache = new AssemblyResolveCache();
         }
 
         private PluginDependencyResolver CreatePluginDependencyResolver()
@@ -40,8 +44,8 @@ namespace Rhyous.SimplePluginLoader.Tests
             return new PluginDependencyResolver(_MockAppDomain.Object,
                                                 _MockIPluginLoaderSettings.Object,
                                                 _MockAssemblyLoader.Object,
-                                                new Waiter(_MockPluginLoaderLogger.Object),
-                                                new AssemblyResolveCache(),
+                                                _Waiter,
+                                                _AssemblyResolveCache,
                                                 _MockPluginLoaderLogger.Object)
             {
                 Plugin = _MockPlugin.Object,
@@ -299,6 +303,7 @@ namespace Rhyous.SimplePluginLoader.Tests
             // Assert
             Assert.AreEqual(1, listLog.Count(l=> Regex.IsMatch(l,"Debug - Thread [0-9]+ is searching for name_.\r\n")));
             Assert.AreEqual(28, listLog.Count(l => Regex.IsMatch(l, "Debug - Thread [0-9]+ is waiting name_.\r\n")));
+            Assert.IsFalse(_Waiter.InProgress.Values.All(a => a));
             _MockRepository.VerifyAll();
         }
         #endregion
