@@ -39,7 +39,9 @@ namespace Tool
             var assemblyCache = new AssemblyCache(appDomain, assemblyNameReader, logger);
             var assemblyLoader = new AssemblyLoader(appDomain, settings, assemblyCache, assemblyNameReader, logger);
             var pluginPaths = new AppPluginPaths(settings.AppName, settings.PluginFolder, appDomain, logger);
-            var pluginDependencyResolverObjectCreator = new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, logger);
+            var waiter = new Waiter(logger);
+            var assemblyResolveCache = new AssemblyResolveCache();
+            var pluginDependencyResolverObjectCreator = new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, waiter, assemblyResolveCache, logger);
             var pluginDependencyResolverFactory = new PluginDependencyResolverCacheFactory(pluginDependencyResolverObjectCreator, logger);
 
             // ITool plugin loader objects

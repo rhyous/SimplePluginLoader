@@ -39,6 +39,10 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             builder.RegisterType<AssemblyCache>()
                    .As<IAssemblyCache>()
                    .SingleInstance();
+            builder.RegisterType<Waiter>()
+                   .As<IWaiter>();
+            builder.RegisterType<AssemblyResolveCache>()
+                   .As<IAssemblyResolveCache>();
             builder.RegisterType<AssemblyNameReader>()
                    .As<IAssemblyNameReader>()
                    .SingleInstance();

@@ -20,13 +20,17 @@ namespace Rhyous.SimplePluginLoader
         private readonly IPluginObjectCreator<T> _PluginObjectCreator;
         private readonly IPluginPaths _PluginPaths;
         protected readonly IPluginLoaderLogger _Logger;
+        private readonly bool _DisconnectResolverOnPluginLoad;
+        private readonly bool _DisconnectResolverOnPluginTypeLoad;
 
         public RuntimePluginLoaderBase(IAppDomain appDomain,
                                        IPluginLoaderSettings settings,
                                        IPluginLoaderFactory<T> pluginLoaderFactory,
                                        IPluginObjectCreator<T> pluginObjectCreator,
                                        IPluginPaths pluginPaths = null,
-                                       IPluginLoaderLogger logger = null)
+                                       IPluginLoaderLogger logger = null,
+                                       bool disconnectResolverOnPluginLoad = false,
+                                       bool disconnectResolverOnPluginTypeLoad = false)
         {
             _AppDomain = appDomain ?? throw new ArgumentNullException(nameof(appDomain));
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -37,6 +41,8 @@ namespace Rhyous.SimplePluginLoader
                          ? pluginPaths
                          : new PluginPaths { Paths = pluginPaths.Paths.Select(p => Path.Combine(p, PluginSubFolder)) };
             _Logger = logger;
+            _DisconnectResolverOnPluginLoad = disconnectResolverOnPluginLoad;
+            _DisconnectResolverOnPluginTypeLoad = disconnectResolverOnPluginTypeLoad;
         }
 
         /// <inheritdoc />
@@ -76,8 +82,21 @@ namespace Rhyous.SimplePluginLoader
         /// <summary>
         /// Gets only the types of a plugin, not an actual instance.
         /// </summary>
-        public virtual List<Type> PluginTypes { get { return _PluginTypes ?? (_PluginTypes = PluginCollection?.SelectMany(p => p.PluginTypes).ToList()); } }
+        public virtual List<Type> PluginTypes { get { return _PluginTypes ?? (_PluginTypes = GetPluginTypes()); } }
         private List<Type> _PluginTypes;
+
+        private List<Type> GetPluginTypes() 
+        {
+            var types = PluginCollection?.SelectMany(p => p.PluginTypes).ToList();
+            if (_DisconnectResolverOnPluginTypeLoad)
+            {
+                foreach (var plugin in PluginCollection)
+                {
+                    plugin.DependencyResolver.RemoveDependencyResolver();
+                }
+            }
+            return types;
+        }
 
         /// <summary>
         /// This populates PluginCollection.
@@ -101,7 +120,15 @@ namespace Rhyous.SimplePluginLoader
 
         public virtual IList<T> CreatePluginObjects(IPluginObjectCreator<T> pluginObjectCreator = null)
         {
-            return PluginCollection?.CreatePluginObjects(pluginObjectCreator ?? _PluginObjectCreator);
+            var pluginObjects = PluginCollection?.CreatePluginObjects(pluginObjectCreator ?? _PluginObjectCreator);
+            if (_DisconnectResolverOnPluginLoad)
+            {
+                foreach (var plugin in PluginCollection)
+                {
+                    plugin.DependencyResolver.RemoveDependencyResolver();
+                }
+            }
+            return pluginObjects;
         }
     }
 }
