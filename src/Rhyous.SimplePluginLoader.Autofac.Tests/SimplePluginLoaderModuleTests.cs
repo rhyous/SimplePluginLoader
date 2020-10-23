@@ -8,7 +8,7 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
     [TestClass]
     public class SimplePluginLoaderModuleTests
     {
-        IContainer Container; 
+        IContainer Container;
 
         [TestInitialize]
         public void TestInitialize()
