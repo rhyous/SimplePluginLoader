@@ -23,8 +23,8 @@ namespace Tools.Ui
             base.OnStartup(e);
             Tools.Add(new Hammer());
             var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
-            var logger = PluginLoaderLogger.Instance;
             var appSettings = new AppSettings();
+            var logger = PluginLoaderLogger.Factory(appSettings);
             var settings = new PluginLoaderSettings(appSettings);
             var typeLoader = new TypeLoader<ITool>(PluginLoaderSettings.Default, logger);
             var assemblyNameReader = new AssemblyNameReader();

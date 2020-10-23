@@ -13,6 +13,11 @@ namespace Rhyous.SimplePluginLoader
     /// <remarks>It is expected that most consumers will implement their own loggers. This logger is quite simple.</remarks>
     public class PluginLoaderLogger : IPluginLoaderLogger
     {
+        public static IPluginLoaderLogger Factory(IAppSettings appSettings)
+        {
+            return Instance = new PluginLoaderLogger(appSettings);
+        }
+
         public string LogPathConfiguration { get { return _AppSettings.Settings["PluginLoaderLogPath"]; } }
         public string LogLevelConfiguration { get { return _AppSettings.Settings["PluginLoaderLogLevel"]; } }
 
@@ -23,7 +28,7 @@ namespace Rhyous.SimplePluginLoader
         internal static Locked<int> InstanceCount => new Locked<int>();
         internal int InstanceId;
 
-        public static PluginLoaderLogger Instance;
+        public static IPluginLoaderLogger Instance;
 
         private readonly IAppSettings _AppSettings;
 
@@ -152,8 +157,8 @@ namespace Rhyous.SimplePluginLoader
                 {
                     try
                     {
-                        _TextWriter.Write($"{logMessage.Level}: {logMessage.Message}");
-                        _TextWriter.Flush();
+                        Writer.Write($"{logMessage.Level}: {logMessage.Message}");
+                        Writer.Flush();
                     }
                     catch { } // If we fail to log, don't crash. Failure to log shouldn't cause a crash.
                 }

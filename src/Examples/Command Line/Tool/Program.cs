@@ -30,9 +30,9 @@ namespace Tool
             };
 
             // Common objects
-            var logger = PluginLoaderLogger.Instance;
-            var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain, logger);
             var appSettings = new AppSettings();
+            var logger = PluginLoaderLogger.Factory(appSettings);
+            var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain, logger);
             PluginLoaderSettings.Default = new MyPluginLoaderSettings(appSettings);
             var settings = PluginLoaderSettings.Default;
             var assemblyNameReader = new AssemblyNameReader();
