@@ -1,6 +1,6 @@
 ﻿using Rhyous.SimplePluginLoader.Extensions;
 using System;
-using System.Configuration;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -13,49 +13,45 @@ namespace Rhyous.SimplePluginLoader
     /// <remarks>It is expected that most consumers will implement their own loggers. This logger is quite simple.</remarks>
     public class PluginLoaderLogger : IPluginLoaderLogger
     {
-        public static string LogPathConfiguration { get { return ConfigurationManager.AppSettings["PluginLoaderLogPath"]; } }
-        public static string LogLevelConfiguration { get { return ConfigurationManager.AppSettings["PluginLoaderLogLevel"]; } }
+        public static IPluginLoaderLogger Factory(IAppSettings appSettings)
+        {
+            return Instance = new PluginLoaderLogger(appSettings);
+        }
+
+        public string LogPathConfiguration { get { return _AppSettings.Settings["PluginLoaderLogPath"]; } }
+        public string LogLevelConfiguration { get { return _AppSettings.Settings["PluginLoaderLogLevel"]; } }
 
         #region Singleton
-
-        private static readonly Lazy<PluginLoaderLogger> Lazy = new Lazy<PluginLoaderLogger>(() => new PluginLoaderLogger());
+        
+        internal ConcurrentQueue<LogMessage> _LogMessages = new ConcurrentQueue<LogMessage>();
 
         internal static Locked<int> InstanceCount => new Locked<int>();
         internal int InstanceId;
 
-        public static PluginLoaderLogger Instance { get { return Lazy.Value; } }
+        public static IPluginLoaderLogger Instance;
 
-        internal PluginLoaderLogger() { InstanceId = ++InstanceCount.Value; }
+        private readonly IAppSettings _AppSettings;
+
+        internal PluginLoaderLogger(IAppSettings appSettings)
+        {
+            InstanceId = ++InstanceCount.Value; ;
+            _AppSettings = appSettings;
+        }
 
         #endregion
 
-
-
-        public StreamWriter Writer
+        public ITextWriter SafeSetWriter()
         {
-            get {
-                if (_Writer == null)
-                    SafeSetWriter();
-                return _Writer;
-            }             
-            set { _Writer = value; }
-        } private StreamWriter _Writer;
-
-        public void SafeSetWriter(StreamWriter writer = null)
-        {
-            if (_Writer == null)
+            if (_TextWriter != null)
+                return _TextWriter;
+            lock (_Locker)
             {
-                lock (_Locker)
-                {
-                    if (_Writer == null)
-                    {
-                        CreateDirectory();
-                        _Writer = writer ?? new StreamWriter(LogFullPath, true);
-
-                    }
-                }
+                if (_TextWriter != null)
+                    return _TextWriter;
+                CreateDirectory();
+                return _TextWriter = new TextWriterWrapper(new StreamWriter(LogFullPath, true));
             }
-        } private object _Locker = new object();  
+        } private object _Locker = new object();
 
         public string LogPath
         {
@@ -66,7 +62,8 @@ namespace Rhyous.SimplePluginLoader
                     : LogPathConfiguration);
             }
             set { _LogPath = value; }
-        } private string _LogPath;
+        }
+        private string _LogPath;
 
         public PluginLoaderLogLevel LogLevel
         {
@@ -83,13 +80,15 @@ namespace Rhyous.SimplePluginLoader
         public string LogFullPath { get { return Path.Combine(LogPath, LogFile); } }
 
         public bool LogExists { get { return File.Exists(LogFullPath); } }
-                
+
         public void Write(PluginLoaderLogLevel level, string msg)
         {
+            if (string.IsNullOrEmpty(msg))
+                return;
             if (level >= LogLevel)
             {
-                Writer.Write(msg);
-                Writer.Flush();
+                _LogMessages.Enqueue(new LogMessage(level, msg));
+                WriteQueue();
             }
         }
 
@@ -108,6 +107,8 @@ namespace Rhyous.SimplePluginLoader
 
         public void Log(Exception e)
         {
+            if (e == null)
+                return;
             if (LogLevel == PluginLoaderLogLevel.Debug)
                 WriteLines(PluginLoaderLogLevel.Debug, e.ToString());
             if (LogLevel == PluginLoaderLogLevel.Info)
@@ -136,6 +137,45 @@ namespace Rhyous.SimplePluginLoader
             get { return _File ?? (_File = FileWrapper.Instance); }
             set { _File = value; }
         } private IFile _File;
+
+        internal ITextWriter Writer
+        {
+            get { return SafeSetWriter(); }
+            set { _TextWriter = value; }
+        } private ITextWriter _TextWriter;
+
         #endregion
+
+        internal void WriteQueue()
+        {
+            if (_IsWritingToQueue)
+                return;
+            _IsWritingToQueue = true;
+            while (_LogMessages.Any())
+            {
+                if (_LogMessages.TryDequeue(out LogMessage logMessage))
+                {
+                    try
+                    {
+                        Writer.Write($"{logMessage.Level}: {logMessage.Message}");
+                        Writer.Flush();
+                    }
+                    catch { } // If we fail to log, don't crash. Failure to log shouldn't cause a crash.
+                }
+            }
+            _IsWritingToQueue = false;
+        }
+        private bool _IsWritingToQueue;
+    }
+
+    internal struct LogMessage
+    {
+        public LogMessage(PluginLoaderLogLevel level, string message)
+        {
+            Level = level;
+            Message = message;
+        }
+        public readonly PluginLoaderLogLevel Level;
+        public readonly string Message;
     }
 }

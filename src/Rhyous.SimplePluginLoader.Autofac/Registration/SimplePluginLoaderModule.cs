@@ -15,7 +15,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
         /// <param name="builder">The Autofac ContainerBuilder.</param>
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(PluginLoaderLogger.Instance)
+            builder.Register((ctx) => PluginLoaderLogger.Instance = new PluginLoaderLogger(ctx.Resolve<IAppSettings>()))
                    .As<IPluginLoaderLogger>()
                    .SingleInstance();
             builder.RegisterInstance(AppDomain.CurrentDomain)
