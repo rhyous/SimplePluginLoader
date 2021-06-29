@@ -29,4 +29,4 @@ deploy:
   on:
     branch: master
   api_key:
-    secure: YuESu/nQz4WK2RIjra4BXLJ7dDNM/7mJcKJAJQZCiYlKgMBPozzyCSRIBgu/72mC
+    secure: 0atBWZHBxA1tMMSATgnvZ3ew3l38cESi/pSrosX0j8OevgbxgA9z75qtyBnCfYfz
