@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Rhyous.SimplePluginLoader
 {
     public class PluginObjectCreator<T> : IPluginObjectCreator<T>
-        where T : class
     {
         private readonly IPluginLoaderSettings _Settings;
         private readonly IPluginLoaderLogger _Logger;
@@ -23,7 +21,7 @@ namespace Rhyous.SimplePluginLoader
         {
             if (type == null)
                 type = typeof(T);
-            T obj = null;
+            T obj = default;
             try
             {
                 obj = _ObjectCreator.Create(type);

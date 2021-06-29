@@ -40,16 +40,14 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             var scope = _ComponentContext.Resolve<ILifetimeScope>();
             Type typeToLoad = null;
 
-            using (var pluginScope = scope.BeginLifetimeScope((builder) =>
+            var pluginScope = scope.BeginLifetimeScope((builder) =>
             {
                 typeToLoad = RegisterTypeMethod(builder, type, typeof(T));
                 _PluginDependecyRegistrar.RegisterPluginDependencies(builder, plugin, type);
-            }))
-            {
-                if (typeToLoad == null || typeToLoad.IsGenericTypeDefinition)
-                    return default(T);
-                return (T)pluginScope.Resolve(typeToLoad);
-            }
+            });
+            if (typeToLoad == null || typeToLoad.IsGenericTypeDefinition)
+                return default(T);
+            return (T)pluginScope.Resolve(typeToLoad);
         }
 
         /// <summary>This wrapper aroudn the extension method is used to add ease of Unit Testing</summary>

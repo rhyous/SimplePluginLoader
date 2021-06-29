@@ -26,7 +26,6 @@ namespace Rhyous.SimplePluginLoader.Tests.Factories
 
 
         private PluginObjectCreator<T> CreatePluginObjectCreator<T>(bool nullLogger = false, Mock<IObjectCreator<T>> mockObjectCreator = null)
-            where T : class
         {
             mockObjectCreator = mockObjectCreator ?? _MockRepository.Create<IObjectCreator<T>>();
             return new PluginObjectCreator<T>(

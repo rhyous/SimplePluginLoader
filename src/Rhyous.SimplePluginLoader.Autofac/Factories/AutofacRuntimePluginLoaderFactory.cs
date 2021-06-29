@@ -39,7 +39,6 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
         /// <returns>An instantiated instance of IPluginObjectCreator{T}.</returns>
         public IRuntimePluginLoader<T> Create<TRuntimePluginLoader, T>(params object[] dependencies)
             where TRuntimePluginLoader : class, IRuntimePluginLoader<T>
-            where T : class
         {
             var t = _Scope.ResolveOptional<TRuntimePluginLoader>();
             if (t == null)

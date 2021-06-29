@@ -9,7 +9,6 @@ using System.Reflection;
 namespace Rhyous.SimplePluginLoader
 {
     public class PluginFinder<T> : IDisposable, IPluginFinder<T>
-        where T : class
     {
         private const string DllExtension = "*.dll";
         private readonly IPluginLoader<T> _PluginLoader;
@@ -36,13 +35,13 @@ namespace Rhyous.SimplePluginLoader
         public T FindPlugin(string pluginName, string dir, IPluginObjectCreator<T> pluginObjectCreator = null)
         {
             if (string.IsNullOrWhiteSpace(pluginName))
-                return null;
+                return default(T);
             if (string.IsNullOrWhiteSpace(dir))
-                return null;
+                return default(T);
             _Logger?.WriteLine(PluginLoaderLogLevel.Info, $"Attempting to find plugin: {pluginName}; from path: {dir}");
             var plugins = _PluginLoader.LoadPlugins(Directory.GetFiles(dir, DllExtension));
             if (plugins == null || !plugins.Any())
-                return null;
+                return default(T);
             pluginObjectCreator = pluginObjectCreator ?? _PluginObjectCreator;
             foreach (var plugin in plugins)
             {
@@ -72,7 +71,7 @@ namespace Rhyous.SimplePluginLoader
                     }
                 }
             }
-            return null;
+            return default(T);
         }
         
         #region IDisposable

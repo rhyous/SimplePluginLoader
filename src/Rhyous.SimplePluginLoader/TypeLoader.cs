@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace Rhyous.SimplePluginLoader
 {
     public class TypeLoader<T> : ITypeLoader<T>
-        where T : class
     {
         private readonly IPluginLoaderSettings _Settings;
         private readonly IPluginLoaderLogger _Logger;

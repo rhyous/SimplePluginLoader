@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Rhyous.SimplePluginLoader
 {
-    public class PluginCollection<T> : List<IPlugin<T>> where T : class
+    public class PluginCollection<T> : List<IPlugin<T>>
     {
         public PluginCollection()
         {

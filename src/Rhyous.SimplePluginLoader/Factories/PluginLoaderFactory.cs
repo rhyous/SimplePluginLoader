@@ -1,7 +1,6 @@
 ﻿namespace Rhyous.SimplePluginLoader
 {
     public class PluginLoaderFactory<T> : IPluginLoaderFactory<T> 
-        where T : class
     {
         private readonly IPluginCacheFactory<T> _PluginCacheFactory;
 

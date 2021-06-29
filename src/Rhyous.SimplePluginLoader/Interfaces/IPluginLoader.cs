@@ -2,7 +2,7 @@
 
 namespace Rhyous.SimplePluginLoader
 {
-    public interface IPluginLoader<T> where T : class
+    public interface IPluginLoader<T>
     {
         /// <summary>
         /// Load plugins.  

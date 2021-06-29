@@ -9,15 +9,15 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
     /// <typeparam name="T"></typeparam>
     public class AutofacObjectCreator<T> : IObjectCreator<T>
     {
-        private readonly IComponentContext _ComponentContext;
+        private readonly ILifetimeScope _LifetimeScope;
 
         /// <summary>
         /// AutofacObjectCreator constructor
         /// </summary>
-        /// <param name="componentContext">An Autofac ComponentContenxt object.</param>
-        public AutofacObjectCreator(IComponentContext componentContext)
+        /// <param name="lifetimeScope">An Autofac ComponentContenxt object.</param>
+        public AutofacObjectCreator(ILifetimeScope lifetimeScope)
         {
-            _ComponentContext = componentContext;
+            _LifetimeScope = lifetimeScope;
         }
 
         /// <summary>
@@ -29,17 +29,15 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
         public T Create(Type type)
         {
 
-            var scope = _ComponentContext.Resolve<ILifetimeScope>();
+            var scope = _LifetimeScope.Resolve<ILifetimeScope>();
             Type typeToLoad = null;
-            using (var pluginScope = scope.BeginLifetimeScope((builder) =>
+            var pluginScope = scope.BeginLifetimeScope((builder) =>
             {
                 typeToLoad = RegisterTypeMethod(builder, type, typeof(T));
-            }))
-            {
-                if (typeToLoad == null || typeToLoad.IsGenericTypeDefinition)
-                    return default(T);
-                return (T)pluginScope.Resolve(typeToLoad);
-            }
+            });
+            if (typeToLoad == null || typeToLoad.IsGenericTypeDefinition)
+                return default(T);
+            return (T)pluginScope.Resolve(typeToLoad);
         }
 
         /// <summary>This wrapper aroudn the extension method is used to add ease of Unit Testing</summary>

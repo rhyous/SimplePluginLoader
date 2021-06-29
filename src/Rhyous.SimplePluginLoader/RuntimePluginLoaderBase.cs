@@ -12,7 +12,6 @@ namespace Rhyous.SimplePluginLoader
     /// </summary>
     /// <typeparam name="T">The type of the plugin to load.</typeparam>
     public abstract class RuntimePluginLoaderBase<T> : IRuntimePluginLoader<T>
-        where T : class
     {
         private readonly IAppDomain _AppDomain;
         private readonly IPluginLoaderSettings _Settings;

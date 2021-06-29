@@ -17,7 +17,6 @@ namespace Rhyous.SimplePluginLoader
 
         public IRuntimePluginLoader<T> Create<TRuntimePluginLoader, T>(params object[] dependencies)
             where TRuntimePluginLoader : class, IRuntimePluginLoader<T>
-            where T : class
         {
             if (Singletons == null)
                 Singletons = new SingletonObjects();

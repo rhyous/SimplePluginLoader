@@ -27,7 +27,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
 
             if (asType.IsGenericTypeDefinition && regType.IsGenericTypeDefinition)
             {
-                builder.RegisterGeneric(regType.GetGenericTypeDefinition()).As(asType).IfNotRegistered(asType).SingleInstance();
+                builder.RegisterGeneric(regType.GetGenericTypeDefinition()).As(asType).InstancePerLifetimeScope();
                 return asType;
             }
 
@@ -49,8 +49,9 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
 
             if (asType.IsGenericType && !regType.IsGenericTypeDefinition)
             {
-                builder.RegisterType(regType).As(asType).IfNotRegistered(asType).SingleInstance();
-                return asType;
+                builder.RegisterType(regType).As(regType).InstancePerLifetimeScope();
+                builder.RegisterType(regType).As(asType).InstancePerLifetimeScope();
+                return regType;
             }
 
             builder.RegisterType(regType);
