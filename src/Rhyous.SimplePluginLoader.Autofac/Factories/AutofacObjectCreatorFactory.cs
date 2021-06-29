@@ -8,19 +8,19 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
     /// <typeparam name="T">The type of the object to create.</typeparam>
     public class AutofacObjectCreatorFactory<T> : IObjectCreatorFactory<T> 
     {
-        private readonly IComponentContext _ComponentContext;
+        private readonly ILifetimeScope _ComponentContext;
 
         /// <summary>
         /// AutofacObjectCreatorFactory constructor
         /// </summary>
-        /// <param name="componentContext">An Autofac ComponentContext object.</param>
-        public AutofacObjectCreatorFactory(IComponentContext componentContext)
+        /// <param name="lifetimeScope">An Autofac LifetimeScope object.</param>
+        public AutofacObjectCreatorFactory(ILifetimeScope lifetimeScope)
         {
-            _ComponentContext = componentContext;
+            _ComponentContext = lifetimeScope;
         }
 
         /// <summary>
-        /// This uses the Autofac ComponentContext to resolve (i.e. instantiate) a 
+        /// This uses the Autofac LifetimeScope to resolve (i.e. instantiate) a 
         /// concrete instance of IObjectCreator{T}.
         /// </summary>
         /// <returns></returns>
