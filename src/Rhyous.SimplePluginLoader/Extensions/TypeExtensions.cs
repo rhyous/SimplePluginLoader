@@ -15,12 +15,34 @@ namespace Rhyous.SimplePluginLoader
 
         public static bool IsPluginType<T>(this Type type)
         {
-            return type.IsSameOrSubclassAs(typeof(T)) || typeof(T).IsAssignableFrom(type) || typeof(T).IsGenericInterfaceOf(type);
+            if (!type.IsTypeOf(typeof(T)) || type.IsInterface)
+                return false;
+
+            if (!typeof(T).IsGenericType && !type.IsGenericType) // Neither is Generic
+                return true;
+
+            if (!typeof(T).IsGenericType && type.IsGenericType) // type is Generic by T is not
+                return !type.IsGenericTypeDefinition;
+
+            if (typeof(T).IsGenericType && !type.IsGenericType) // T is Generic by type is not
+                return !typeof(T).IsGenericTypeDefinition;
+
+            if (typeof(T).IsGenericType && type.IsGenericType) // Both are Generic by T is not
+            {
+                if (typeof(T).IsGenericTypeDefinition && type.IsGenericTypeDefinition) // Both can't be empty generics, one needs types
+                    return false;
+                if ((!typeof(T).IsGenericTypeDefinition && type.IsGenericTypeDefinition) // One is empty but one isn't
+                  || typeof(T).IsGenericTypeDefinition && !type.IsGenericTypeDefinition)
+                    return type.GetGenericArguments().Length == typeof(T).GetGenericArguments().Length;
+                return true;
+            }
+            return false;
         }
 
         public static bool IsTypeOf(this Type type, Type type2)
         {
-            return type.IsSameOrSubclassAs(type2) || type2.IsAssignableFrom(type) || type2.IsGenericInterfaceOf(type) || type2.IsGenericTypeDefinitionOf(type);
+            return type.IsSameOrSubclassAs(type2) || type2.IsAssignableFrom(type) 
+                || type2.IsGenericInterfaceOf(type) || type2.IsGenericTypeDefinitionOf(type);
         }
 
         public static bool IsGenericInterfaceOf(this Type left, Type right)
@@ -46,13 +68,43 @@ namespace Rhyous.SimplePluginLoader
 
         public static bool IsGenericTypeDefinitionOf(this Type left, Type right)
         {
-            if (left.IsGenericType && left.IsGenericTypeDefinition && right.IsGenericType)
+            if (left.IsEmptyGeneric() && right.IsConcreteGeneric())
             {
-                return (right.GetGenericTypeDefinition() == left)
-                    || (right.BaseType.IsGenericType && right.IsGenericTypeDefinition && right.GetGenericTypeDefinition() == left);
+                var baseType = right;
+                while (baseType != null && baseType != typeof(object))
+                {
+                    if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == left)
+                        return true;
+                    baseType = baseType.BaseType;
+                }
             }
+            if (left.IsConcreteGeneric() && right.IsEmptyGeneric())
+            {
+                var baseType = left;
+                while (baseType != null && baseType != typeof(object))
+                {
+                    if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == right)
+                        return true;
+                    baseType = baseType.BaseType;
+                }
+                baseType = right;
+                while (baseType != null && baseType != typeof(object))
+                {
+                    if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == left.GetGenericTypeDefinition())
+                        return true;
+                    baseType = baseType.BaseType;
+                }
+            }
+            if (left.IsConcreteGeneric() && right.IsConcreteGeneric())
+            {
+                if (left == right)
+                    return true;
+            }
+            if (right.BaseType != null && right.BaseType != typeof(object))
+                return left.IsGenericTypeDefinitionOf(right.BaseType);
             return false;
         }
+
 
         public static bool IsInstantiable(this Type type)
         {
@@ -78,7 +130,7 @@ namespace Rhyous.SimplePluginLoader
         {
             if (t.DeclaringType == null)
                 return t;
-            while (t.GetType() == _RunTimeType) 
+            while (t.GetType() == _RunTimeType)
                 return GetFixedDeclaringType(t.DeclaringType);
             return t;
         }
@@ -100,6 +152,16 @@ namespace Rhyous.SimplePluginLoader
 
         /// <summary> System.RuntimeType is internal so we can't use it directly</summary>
         private static Type _RunTimeType = Type.GetType("System.RuntimeType");
+
+        public static bool IsConcreteGeneric(this Type type)
+        {
+            return (type.IsGenericType && !type.IsGenericTypeDefinition);
+        }
+
+        public static bool IsEmptyGeneric(this Type type)
+        {
+            return (type.IsGenericType && type.IsGenericTypeDefinition);
+        }
     }
 
 }
