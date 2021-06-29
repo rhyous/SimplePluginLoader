@@ -4,7 +4,6 @@ using System.Linq;
 namespace Rhyous.SimplePluginLoader.Autofac.Tests.Models
 {
     public class ServiceLoader<T> : IServiceLoader<T>
-                where T : class
     {
         private readonly ILifetimeScope _Container;
 
@@ -30,7 +29,7 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests.Models
             }))
             {
                 if (typeof(T).IsGenericTypeDefinition)
-                    return null;
+                    return default(T);
                 return scope.Resolve<T>(); ;
             }
         }

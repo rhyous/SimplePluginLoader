@@ -1,6 +1,6 @@
 ﻿namespace Rhyous.SimplePluginLoader
 {
-    public interface IPluginLoaderFactory<T> where T : class
+    public interface IPluginLoaderFactory<T>
     {
         IPluginLoader<T> Create(IPluginPaths pluginPaths);
     }

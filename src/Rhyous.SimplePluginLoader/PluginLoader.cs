@@ -12,7 +12,6 @@ namespace Rhyous.SimplePluginLoader
     /// A singleton that load plugins
     /// </summary>
     public class PluginLoader<T> : IPluginLoader<T>
-        where T : class
     {
         #region static create
         public static PluginLoader<T> Create(string appName,

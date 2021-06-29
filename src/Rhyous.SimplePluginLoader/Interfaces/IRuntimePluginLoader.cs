@@ -29,7 +29,6 @@ namespace Rhyous.SimplePluginLoader
     /// </summary>
     /// <typeparam name="T">The type of plugin to load.</typeparam>
     public interface IRuntimePluginLoader<T> : IRuntimePluginLoader
-        where T : class
     {
         /// <summary>
         /// Instantiated instances of the plugins. If multiple dlls have plugins, there could be multiple collections.
