@@ -19,9 +19,9 @@ namespace Rhyous.SimplePluginLoader
                             IPluginObjectCreator<T> pluginObjectCreator,
                             IPluginLoaderLogger logger)
         {
-            _PluginLoader = pluginLoader;
-            _PluginObjectCreator = pluginObjectCreator;
-            _Logger = logger;
+            _PluginLoader = pluginLoader ?? throw new ArgumentNullException(nameof(pluginLoader));
+            _PluginObjectCreator = pluginObjectCreator ?? throw new ArgumentNullException(nameof(pluginObjectCreator));
+            _Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>

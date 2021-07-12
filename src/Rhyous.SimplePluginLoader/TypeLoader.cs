@@ -12,7 +12,7 @@ namespace Rhyous.SimplePluginLoader
                           IPluginLoaderLogger logger)
         {
             _Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _Logger = logger;
+            _Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public List<Type> Load(IAssembly assembly)

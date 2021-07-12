@@ -5,9 +5,9 @@
         public SingletonObjects()
         {
             Settings = PluginLoaderSettings.Default;
-            Logger = PluginLoaderLogger.Instance;
-            AppDomain = new AppDomainWrapper(System.AppDomain.CurrentDomain, Logger);
             AppSettings = new AppSettings();
+            Logger = PluginLoaderLogger.Factory(AppSettings);
+            AppDomain = new AppDomainWrapper(System.AppDomain.CurrentDomain, Logger);
             AssemblyNameReader = new AssemblyNameReader();
             AssemblyCache = new AssemblyCache(AppDomain, AssemblyNameReader, Logger);
             AssemblyLoader = new AssemblyLoader(AppDomain, Settings, AssemblyCache, AssemblyNameReader, Logger);

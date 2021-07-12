@@ -17,7 +17,7 @@ namespace Rhyous.SimplePluginLoader
         public Waiter(IPluginLoaderLogger logger)
         {
             InProgress = new ConcurrentDictionary<string, bool>();
-            _Logger = logger;
+            _Logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
         }
 
         public ConcurrentDictionary<string, bool> InProgress { get; }

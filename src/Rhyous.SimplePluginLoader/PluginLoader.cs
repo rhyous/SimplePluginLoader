@@ -23,12 +23,12 @@ namespace Rhyous.SimplePluginLoader
                              IAssemblyNameReader assemblyNameReader = null,
                              IAssemblyLoader assemblyLoader = null,
                              IWaiter waiter = null,
-                             IAssemblyResolveCache assemblyResolveCache = null,
                              IPluginDependencyResolverObjectCreator pluginDependencyResolverObjectCreator = null,
                              IPluginDependencyResolverCacheFactory pluginDependencyResolverCacheFactory = null,
                              IPluginCacheFactory<T> pluginCacheFactory = null,
                              IPluginLoaderLogger logger = null)
         {
+            logger = logger ?? PluginLoaderLogger.Factory(new AppSettings());
             appDomain = appDomain ?? new AppDomainWrapper(AppDomain.CurrentDomain, logger);
             paths = paths ?? new AppPluginPaths(appName, null, appDomain,  logger);
             settings = settings ?? PluginLoaderSettings.Default;
@@ -37,8 +37,7 @@ namespace Rhyous.SimplePluginLoader
             assemblyDictionary = assemblyDictionary ?? new AssemblyCache(appDomain, assemblyNameReader, logger);
             assemblyLoader = assemblyLoader ?? new AssemblyLoader(appDomain, settings, assemblyDictionary, assemblyNameReader, logger);
             waiter = waiter ?? new Waiter(logger);
-            assemblyResolveCache = assemblyResolveCache = new AssemblyResolveCache();
-            pluginDependencyResolverObjectCreator = pluginDependencyResolverObjectCreator ?? new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, waiter, assemblyResolveCache, logger);
+            pluginDependencyResolverObjectCreator = pluginDependencyResolverObjectCreator ?? new PluginDependencyResolverObjectCreator(appDomain, settings, assemblyLoader, waiter, new AssemblyResolveCache(), logger);
             pluginDependencyResolverCacheFactory = pluginDependencyResolverCacheFactory ?? new PluginDependencyResolverCacheFactory(pluginDependencyResolverObjectCreator, logger);
             pluginCacheFactory = pluginCacheFactory ?? new PluginCacheFactory<T>(typeLoader, pluginDependencyResolverCacheFactory, assemblyLoader,  logger);
             return new PluginLoader<T>(paths, pluginCacheFactory);

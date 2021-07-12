@@ -15,7 +15,7 @@ namespace Rhyous.SimplePluginLoader
     {
         public static IPluginLoaderLogger Factory(IAppSettings appSettings)
         {
-            return Instance = new PluginLoaderLogger(appSettings);
+            return Instance ?? (Instance = new PluginLoaderLogger(appSettings));
         }
 
         public string LogPathConfiguration { get { return _AppSettings.Settings["PluginLoaderLogPath"]; } }
@@ -34,8 +34,8 @@ namespace Rhyous.SimplePluginLoader
 
         internal PluginLoaderLogger(IAppSettings appSettings)
         {
-            InstanceId = ++InstanceCount.Value; ;
-            _AppSettings = appSettings;
+            InstanceId = ++InstanceCount.Value;
+            _AppSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));
         }
 
         #endregion

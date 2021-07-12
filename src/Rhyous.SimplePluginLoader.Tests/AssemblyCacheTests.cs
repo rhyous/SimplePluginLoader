@@ -216,7 +216,7 @@ namespace Rhyous.SimplePluginLoader.Tests
         public void AssemblyLoader_FindAlreadyLoadedAssembly_OnlyDifferentVersionLoaded()
         {
             // Arrange
-            var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain);
+            var appDomain = new AppDomainWrapper(AppDomain.CurrentDomain, _MockLogger.Object);
             var logLines = new List<string>();
             _MockAppDomain.Setup(m => m.GetAssemblies()).Returns(appDomain.GetAssemblies());
             var assemblyCache = CreateAssemblyCache();

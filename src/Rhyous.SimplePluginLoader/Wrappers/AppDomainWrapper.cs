@@ -19,7 +19,7 @@ namespace Rhyous.SimplePluginLoader
         private readonly IPluginLoaderLogger _Logger;
         private readonly ConcurrentDictionary<ResolveEventHandler, byte> Handlers = new ConcurrentDictionary<ResolveEventHandler, byte>();
 
-        public AppDomainWrapper(AppDomain appDomain, IPluginLoaderLogger logger = null)
+        public AppDomainWrapper(AppDomain appDomain, IPluginLoaderLogger logger)
         {
             _AppDomain = appDomain;
             _Logger = logger;
