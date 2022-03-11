@@ -1,11 +1,11 @@
-version: 1.5.{build}
+version: 2.0.{build}
 image: Visual Studio 2019
 dotnet_csproj:
   patch: true
   file: '**\*.csproj'
   version: '{version}'
   package_version: '{version}'
-  assembly_version: '1.5.8.0'
+  assembly_version: '2.0.0.0'
   file_version: '{version}'
   informational_version: '{version}'
 before_build:
@@ -29,4 +29,4 @@ deploy:
   on:
     branch: master
   api_key:
-    secure: 0atBWZHBxA1tMMSATgnvZ3ew3l38cESi/pSrosX0j8OevgbxgA9z75qtyBnCfYfz
+    secure: aBtwxNQUKVE+75XlHMIpG7dyc041X0T/svrpxRW0VfBH61cfv4dBZ1U8i9St3zR/
