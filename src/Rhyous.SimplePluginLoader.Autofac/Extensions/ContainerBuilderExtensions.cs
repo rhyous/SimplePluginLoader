@@ -14,7 +14,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
         /// It is especially useful for registering a GenericTypeDefinition.
         /// </summary>
         /// <param name="builder">The ContainerBuilder that allows for Autofac object registration.</param>
-        /// <param name="regType">The type to register.</param>
+        /// <param name="regType">The type to register. Must be a concrete type else it must already be registered and this method will do noth.</param>
         /// <param name="asType">The plugin type.</param>
         /// <returns>The type to resolve. This could be the regType, the asType, or a custom built generic type.</returns>
         public static Type RegisterType(this ContainerBuilder builder, Type regType, Type asType)
@@ -28,7 +28,7 @@ namespace Rhyous.SimplePluginLoader.DependencyInjection
             if (asType.IsGenericTypeDefinition && regType.IsGenericTypeDefinition)
             {
                 builder.RegisterGeneric(regType.GetGenericTypeDefinition()).As(asType).InstancePerLifetimeScope();
-                return asType;
+                return null;
             }
 
             if (asType.IsGenericTypeDefinition && !regType.IsGenericTypeDefinition)

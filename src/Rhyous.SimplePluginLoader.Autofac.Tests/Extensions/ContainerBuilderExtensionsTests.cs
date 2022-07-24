@@ -249,11 +249,7 @@ namespace Rhyous.SimplePluginLoader.Autofac.Tests
             }))
             {
                 // Assert
-                Assert.ThrowsException<ComponentNotRegisteredException>(() =>
-                {
-                    pluginScope.Resolve(typeToLoad);
-                });
-                Assert.AreEqual(type2, typeToLoad);
+                Assert.IsNull(typeToLoad);
             };
         }
 

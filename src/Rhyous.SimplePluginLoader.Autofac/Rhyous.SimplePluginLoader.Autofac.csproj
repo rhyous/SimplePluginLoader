@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net48</TargetFrameworks>
     <RootNamespace>Rhyous.SimplePluginLoader.Autofac</RootNamespace>
     <AssemblyName>Rhyous.SimplePluginLoader.Autofac</AssemblyName>
     <Authors>Jared Barneck (Rhyous)</Authors>
@@ -19,10 +19,11 @@
     <PackageTags>plugin extension extensibility</PackageTags>
     <PackageIcon>SimplePluginLoaderLogo.png</PackageIcon>
     <PackageIconUrl />
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
-    <DocumentationFile>C:\Dev\Git\Rhyous\SimplePluginLoader\src\Rhyous.SimplePluginLoader.Autofac\Rhyous.SimplePluginLoader.Autofac.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
