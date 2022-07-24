@@ -2,6 +2,23 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net48</TargetFrameworks>
+    <RootNamespace>Rhyous.SimplePluginLoader.Ninject</RootNamespace>
+    <AssemblyName>Rhyous.SimplePluginLoader.Ninject</AssemblyName>
+    <Authors>Jared Barneck (Rhyous)</Authors>
+    <Company>Rhyous Publishing LLC</Company>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <Version>2.0.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>An Ninject extension to Rhyous.SimplePluginLoader.</Description>
+    <Copyright>Copyright Jared Barneck (Rhyous) 2019</Copyright>
+    <PackageLicenseFile>License.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/rhyous/SimplePluginLoader/wiki</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/rhyous/SimplePluginLoader</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>plugin extension extensibility</PackageTags>
+    <PackageIcon>SimplePluginLoaderLogo.png</PackageIcon>
+    <PackageIconUrl />
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
@@ -12,6 +29,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rhyous.SimplePluginLoader\Rhyous.SimplePluginLoader.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\Images\SimplePluginLoaderLogo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\License.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

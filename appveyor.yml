@@ -26,7 +26,7 @@ test:
 nuget:
   disable_publish_on_pr: true
 artifacts:
-  - path: 'src\Rhyous.SimplePluginLoader\**\*.nupkg;src\Rhyous.SimplePluginLoader.Autofac\**\*.nupkg;'
+  - path: 'src\Rhyous.SimplePluginLoader\**\*.nupkg;src\Rhyous.SimplePluginLoader.Autofac\**\*.nupkg;src\Rhyous.SimplePluginLoader.Ninject\**\*.nupkg;'
 deploy:
 - provider: NuGet
   on:
