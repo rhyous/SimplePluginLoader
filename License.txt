@@ -1,4 +1,4 @@
-SimpleArgs - Easy coding of command line arguments.
+SimplePluginLoader - Easy coding of plugin loading.
 
 Copyright (c) 2012, Jared Barneck (Rhyous)
 All rights reserved.
