@@ -39,7 +39,7 @@ namespace Rhyous.SimplePluginLoader
         {
             Plugin<T> plugin;
             var pluginDir = Path.GetDirectoryName(pluginFile);
-            var binDir = @"\bin";
+            var binDir = $"{Path.DirectorySeparatorChar}bin";
             if (pluginDir.EndsWith(binDir, StringComparison.OrdinalIgnoreCase))
                 pluginDir = pluginDir.Substring(0, pluginDir.Length - binDir.Length);
             var resolver = _DependencyResolverCacheFactory.Create(pluginDir, typeof(PluginDependencyResolver));

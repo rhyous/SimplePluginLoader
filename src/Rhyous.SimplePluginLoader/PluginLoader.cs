@@ -93,7 +93,7 @@ namespace Rhyous.SimplePluginLoader
                     continue;
                 fullPaths.Add(info.FullName);
                 var allfiles = Directory.GetFiles(info.FullName, AppPluginPaths.DefaultDllSearchString, SearchOption.AllDirectories);
-                var foundplugins = LoadPlugins(allfiles.Where(s => !Path.GetDirectoryName(s).EndsWith(@"\bin")).ToArray());
+                var foundplugins = LoadPlugins(allfiles.Where(s => !Path.GetDirectoryName(s).EndsWith($"{Path.DirectorySeparatorChar}bin")).ToArray());
                 plugins.AddRange(foundplugins);
             }
             return plugins;
